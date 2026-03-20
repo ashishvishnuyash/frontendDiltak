@@ -6,10 +6,14 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { ModalProvider } from '@/contexts/modal-context';
 import { ThemeProvider } from '@/contexts/theme-context';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+});
 
 export const metadata: Metadata = {
-  title: 'WellnessHub - Employee Mental Health Platform',
+  title: 'Diltak.ai - Employee Mental Health Platform',
   description: 'AI-powered employee mental health analytics and wellness tracking platform',
 };
 
@@ -21,15 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Inline script to prevent FOUC — runs synchronously before paint */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              // Force light mode immediately
-              document.documentElement.classList.remove('dark');
-              try {
-                localStorage.setItem('theme', 'light');
-              } catch (e) {}
-            `,
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}})()`,
           }}
         />
       </head>

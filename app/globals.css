@@ -1,74 +1,142 @@
 /* stylelint-disable at-rule-no-unknown */
-/* Tailwind CSS directives and custom styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
+/* ─────────────────────────────────────────────────────────────────────────────
+   DESIGN TOKENS — CSS Custom Properties
+   Source of truth: lib/tokens.ts
+───────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    /* ── Brand (teal-green) ─────────────────────────────────────── */
+    --brand-100: #E8F9F3;
+    --brand-200: #BFF1DD;
+    --brand-300: #7EE3BE;
+    --brand-400: #3CCF9C;
+    --brand-500: #1FA97A;
+    --brand-600: #148A6A;
+    --brand-600: #148A63;
+    --brand-700: #0F6B4F;
+
+    /* ── Primary (blue) ─────────────────────────────────────────── */
+    --primary-0:   #FFFFFF;
+    --primary-50:  #E9F6FF;
+    --primary-100: #CFEFFF;
+    --primary-200: #A5DDFF;
+    --primary-300: #7CCBFF;
+    --primary-400: #4FB8FF;
+    --primary-500: #2BADFF;
+    --primary-600: #1976D2;
+    --primary-700: #1565C0;
+    --primary-800: #0E4874;
+    --primary-900: #072C4A;
+
+    /* ── Background ─────────────────────────────────────────────── */
+    --bg-0:   #FFFFFF;
+    --bg-50:  #F7FBF9;
+    --bg-100: #EEF6F2;
+    --bg-200: #DCEEE6;
+    --bg-300: #C8E3D7;
+
+    /* ── Text ───────────────────────────────────────────────────── */
+    --txt-headings:  #0F172A;
+    --txt-primary:   #1E293B;
+    --txt-secondary: #334155;
+    --txt-disabled:  #94A3B8;
+    --txt-dividers:  #E2E8F0;
+    --txt-loader:    #EEEEEE;
+    --txt-inverse:   #FFFFFF;
+
+    /* ── Status ─────────────────────────────────────────────────── */
+    --success-subtle:  #E8F7EE;
+    --success-default: #22C55E;
+    --success-bold:    #16A34A;
+    --warning-subtle:  #FFF7E5;
+    --warning-default: #F59E0B;
+    --warning-bold:    #D97706;
+    --error-subtle:    #FDECEC;
+    --error-default:   #F44444;
+    --error-bold:      #DC2626;
+
+    /* ── Spacing ────────────────────────────────────────────────── */
+    --space-0:  0px;
+    --space-4:  4px;
+    --space-8:  8px;
+    --space-12: 12px;
+    --space-16: 16px;
+    --space-18: 18px;
+    --space-20: 20px;
+    --space-24: 24px;
+    --space-32: 32px;
+    --space-48: 48px;
+    --space-80: 80px;
+
+    /* ── Radius ─────────────────────────────────────────────────── */
     --radius: 0.5rem;
+
+    /* ── Shadcn/Radix semantic tokens (light mode) ──────────────── */
+    --background: 0 0% 100%;
+    --foreground: 215 28% 17%;        /* txt-primary */
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+    --primary: 162 68% 39%;           /* brand-500 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 150 30% 95%;         /* bg-50 */
+    --secondary-foreground: 215 28% 17%;
+    --muted: 150 20% 95%;
+    --muted-foreground: 215 16% 47%;  /* txt-disabled */
+    --accent: 150 30% 93%;            /* bg-100 */
+    --accent-foreground: 215 28% 17%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;            /* txt-dividers */
+    --input: 214 32% 91%;
+    --ring: 162 68% 39%;              /* brand-500 */
+    --chart-1: 162 68% 39%;
+    --chart-2: 207 90% 54%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --bg-0:   #0F172A;
+    --bg-50:  #1E293B;
+    --bg-100: #1E293B;
+    --bg-200: #334155;
+    --bg-300: #475569;
+
+    --txt-headings:  #F8FAFC;
+    --txt-primary:   #E2E8F0;
+    --txt-secondary: #CBD5E1;
+    --txt-disabled:  #64748B;
+    --txt-dividers:  #334155;
+    --txt-inverse:   #0F172A;
+
+    --background: 215 28% 9%;
+    --foreground: 210 40% 98%;
+    --card: 215 28% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 215 28% 12%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 162 68% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 215 28% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
+    --border: 215 28% 20%;
+    --input: 215 28% 20%;
+    --ring: 162 68% 39%;
+    --chart-1: 162 68% 45%;
+    --chart-2: 207 90% 60%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
@@ -80,113 +148,157 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply bg-background text-foreground;
-  }
-
-  /* Ensure text-gray-900 is readable in dark mode */
-  .dark .text-gray-900:not(.dark\:text-gray-100):not(.dark\:text-white):not([class*="dark:text-"]) {
-    color: rgb(243 244 246) !important; /* gray-100 */
-  }
-
-  /* Ensure text-gray-800 is readable in dark mode */
-  .dark .text-gray-800:not(.dark\:text-gray-200):not([class*="dark:text-"]) {
-    color: rgb(229 231 235) !important; /* gray-200 */
-  }
-
-  /* Ensure text-gray-700 is readable in dark mode */
-  .dark .text-gray-700:not(.dark\:text-gray-300):not([class*="dark:text-"]) {
-    color: rgb(209 213 219) !important; /* gray-300 */
+    font-family: var(--font-inter, 'Inter', ui-sans-serif, system-ui, sans-serif);
+    color: var(--txt-primary);
+    background-color: var(--bg-0);
   }
 }
 
-/* Enhanced Mental Health Wellness Styling */
+/* ─────────────────────────────────────────────────────────────────────────────
+   TYPOGRAPHY UTILITIES — token-based heading & body classes
+───────────────────────────────────────────────────────────────────────────── */
 @layer components {
+  /* Headings */
+  .dt-h1 { font-size: 32px; line-height: 40px; font-weight: 600; color: var(--txt-headings); }
+  .dt-h2 { font-size: 28px; line-height: 36px; font-weight: 600; color: var(--txt-headings); }
+  .dt-h3 { font-size: 24px; line-height: 32px; font-weight: 600; color: var(--txt-headings); }
+  .dt-h4 { font-size: 20px; line-height: 28px; font-weight: 600; color: var(--txt-headings); }
+  .dt-h5 { font-size: 18px; line-height: 26px; font-weight: 600; color: var(--txt-headings); }
+
+  /* Body — Large */
+  .dt-l-semibold { font-size: 18px; line-height: 26px; font-weight: 600; }
+  .dt-l-regular  { font-size: 18px; line-height: 26px; font-weight: 400; }
+
+  /* Body — Medium */
+  .dt-m-semibold { font-size: 16px; line-height: 24px; font-weight: 600; }
+  .dt-m-regular  { font-size: 16px; line-height: 24px; font-weight: 400; }
+
+  /* Body — Small */
+  .dt-s-semibold { font-size: 14px; line-height: 20px; font-weight: 600; }
+  .dt-s-regular  { font-size: 14px; line-height: 20px; font-weight: 400; }
+
+  /* UI */
+  .dt-label            { font-size: 14px; line-height: 20px; font-weight: 500; }
+  .dt-caption          { font-size: 12px; line-height: 18px; font-weight: 400; }
+  .dt-caption-semibold { font-size: 12px; line-height: 18px; font-weight: 600; }
+  .dt-micro            { font-size: 10px; line-height: 14px; font-weight: 400; }
+
+  /* ── Status badges ──────────────────────────────────────────────────────── */
+  .dt-badge-success {
+    background-color: var(--success-subtle);
+    color: var(--success-bold);
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .dt-badge-warning {
+    background-color: var(--warning-subtle);
+    color: var(--warning-bold);
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .dt-badge-error {
+    background-color: var(--error-subtle);
+    color: var(--error-bold);
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  /* ── Brand button ───────────────────────────────────────────────────────── */
+  .dt-btn-brand {
+    background-color: var(--brand-500);
+    color: #ffffff;
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-colors;
+  }
+  .dt-btn-brand:hover  { background-color: var(--brand-600); }
+  .dt-btn-brand:active { background-color: var(--brand-700); }
+
+  /* ── Card surface ───────────────────────────────────────────────────────── */
+  .dt-card {
+    background-color: var(--bg-0);
+    border: 1px solid var(--txt-dividers);
+    @apply rounded-card shadow-sm;
+  }
+  .dt-card-subtle {
+    background-color: var(--bg-50);
+    border: 1px solid var(--txt-dividers);
+    @apply rounded-card;
+  }
+
+  /* ── Wellness gradient (brand) ──────────────────────────────────────────── */
   .wellness-gradient {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%);
   }
-
   .wellness-card {
-    @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl;
+    @apply dt-card backdrop-blur-sm hover:shadow-lg transition-shadow duration-200;
   }
-
-  /* Ensure cards are visible in dark mode */
-  .dark .bg-white:not(.dark\:bg-gray-800):not(.dark\:bg-gray-900):not([class*="dark:bg-"]) {
-    background-color: rgb(31 41 55 / 0.95) !important; /* gray-800 with opacity */
-  }
-
-  .dark .bg-gray-50:not(.dark\:bg-gray-900):not(.dark\:bg-gray-800):not([class*="dark:bg-"]) {
-    background-color: rgb(17 24 39 / 0.5) !important; /* gray-900 with opacity */
-  }
-
-  .wellness-button {
-    @apply bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300;
-  }
-
   .gradient-text {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    background-image: linear-gradient(135deg, var(--brand-500), var(--brand-600));
   }
-
   .glass-effect {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
   }
 
-  .floating-animation {
-    animation: float 6s ease-in-out infinite;
+  /* ── Avatar container ───────────────────────────────────────────────────── */
+  .avatar-container {
+    @apply relative w-full h-full overflow-hidden;
+    contain: layout style paint;
+    min-height: 400px;
   }
-
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite alternate;
+  .avatar-canvas {
+    @apply w-full h-full;
+    min-width: 100% !important;
+    min-height: 100% !important;
+  }
+  .avatar-split-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 500px;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────────────────────────────────────────── */
 
 @keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-20px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
 }
 
 @keyframes pulse-glow {
-  0% {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
-  }
-
-  100% {
-    box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
-  }
+  0%   { box-shadow: 0 0 16px rgba(31, 169, 122, 0.4); }
+  100% { box-shadow: 0 0 32px rgba(31, 169, 122, 0.7); }
 }
 
 @keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .animate-gradient {
   background-size: 200% 200%;
-  animation: gradient 3s ease infinite;
+  animation: gradient 4s ease infinite;
 }
 
-/* Smooth scrolling for better UX */
-html {
-  scroll-behavior: smooth;
-}
+.floating-animation { animation: float 6s ease-in-out infinite; }
+.pulse-glow         { animation: pulse-glow 2s ease-in-out infinite alternate; }
 
-/* Modern Custom Scrollbar for webkit browsers */
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCROLLBARS
+───────────────────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

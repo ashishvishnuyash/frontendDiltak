@@ -6,7 +6,6 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import ManagerNavbar from "@/components/shared/ManagerNavbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1489,38 +1488,7 @@ export default function EmployeeChatPage() {
   if (!user) return null;
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 dark:from-gray-950 dark:via-slate-900 dark:to-teal-950 text-gray-900 dark:text-gray-100 transition-colors duration-500 overflow-hidden lg:ml-64">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-emerald-300/20 dark:bg-emerald-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-40 right-20 w-96 h-96 bg-blue-300/20 dark:bg-blue-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, -80, 0],
-            y: [0, 100, 0],
-            scale: [1, 1.3, 1],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 left-1/3 w-80 h-80 bg-teal-300/20 dark:bg-teal-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, 60, 0],
-            y: [0, -80, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
-
+    <div className="flex flex-col text-gray-900 dark:text-gray-100 overflow-hidden" style={{ height: 'calc(100vh - 60px)' }}>
       {/* Voice Call UI Overlay */}
       <VoiceCallUI
         isActive={isVoiceMode}
@@ -1530,28 +1498,16 @@ export default function EmployeeChatPage() {
         callDuration={callDuration}
         onEndCall={endCall}
         onToggleMute={() => setAudioEnabled(!audioEnabled)}
-        // Remove onToggleRecording to make it fully autonomous - recording starts/stops automatically
         isMuted={!audioEnabled}
         showClosedCaptions={showClosedCaptions}
         onToggleClosedCaptions={() => setShowClosedCaptions(!showClosedCaptions)}
         currentText={currentTTSText || lastAIMessage}
       />
-      
-      <ManagerNavbar 
-        user={user} 
-        onNavigate={() => {
-          // Close avatar mode before navigation
-          if (isAvatarMode) {
-            setIsAvatarMode(false);
-            toast.info("Closing avatar...");
-          }
-        }}
-      />
 
 
 
       {/* Full Screen Chat Container */}
-      <div className="flex flex-col flex-1 relative" style={{ height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+      <div className="flex flex-col flex-1 relative" style={{ overflow: 'hidden' }}>
         {/* Responsive Layout - Split on desktop, overlay on mobile */}
         <div className="flex flex-col lg:flex-row flex-1 min-h-0 relative" style={{ height: '100%' }}>
           {/* Chat Section - Equal 50% width on desktop */}

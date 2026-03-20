@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/use-user';
+import { SectionLoader } from '@/components/loader';
 
 interface CommunityPost {
   id: string;
@@ -259,11 +260,7 @@ export default function AnonymousCommunity() {
   }, [selectedCategory]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
+    return <SectionLoader message="Loading community..." />;
   }
 
   // Calculate community metrics based on actual data
@@ -495,7 +492,7 @@ export default function AnonymousCommunity() {
                             {post.title}
                           </h3>
                           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
-                            <Users className="h-4 w-4" />
+                            <Users className="h-5 w-5" />
                             <span>Anonymous User</span>
                           </div>
                         </div>
@@ -513,7 +510,7 @@ export default function AnonymousCommunity() {
                             onClick={() => likePost(post.id)}
                             className="text-gray-500 hover:text-red-500 dark:hover:text-red-400"
                           >
-                            <Heart className="h-4 w-4 mr-1" />
+                            <Heart className="h-5 w-5 mr-1" />
                             {post.likes}
                           </Button>
                           <Button
@@ -529,11 +526,11 @@ export default function AnonymousCommunity() {
                             }}
                             className="text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"
                           >
-                            <MessageCircle className="h-4 w-4 mr-1" />
+                            <MessageCircle className="h-5 w-5 mr-1" />
                             {post.replies}
                           </Button>
                           <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
-                            <Eye className="h-4 w-4 mr-1" />
+                            <Eye className="h-5 w-5 mr-1" />
                             {post.views}
                           </div>
                         </div>
@@ -587,7 +584,7 @@ export default function AnonymousCommunity() {
                                 {replies[post.id].map((reply) => (
                                   <div key={reply.id} className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
                                     <div className="flex items-center space-x-2 mb-2">
-                                      <Users className="h-4 w-4 text-gray-400" />
+                                      <Users className="h-5 w-5 text-gray-400" />
                                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Anonymous</span>
                                       <span className="text-xs text-gray-500 dark:text-gray-400">
                                         {new Date(reply.created_at).toLocaleDateString()}

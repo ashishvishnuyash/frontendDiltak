@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence, easeInOut, easeOut } from 'framer-motion';
-import { Navbar } from '@/components/shared/navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +39,7 @@ import { signOut } from 'firebase/auth';
 import { MentalHealthReport, User } from '@/types';
 
 import { toast } from 'sonner';
+import { PageLoader } from '@/components/loader';
 
 interface ReportWithEmployee extends MentalHealthReport {
   employee?: User;
@@ -325,24 +325,7 @@ export default function EmployerReportsPage() {
   };
 
   if (userLoading || loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 dark:from-gray-950 dark:via-slate-900 dark:to-teal-950 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          >
-            <FileText className="h-16 w-16 text-green-600 mx-auto mb-4" />
-          </motion.div>
-          <p className="text-lg text-gray-600 dark:text-gray-400">Loading wellness reports...</p>
-        </motion.div>
-      </div>
-    );
+    return <PageLoader message="Loading wellness reports..." iconColor="text-green-600" />;
   }
 
   if (!user) {
@@ -350,79 +333,8 @@ export default function EmployerReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 dark:from-gray-950 dark:via-slate-900 dark:to-teal-950 text-gray-900 dark:text-gray-100 transition-colors duration-500 overflow-x-hidden">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-emerald-300/20 dark:bg-emerald-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-40 right-20 w-96 h-96 bg-blue-300/20 dark:bg-blue-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, -80, 0],
-            y: [0, 100, 0],
-            scale: [1, 1.3, 1],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 left-1/3 w-80 h-80 bg-teal-300/20 dark:bg-teal-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, 60, 0],
-            y: [0, -80, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
-
-      {/* Header */}
-      <div className="border-b border-white/20 dark:border-gray-800/50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 transition-all duration-300 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group" onClick={() => router.push('/auth/login')}>
-              <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-emerald-600 to-green-700 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <Shield className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6 text-white" />
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-base sm:text-lg lg:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent group-hover:from-emerald-600 group-hover:to-green-700 transition-all duration-300">
-                  Wellness Hub
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Employer Portal</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Button variant="outline" size="sm" className="hidden lg:flex text-emerald-700 border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 hover:from-emerald-100 hover:to-green-100 font-semibold shadow-sm hover:shadow-md transition-all duration-300 text-xs sm:text-sm">
-                Management
-              </Button>
-              <Button variant="outline" size="sm" className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300">
-                <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400" />
-              </Button>
-              <Button variant="outline" size="sm" className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300">
-                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400" />
-              </Button>
-              <ThemeToggle size="sm" />
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-emerald-700 border-emerald-200 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 font-semibold shadow-sm hover:shadow-md transition-all duration-300 px-2 sm:px-3"
-                onClick={handleLogout}
-              >
-                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+    <div className="text-gray-900 dark:text-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8 lg:mb-10">
           <motion.div

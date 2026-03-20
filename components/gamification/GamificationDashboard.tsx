@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/use-user';
+import { SectionLoader, ButtonLoader } from '@/components/loader';
 
 interface UserGamification {
   id: string;
@@ -200,11 +201,7 @@ export default function GamificationDashboard() {
   }, [user]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
+    return <SectionLoader message="Loading gamification..." />;
   }
 
   if (!userStats) {
@@ -215,10 +212,7 @@ export default function GamificationDashboard() {
         <p className="text-gray-600 mb-6">Start your wellness journey by checking in for the first time.</p>
         <Button onClick={handleCheckIn} disabled={checkingIn} className="bg-blue-600 hover:bg-blue-700">
           {checkingIn ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Checking In...
-            </>
+            <><ButtonLoader message="Checking In..." /></>
           ) : (
             <>
               <CheckCircle className="h-4 w-4 mr-2" />
@@ -328,10 +322,7 @@ export default function GamificationDashboard() {
             className="bg-white text-blue-600 hover:bg-gray-100"
           >
             {checkingIn ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Checking In...
-              </>
+              <><ButtonLoader message="Checking In..." /></>
             ) : (
               <>
                 <CheckCircle className="h-4 w-4 mr-2" />

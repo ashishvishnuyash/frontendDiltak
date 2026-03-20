@@ -31,6 +31,7 @@ import { getTeamStats, getDirectReports, getManagerPermissions } from '@/lib/hie
 import { getDemoUser, getDemoTeamStats, demoUsers } from '@/lib/demo-data';
 import type { User, TeamStats, ManagerPermissions } from '@/types/index';
 import Link from 'next/link';
+import { SectionLoader } from '@/components/loader';
 
 interface ManagerDashboardProps {
   manager: User;
@@ -194,15 +195,7 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
   if (loading) {
     return (
       <div className="space-y-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
-          <Loader2 className="h-16 w-16 animate-spin text-blue-400 mx-auto mb-4" />
-          <p className="text-lg text-gray-600 dark:text-gray-400">Loading team dashboard...</p>
-        </motion.div>
+        <SectionLoader message="Loading team dashboard..." />
       </div>
     );
   }

@@ -19,7 +19,6 @@ import {
   Activity
 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
-import { Navbar } from '@/components/shared/navbar';
 import { db } from '@/lib/firebase';
 import {
   LineChart,
@@ -47,6 +46,7 @@ import { toast } from 'sonner';
 
 import type { MentalHealthReport, User } from '@/types/index';
 import { demoUsers, demoReports } from '@/lib/demo-data';
+import { PageLoader } from '@/components/loader';
 
 interface AnalyticsData {
   departmentStats: { [key: string]: { count: number; avgWellness: number; avgStress: number; avgMood: number; avgEnergy: number } };
@@ -269,45 +269,12 @@ export default function AnalyticsPage() {
   };
 
   if (userLoading || loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          >
-            <BarChart3 className="h-16 w-16 text-green-600 mx-auto mb-4" />
-          </motion.div>
-          <p className="text-lg text-gray-600">Loading analytics...</p>
-        </motion.div>
-      </div>
-    );
+    return <PageLoader message="Loading analytics..." iconColor="text-green-600" />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
-          className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"
-          animate={floatingAnimation}
-        />
-        <motion.div 
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"
-          animate={{
-            ...floatingAnimation,
-            transition: { ...floatingAnimation.transition, delay: 2 }
-          }}
-        />
-      </div>
-
-      <Navbar user={user || undefined} />
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="text-gray-900 dark:text-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
         <motion.div 
           className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8"

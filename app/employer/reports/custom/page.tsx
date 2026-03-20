@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Navbar } from '@/components/shared/navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +28,7 @@ import { toast } from 'sonner';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { MentalHealthReport, User as UserType } from '@/types';
+import { ButtonLoader } from '@/components/loader';
 
 interface CustomReportConfig {
   name: string;
@@ -388,11 +388,8 @@ export default function CustomReportPage() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar user={user || undefined} />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -403,8 +400,6 @@ export default function CustomReportPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar user={user || undefined} />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -695,11 +690,11 @@ export default function CustomReportPage() {
                     className="w-full"
                   >
                     {loading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <ButtonLoader message="Generating..." />
                     ) : (
                       <Play className="h-4 w-4 mr-2" />
                     )}
-                    Generate Report
+                    {!loading && 'Generate Report'}
                   </Button>
                   
                   <Button variant="outline" className="w-full">

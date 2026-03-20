@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Mail, Phone, Calendar, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@/hooks/use-user';
-import { Navbar } from '@/components/shared/navbar';
 import type { User as UserType } from '@/types';
 
 interface Employee extends UserType {

@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Brain, Eye, EyeOff, Building, Shield } from 'lucide-react';
+import { Building, Eye, EyeOff, Shield, ArrowLeft, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { toast } from 'sonner';
 import { auth, db } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
@@ -20,6 +22,7 @@ export default function EmployerLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [focusedField, setFocusedField] = useState('');
   const router = useRouter();
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -31,7 +34,6 @@ export default function EmployerLoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Verify user is an employer
       const userDocRef = doc(db, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
@@ -52,153 +54,192 @@ export default function EmployerLoginPage() {
       toast.success(`Welcome back, ${userData.first_name || userData.firstName || 'there'}!`);
       router.push('/employer/dashboard');
     } catch (err: any) {
-      setError('An unexpected error occurred. Please try again.');
+      switch (err.code) {
+        case 'auth/user-not-found':
+          setError('No account found with this email address.');
+          break;
+        case 'auth/wrong-password':
+          setError('Incorrect password.');
+          break;
+        case 'auth/invalid-email':
+          setError('Invalid email address.');
+          break;
+        case 'auth/too-many-requests':
+          setError('Too many failed attempts. Please try again later.');
+          break;
+        default:
+          setError('Login failed. Please check your credentials and try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm">
+      <motion.header
+        className="border-b border-border bg-background/80 backdrop-blur-sm"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             <Link href="/" className="flex items-center space-x-2">
-              <Brain className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">WellnessHub</span>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600 rounded flex items-center justify-center">
+                <span className="text-white font-bold text-xs sm:text-sm">D</span>
+              </div>
+              <span className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600">Diltak.ai</span>
             </Link>
-            <div className="flex items-center space-x-4">
-              <Link href="/auth/employee/login">
-                <Button variant="ghost">Employee Login</Button>
-              </Link>
-              <Link href="/auth/employer/register">
-                <Button>Register as Employer</Button>
+            <div className="flex items-center space-x-2">
+              <ThemeToggle size="sm" />
+              <Link href="/auth/login">
+                <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-muted-foreground hover:text-foreground">
+                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Back</span>
+                </Button>
               </Link>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <Building className="h-8 w-8 text-blue-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900">Employer Portal</h1>
-            <p className="text-gray-600 mt-2">
-              Sign in to your employer account
+      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] px-4 py-8">
+        <motion.div
+          className="w-full max-w-md"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          {/* Icon + Title */}
+          <div className="text-center mb-6">
+            <motion.div
+              className="w-14 h-14 bg-gradient-to-br from-amber-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Building className="h-7 w-7 text-white" />
+            </motion.div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Employer Portal</h1>
+            <p className="text-sm text-muted-foreground mt-1">Sign in to manage your organization</p>
+          </div>
+
+          {/* Notice */}
+          <div className="flex items-start space-x-3 bg-card border border-border rounded-xl p-4 mb-6">
+            <Shield className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+            <p className="text-xs text-muted-foreground">
+              This portal is exclusively for registered employers. Employees should use the
+              <Link href="/auth/employee/login" className="text-green-600 dark:text-green-400 hover:underline ml-1">employee login portal</Link>.
             </p>
           </div>
 
-          {/* Login Notice */}
-          <Card className="mb-6 border-blue-200 bg-blue-50">
-            <CardContent className="p-4">
-              <div className="flex items-start space-x-3">
-                <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div>
-                  <h3 className="font-medium text-blue-900">Employer Login Portal</h3>
-                  <p className="text-sm text-blue-700 mt-1">
-                    This portal is exclusively for registered employers. 
-                    Employees should use the separate employee login portal.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
-              <CardDescription className="text-center">
-                Enter your business email and password to continue
-              </CardDescription>
+          {/* Form Card */}
+          <Card className="bg-card border border-border shadow-xl rounded-2xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-bold text-foreground text-center">Welcome back</CardTitle>
+              <p className="text-sm text-muted-foreground text-center">Enter your business credentials to continue</p>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSignIn} className="space-y-4">
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
+            <CardContent className="space-y-5 pt-2">
+              <form onSubmit={handleSignIn} className="space-y-5">
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      <Alert variant="destructive">
+                        <AlertDescription className="text-sm">{error}</AlertDescription>
+                      </Alert>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Business Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your business email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="email" className="text-sm font-semibold text-foreground">Business Email</Label>
+                  <div className="relative">
+                    <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'email' ? 'text-green-500' : 'text-muted-foreground'}`} />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@company.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField('')}
+                      className={`pl-10 ${focusedField === 'email' ? 'border-green-500 ring-2 ring-green-200 dark:ring-green-800' : ''}`}
+                      disabled={loading}
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-semibold text-foreground">Password</Label>
                   <div className="relative">
+                    <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'password' ? 'text-green-500' : 'text-muted-foreground'}`} />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() => setFocusedField('')}
+                      className={`pl-10 pr-10 ${focusedField === 'password' ? 'border-green-500 ring-2 ring-green-200 dark:ring-green-800' : ''}`}
+                      disabled={loading}
                       required
                     />
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      disabled={loading}
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Signing in...
-                    </>
-                  ) : (
-                    'Sign In to Employer Portal'
-                  )}
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600 hover:opacity-90 text-white font-semibold py-2.5 shadow-lg transition-all duration-300"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing In...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center">
+                        Sign In to Employer Portal
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </span>
+                    )}
+                  </Button>
+                </motion.div>
               </form>
 
-              <div className="mt-6 space-y-4">
-                <div className="text-center">
-                  <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
-                    Forgot your password?
-                  </Link>
-                </div>
-
-                <div className="text-center text-sm text-gray-600">
-                  <span>Don't have an employer account? </span>
-                  <Link href="/auth/employer/register" className="text-blue-600 hover:underline">
+              <div className="space-y-3 text-center text-sm">
+                <div>
+                  <span className="text-muted-foreground">Don&apos;t have an account? </span>
+                  <Link href="/auth/employer/register" className="text-green-600 dark:text-green-400 hover:underline font-semibold">
                     Register here
                   </Link>
                 </div>
-
-                <div className="text-center text-sm text-gray-600">
-                  <span>Are you an employee? </span>
-                  <Link href="/auth/employee/login" className="text-blue-600 hover:underline">
-                    Use Employee Portal
+                <div>
+                  <span className="text-muted-foreground">Are you an employee? </span>
+                  <Link href="/auth/employee/login" className="text-green-600 dark:text-green-400 hover:underline font-semibold">
+                    Employee Portal
                   </Link>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

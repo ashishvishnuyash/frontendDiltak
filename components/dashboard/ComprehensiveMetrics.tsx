@@ -26,6 +26,7 @@ import {
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { MentalHealthReport } from '@/types';
+import { SectionLoader } from '@/components/loader';
 
 interface ComprehensiveMetricsProps {
   userId?: string;
@@ -186,12 +187,7 @@ export default function ComprehensiveMetrics({
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-        <span className="ml-2 text-gray-600">Loading comprehensive metrics...</span>
-      </div>
-    );
+    return <SectionLoader message="Loading comprehensive metrics..." />;
   }
 
   if (!metrics) {

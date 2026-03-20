@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/use-user';
+import { SectionLoader, ButtonLoader } from '@/components/loader';
 
 interface AIRecommendation {
   id: string;
@@ -279,12 +280,9 @@ export default function AIRecommendations() {
 
       {/* Category Cards Grid - 2x2 Layout */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-        </div>
+        <SectionLoader message="Generating recommendations..." />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-          {categories.map((category, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">          {categories.map((category, index) => (
             <motion.div
               key={category.id}
               initial={{ opacity: 0, y: 20 }}
@@ -340,10 +338,7 @@ export default function AIRecommendations() {
           className="border-2 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 px-6 py-2"
         >
           {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Refreshing...
-            </>
+            <><ButtonLoader message="Refreshing..." /></>
           ) : (
             <>
               <RefreshCw className="h-4 w-4 mr-2" />

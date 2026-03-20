@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, User as UserIcon, Brain, TrendingUp, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@/hooks/use-user';
-import { Navbar } from '@/components/shared/navbar';
 import type { MentalHealthReport } from '@/types';
 
 export default function ReportDetailPage() {

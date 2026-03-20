@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -19,23 +19,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const unsubscribeSnapshotRef = useRef<(() => void) | null>(null);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     const currentUser = auth.currentUser;
-    if (currentUser) {
-      try {
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (userDoc.exists()) {
-          const userData = { id: userDoc.id, ...userDoc.data() } as User;
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error('Error refreshing user data:', error);
+    if (!currentUser) return;
+    try {
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      if (userDoc.exists()) {
+        setUser({ id: userDoc.id, ...userDoc.data() } as User);
       }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
     }
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       await firebaseSignOut(auth);
       setUser(null);
@@ -43,79 +42,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error signing out:', error);
       throw error;
     }
-  };
+  }, []);
 
   useEffect(() => {
-    let unsubscribeSnapshot: (() => void) | null = null;
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      // Clean up previous snapshot listener
+      if (unsubscribeSnapshotRef.current) {
+        unsubscribeSnapshotRef.current();
+        unsubscribeSnapshotRef.current = null;
+      }
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Clean up previous snapshot listener if it exists
-        if (unsubscribeSnapshot) {
-          unsubscribeSnapshot();
-          unsubscribeSnapshot = null;
-        }
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const initialDoc = await getDoc(userDocRef);
 
-        if (firebaseUser) {
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          
-          // First, check if document exists immediately
-          const initialDoc = await getDoc(userDocRef);
-          if (initialDoc.exists()) {
-            const userData = { id: initialDoc.id, ...initialDoc.data() } as User;
-            setUser(userData);
-            setLoading(false);
-            
-            // Set up snapshot listener for real-time updates
-            unsubscribeSnapshot = onSnapshot(userDocRef, (docSnapshot) => {
-              if (docSnapshot.exists()) {
-                const userData = { id: docSnapshot.id, ...docSnapshot.data() } as User;
-                setUser(userData);
-              }
-            });
-          } else {
-            // Document doesn't exist - set up snapshot listener and wait
-            let retryTimeout: NodeJS.Timeout | null = null;
-            let hasChecked = false;
-            
-            unsubscribeSnapshot = onSnapshot(userDocRef, (docSnapshot) => {
-              if (docSnapshot.exists()) {
-                // Clear any pending retry
-                if (retryTimeout) {
-                  clearTimeout(retryTimeout);
-                  retryTimeout = null;
-                }
-                const userData = { id: docSnapshot.id, ...docSnapshot.data() } as User;
-                setUser(userData);
-                setLoading(false);
-              } else if (!hasChecked) {
-                // First time seeing it doesn't exist - wait a bit then check again
-                hasChecked = true;
-                retryTimeout = setTimeout(async () => {
-                  const retryDoc = await getDoc(userDocRef);
-                  if (retryDoc.exists()) {
-                    const userData = { id: retryDoc.id, ...retryDoc.data() } as User;
-                    setUser(userData);
-                    setLoading(false);
-                  } else {
-                    // After waiting, if still no document, show error
-                    console.warn('User exists in Auth but not in Firestore after waiting');
-                    toast.error('Your user data could not be found. If you just registered, please wait a moment and refresh. Otherwise, please contact support.');
-                    firebaseSignOut(auth);
-                    setUser(null);
-                    setLoading(false);
-                  }
-                }, 2000);
-              }
-            }, (error) => {
-              console.error('Error in user snapshot listener:', error);
-              toast.error('There was an error fetching your user data.');
-              setLoading(false);
-            });
-          }
-        } else {
-          setUser(null);
+        if (initialDoc.exists()) {
+          setUser({ id: initialDoc.id, ...initialDoc.data() } as User);
           setLoading(false);
+
+          // Real-time updates after initial load
+          unsubscribeSnapshotRef.current = onSnapshot(userDocRef, (snap) => {
+            if (snap.exists()) {
+              setUser({ id: snap.id, ...snap.data() } as User);
+            }
+          }, (err) => {
+            console.error('Snapshot error:', err);
+          });
+        } else {
+          // Wait for document to be created (e.g. after registration)
+          let retryTimeout: ReturnType<typeof setTimeout> | null = null;
+
+          unsubscribeSnapshotRef.current = onSnapshot(userDocRef, (snap) => {
+            if (snap.exists()) {
+              if (retryTimeout) clearTimeout(retryTimeout);
+              setUser({ id: snap.id, ...snap.data() } as User);
+              setLoading(false);
+            }
+          }, (err) => {
+            console.error('Error in user snapshot listener:', err);
+            setLoading(false);
+          });
+
+          retryTimeout = setTimeout(async () => {
+            const retryDoc = await getDoc(userDocRef);
+            if (retryDoc.exists()) {
+              setUser({ id: retryDoc.id, ...retryDoc.data() } as User);
+              setLoading(false);
+            } else {
+              console.warn('User exists in Auth but not in Firestore');
+              toast.error('User data not found. Please contact support.');
+              firebaseSignOut(auth);
+              setUser(null);
+              setLoading(false);
+            }
+          }, 2000);
         }
       } catch (error) {
         console.error('Error in auth state change:', error);
@@ -125,19 +111,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
-      unsubscribe();
-      if (unsubscribeSnapshot) {
-        unsubscribeSnapshot();
+      unsubscribeAuth();
+      if (unsubscribeSnapshotRef.current) {
+        unsubscribeSnapshotRef.current();
       }
     };
   }, []);
 
-  const value = {
-    user,
-    loading,
-    signOut,
-    refreshUser
-  };
+  const value = useMemo(() => ({ user, loading, signOut, refreshUser }), [user, loading, signOut, refreshUser]);
 
   return (
     <AuthContext.Provider value={value}>

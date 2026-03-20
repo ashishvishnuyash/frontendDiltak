@@ -108,7 +108,7 @@ export default function ManagerSelectionPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 dark:from-gray-950 dark:via-slate-900 dark:to-teal-950 text-gray-900 dark:text-gray-100 transition-colors duration-500 overflow-x-hidden">
+    <div className="text-gray-900 dark:text-gray-100 overflow-x-hidden">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <motion.div
@@ -138,47 +138,6 @@ export default function ManagerSelectionPage() {
           }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
         />
-      </div>
-
-      {/* Header */}
-      <div className="border-b border-white/20 dark:border-gray-800/50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 transition-all duration-300 shadow-sm">
-        <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-4 lg:px-8">
-          <div className="flex justify-between items-center h-12 sm:h-14 md:h-16">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                <Brain className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">WellnessHub</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Manager Portal</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 text-xs sm:text-sm px-2 sm:px-3">
-                {currentUser.role?.charAt(0).toUpperCase() + currentUser.role?.slice(1)}
-              </Badge>
-              <ThemeToggle size="sm" />
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-green-600 border-green-200"
-                onClick={() => {
-                  if (user) {
-                    // Real user - sign out from Firebase
-                    auth.signOut();
-                    router.push('/auth/login');
-                  } else {
-                    // Demo user - go back to demo login
-                    router.push('/login');
-                  }
-                }}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-8 py-6 sm:py-8 lg:py-12">
