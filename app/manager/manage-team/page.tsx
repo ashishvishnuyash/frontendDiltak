@@ -106,7 +106,7 @@ export default function ManageTeamPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8">
           <div className="w-full sm:w-auto">
             <Link href="/manager/dashboard" className="inline-flex items-center text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mb-4 transition-colors">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-5 w-5 mr-2" />
               <span className="text-sm sm:text-base">Back to Dashboard</span>
             </Link>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">Manage Team</h1>
@@ -117,12 +117,12 @@ export default function ManageTeamPage() {
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-0 w-full sm:w-auto">
             <Button variant="outline" className="w-full sm:w-auto text-sm">
-              <UserPlus className="h-4 w-4 mr-2" />
+              <UserPlus className="h-5 w-5 mr-2" />
               <span className="hidden sm:inline">Request New Member</span>
               <span className="sm:hidden">Request Member</span>
             </Button>
             <Button className="w-full sm:w-auto text-sm">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-5 w-5 mr-2" />
               <span className="hidden sm:inline">Add Team Member</span>
               <span className="sm:hidden">Add Member</span>
             </Button>
@@ -189,7 +189,7 @@ export default function ManageTeamPage() {
           <CardContent className="p-4 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
                 <Input
                   placeholder="Search members..."
                   value={searchTerm}
@@ -200,7 +200,7 @@ export default function ManageTeamPage() {
               
               <Select value={filterDepartment} onValueChange={setFilterDepartment}>
                 <SelectTrigger className="text-sm">
-                  <Filter className="h-4 w-4 mr-2" />
+                  <Filter className="h-5 w-5 mr-2" />
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
                 <SelectContent>
@@ -383,7 +383,7 @@ export default function ManageTeamPage() {
                 }
               </p>
               <Button className="text-sm">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-5 w-5 mr-2" />
                 Add Team Member
               </Button>
             </CardContent>
@@ -398,17 +398,17 @@ export default function ManageTeamPage() {
           <CardContent className="pt-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <Button variant="outline" className="justify-start text-sm h-auto py-3">
-                <UserPlus className="h-4 w-4 mr-2 flex-shrink-0" />
+                <UserPlus className="h-5 w-5 mr-2 flex-shrink-0" />
                 <span className="truncate">Request New Team Member</span>
               </Button>
               
               <Button variant="outline" className="justify-start text-sm h-auto py-3">
-                <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
+                <Mail className="h-5 w-5 mr-2 flex-shrink-0" />
                 <span className="truncate">Send Team Update</span>
               </Button>
               
               <Button variant="outline" className="justify-start text-sm h-auto py-3">
-                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                <Calendar className="h-5 w-5 mr-2 flex-shrink-0" />
                 <span className="truncate">Schedule Team Meeting</span>
               </Button>
             </div>

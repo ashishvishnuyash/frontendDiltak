@@ -80,7 +80,7 @@ export default function AvatarDemoPage() {
             <div className="flex items-center space-x-4">
               <Link href="/demo">
                 <Button variant="ghost" className="flex items-center space-x-2 text-gray-700 hover:bg-green-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-all duration-200">
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                   <span>Back to Demos</span>
                 </Button>
               </Link>

@@ -192,7 +192,7 @@ export default function ManagerSelectionPage() {
 
                   <Button className="w-full bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-green-700 hover:via-lime-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300" size="lg">
                     <span>Access {option.title}</span>
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="h-5 w-5 ml-2" />
                   </Button>
                 </CardContent>
               </Card>

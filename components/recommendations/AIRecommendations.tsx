@@ -341,7 +341,7 @@ export default function AIRecommendations() {
             <><ButtonLoader message="Refreshing..." /></>
           ) : (
             <>
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className="h-5 w-5 mr-2" />
               Refresh Recommendations
             </>
           )}

@@ -142,7 +142,7 @@ function Sidebar({
               'absolute inset-0 bg-violet-100 dark:bg-violet-900/40 rounded-xl flex items-center justify-center transition-opacity duration-200',
               logoHovered ? 'opacity-100' : 'opacity-0'
             )}>
-              <ChevronRight className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+              <ChevronRight className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             </div>
           </button>
         ) : (
@@ -160,7 +160,7 @@ function Sidebar({
               aria-label="Collapse sidebar"
               className="flex-shrink-0 p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 transition-colors"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             </button>
           </>
         )}

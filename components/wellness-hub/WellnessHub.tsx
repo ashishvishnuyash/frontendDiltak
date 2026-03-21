@@ -450,7 +450,7 @@ const WellnessHub = ({ userRole, userId }: WellnessHubProps) => {
                                                     whileHover={{ rotate: [0, -5, 5, 0] }}
                                                     transition={{ duration: 0.5 }}
                                                 >
-                                                    <activity.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                                    <activity.icon className="h-5 w-5 sm:h-5 sm:w-5 text-white" />
                                                 </motion.div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 truncate">

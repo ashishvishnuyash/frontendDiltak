@@ -190,7 +190,7 @@ export default function HomePage() {
                   onClick={toggleProducts}
                 >
                   <span>Products</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-5 w-5 transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
                 </Button>
 
                 {isProductsOpen && (
@@ -277,7 +277,7 @@ export default function HomePage() {
                         onClick={toggleMobileProducts}
                       >
                         <span>Products</span>
-                        <ChevronDown className={`h-4 w-4 transition-transform ${isMobileProductsOpen ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`h-5 w-5 transition-transform ${isMobileProductsOpen ? 'rotate-180' : ''}`} />
                       </Button>
 
                       {isMobileProductsOpen && (
@@ -842,7 +842,7 @@ export default function HomePage() {
                 onClick={openContactModal}
               >
                 <span>Contact Us</span>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </motion.div>
           </motion.div>
@@ -879,9 +879,9 @@ export default function HomePage() {
                           transition={{ duration: 0.3 }}
                         >
                           {openFaq === index ? (
-                            <Minus className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <Minus className="h-5 w-5 text-green-600 dark:text-green-400" />
                           ) : (
-                            <Plus className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <Plus className="h-5 w-5 text-green-600 dark:text-green-400" />
                           )}
                         </motion.div>
                       </div>

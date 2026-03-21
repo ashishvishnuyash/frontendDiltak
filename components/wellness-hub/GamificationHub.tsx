@@ -317,7 +317,7 @@ export default function GamificationHub({ userRole, userId }: GamificationHubPro
                         className="flex items-center gap-2 text-sm text-gray-500 mb-2 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full"
                         whileHover={{ scale: 1.05 }}
                       >
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-5 w-5" />
                         {challenge.duration}
                       </motion.div>
                       {challenge.type !== 'individual' && (
@@ -325,7 +325,7 @@ export default function GamificationHub({ userRole, userId }: GamificationHubPro
                           className="flex items-center gap-2 text-sm text-gray-500 bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full"
                           whileHover={{ scale: 1.05 }}
                         >
-                          <Users className="h-4 w-4" />
+                          <Users className="h-5 w-5" />
                           {challenge.participants} participants
                         </motion.div>
                       )}
@@ -361,7 +361,7 @@ export default function GamificationHub({ userRole, userId }: GamificationHubPro
                         className="flex items-center gap-2 text-sm bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 px-4 py-2 rounded-full"
                         whileHover={{ scale: 1.05 }}
                       >
-                        <Gift className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <Gift className="h-5 w-5 text-green-600 dark:text-green-400" />
                         <span className="text-green-700 dark:text-green-300 font-medium">
                           Reward: {challenge.reward}
                         </span>

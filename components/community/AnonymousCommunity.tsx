@@ -340,7 +340,7 @@ export default function AnonymousCommunity() {
             <div className="flex items-center gap-3">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-40">
-                  <Filter className="h-4 w-4 mr-2" />
+                  <Filter className="h-5 w-5 mr-2" />
                   <SelectValue placeholder="Filter" />
                 </SelectTrigger>
                 <SelectContent>
@@ -357,7 +357,7 @@ export default function AnonymousCommunity() {
                 onClick={() => setShowCreatePost(true)}
                 className="bg-teal-600 hover:bg-teal-700 text-white"
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-5 w-5 mr-2" />
                 New Discussion
               </Button>
             </div>
@@ -424,7 +424,7 @@ export default function AnonymousCommunity() {
                       disabled={!newPost.title || !newPost.content}
                       className="bg-teal-600 hover:bg-teal-700"
                     >
-                      <Send className="h-4 w-4 mr-2" />
+                      <Send className="h-5 w-5 mr-2" />
                       Post Anonymously
                     </Button>
                     <Button
@@ -455,7 +455,7 @@ export default function AnonymousCommunity() {
                     onClick={() => setShowCreatePost(true)}
                     className="bg-teal-600 hover:bg-teal-700"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-5 w-5 mr-2" />
                     Start First Discussion
                   </Button>
                 </CardContent>
@@ -574,7 +574,7 @@ export default function AnonymousCommunity() {
                                 size="sm"
                                 className="bg-teal-600 hover:bg-teal-700"
                               >
-                                <Send className="h-4 w-4" />
+                                <Send className="h-5 w-5" />
                               </Button>
                             </div>
 
@@ -659,7 +659,7 @@ export default function AnonymousCommunity() {
                     onClick={() => setShowCreatePost(true)}
                     className="w-full bg-teal-600 hover:bg-teal-700"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-5 w-5 mr-2" />
                     Start New Discussion
                   </Button>
                   <Button
@@ -670,7 +670,7 @@ export default function AnonymousCommunity() {
                       toast.success('Discussions refreshed');
                     }}
                   >
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <RefreshCw className="h-5 w-5 mr-2" />
                     Browse All Posts
                   </Button>
                 </div>
@@ -695,7 +695,7 @@ export default function AnonymousCommunity() {
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-purple-500" />
+                      <Sparkles className="h-5 w-5 text-purple-500" />
                       Be Respectful
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -704,7 +704,7 @@ export default function AnonymousCommunity() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-purple-500" />
+                      <Sparkles className="h-5 w-5 text-purple-500" />
                       Share Constructively
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -713,7 +713,7 @@ export default function AnonymousCommunity() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-purple-500" />
+                      <Sparkles className="h-5 w-5 text-purple-500" />
                       Stay Anonymous
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -722,7 +722,7 @@ export default function AnonymousCommunity() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-purple-500" />
+                      <Sparkles className="h-5 w-5 text-purple-500" />
                       Seek Professional Help
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">

@@ -99,6 +99,7 @@ export function DesktopTopBar({
             <span className="text-[10px] font-semibold text-violet-700 dark:text-violet-300">{initials}</span>
           </div>
         </button>
+
         <ThemeToggle size="sm" />
       </div>
     </header>
@@ -248,7 +249,7 @@ function Navbar({ user, items = [], onNavigate, className }: NavbarProps) {
               onClick={handleSignOut}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
             >
-              <LogOut className="h-4 w-4 flex-shrink-0" />
+              <LogOut className="h-5 w-5 flex-shrink-0" />
               Sign out
             </button>
           </div>

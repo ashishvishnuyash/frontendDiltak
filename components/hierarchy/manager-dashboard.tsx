@@ -221,7 +221,7 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0"
             >
-              <Crown className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
+              <Crown className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
             </motion.div>
             <div className="min-w-0">
               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
@@ -272,7 +272,7 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                     transition={{ duration: 0.6 }}
                     className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0"
                   >
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
+                    <Users className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                   </motion.div>
                   <div className="min-w-0">
                     <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 leading-tight">
@@ -432,7 +432,7 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
               {permissions?.can_manage_team_members && (
                 <Link href="/manager/manage-team">
                   <Button variant="outline" size="sm" className="bg-white/60 backdrop-blur-sm hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-300 group">
-                    <ChevronRight className="h-4 w-4 mr-1 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-5 w-5 mr-1 group-hover:translate-x-1 transition-transform" />
                     Manage Team
                   </Button>
                 </Link>

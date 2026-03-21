@@ -192,7 +192,7 @@ export default function OrgChartPage() {
           <Card className="mb-4 sm:mb-6 lg:mb-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100 text-sm sm:text-base">
-                <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 dark:text-blue-400" />
+                <Settings className="h-5 w-5 sm:h-5 sm:w-5 text-blue-500 dark:text-blue-400" />
                 <span>View Options</span>
               </CardTitle>
             </CardHeader>
@@ -274,7 +274,7 @@ export default function OrgChartPage() {
                     transition={{ duration: 0.6 }}
                     className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg"
                   >
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
+                    <Users className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                   </motion.div>
                   <div className="min-w-0">
                     <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
@@ -444,7 +444,7 @@ export default function OrgChartPage() {
                         onClick={() => router.push(`/manager/team-member/${selectedUser.id}`)}
                         className="bg-white/60 backdrop-blur-sm hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-300"
                       >
-                        <Eye className="h-4 w-4 mr-2" />
+                        <Eye className="h-5 w-5 mr-2" />
                         View Reports
                       </Button>
                     )}
@@ -480,7 +480,7 @@ export default function OrgChartPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 text-sm">
                 <div>
                   <h4 className="font-semibold mb-4 text-gray-900 dark:text-gray-100 flex items-center">
-                    <Brain className="h-4 w-4 mr-2 text-blue-500" />
+                    <Brain className="h-5 w-5 mr-2 text-blue-500" />
                     Permissions
                   </h4>
                   <div className="space-y-3">
@@ -529,7 +529,7 @@ export default function OrgChartPage() {
 
                 <div>
                   <h4 className="font-semibold mb-4 text-gray-900 dark:text-gray-100 flex items-center">
-                    <TrendingUp className="h-4 w-4 mr-2 text-purple-500" />
+                    <TrendingUp className="h-5 w-5 mr-2 text-purple-500" />
                     Hierarchy Info
                   </h4>
                   <div className="space-y-3">

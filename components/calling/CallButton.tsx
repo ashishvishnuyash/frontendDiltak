@@ -111,7 +111,7 @@ export default function CallButton({
         disabled={disabled || isInCall || isLoading}
       >
         {isLoading ? (
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current" />
         ) : (
           <Phone className="w-4 h-4" />
         )}
@@ -126,7 +126,7 @@ export default function CallButton({
         disabled={disabled || isInCall || isLoading}
       >
         {isLoading ? (
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current" />
         ) : (
           <Video className="w-4 h-4" />
         )}

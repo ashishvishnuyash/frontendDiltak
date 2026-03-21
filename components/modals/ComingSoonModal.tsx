@@ -77,7 +77,7 @@ export function ComingSoonModal({ isOpen, onClose, onContactOpen }: ComingSoonMo
               onClick={handleClose}
               className="absolute top-4 right-4 z-10 h-8 w-8 p-0 hover:bg-white/20"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </Button>
 
             {/* Content */}
@@ -167,7 +167,7 @@ export function ComingSoonModal({ isOpen, onClose, onContactOpen }: ComingSoonMo
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
-                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    <Sparkles className="h-5 w-5 text-purple-600" />
                   </motion.div>
                   <span className="text-purple-700 font-semibold">Coming Soon</span>
                 </div>

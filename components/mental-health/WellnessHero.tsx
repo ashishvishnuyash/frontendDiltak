@@ -133,9 +133,9 @@ const WellnessHero = () => {
                     size="lg" 
                     className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    <Play className="mr-2 h-5 w-5 sm:h-5 sm:w-5" />
                     Start Your Journey
-                    <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    <ArrowRight className="ml-2 h-5 w-5 sm:h-5 sm:w-5" />
                   </Button>
                 </Link>
                 <Button 
@@ -168,15 +168,15 @@ const WellnessHero = () => {
                     </div>
                     <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center space-x-3">
-                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                        <CheckCircle className="h-5 w-5 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
                         <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Instant emotional support</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                        <CheckCircle className="h-5 w-5 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
                         <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Personalized therapy sessions</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                        <CheckCircle className="h-5 w-5 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
                         <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Mood tracking & insights</span>
                       </div>
                     </div>
@@ -189,7 +189,7 @@ const WellnessHero = () => {
                 <motion.div variants={fadeInUp}>
                   <Card className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border-0 shadow-lg rounded-xl p-3 sm:p-4 lg:p-6">
                     <div className="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-4">
-                      <Heart className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-600 flex-shrink-0" />
+                      <Heart className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-600 flex-shrink-0" />
                       <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-xs sm:text-sm lg:text-base">Wellness</h4>
                     </div>
                     <p className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-400">Holistic health approach</p>
@@ -199,7 +199,7 @@ const WellnessHero = () => {
                 <motion.div variants={fadeInUp}>
                   <Card className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border-0 shadow-lg rounded-xl p-3 sm:p-4 lg:p-6">
                     <div className="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-4">
-                      <Star className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-600 flex-shrink-0" />
+                      <Star className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-600 flex-shrink-0" />
                       <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-xs sm:text-sm lg:text-base">Expert Care</h4>
                     </div>
                     <p className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-400">Certified professionals</p>

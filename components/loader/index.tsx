@@ -65,7 +65,7 @@ export interface ButtonLoaderProps {
 }
 
 export function ButtonLoader({ message, size = 'sm' }: ButtonLoaderProps) {
-  const sizeMap = { sm: 'h-4 w-4', md: 'h-5 w-5' };
+  const sizeMap = { sm: 'h-5 w-5', md: 'h-5 w-5' };
   return (
     <>
       <Loader2 className={cn('animate-spin mr-2 flex-shrink-0', sizeMap[size])} />
@@ -85,7 +85,7 @@ export interface SpinnerProps {
 
 export function Spinner({ size = 'md', color = 'border-violet-600', className }: SpinnerProps) {
   const sizeMap = {
-    xs: 'h-4 w-4',
+    xs: 'h-5 w-5',
     sm: 'h-6 w-6',
     md: 'h-8 w-8',
     lg: 'h-16 w-16',

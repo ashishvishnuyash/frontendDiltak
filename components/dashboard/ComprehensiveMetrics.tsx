@@ -169,9 +169,9 @@ export default function ComprehensiveMetrics({
   }, [userId, companyId, userRole]);
 
   const getTrendIcon = (trend: number) => {
-    if (trend > 5) return <TrendingUp className="h-4 w-4 text-green-600" />;
-    if (trend < -5) return <TrendingDown className="h-4 w-4 text-red-600" />;
-    return <div className="h-4 w-4" />;
+    if (trend > 5) return <TrendingUp className="h-5 w-5 text-green-600" />;
+    if (trend < -5) return <TrendingDown className="h-5 w-5 text-red-600" />;
+    return <div className="h-5 w-5" />;
   };
 
   const getTrendColor = (trend: number) => {
@@ -227,9 +227,9 @@ export default function ComprehensiveMetrics({
             className="border-green-200 text-green-600 hover:bg-green-50"
           >
             {refreshing ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
             ) : (
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className="h-5 w-5 mr-2" />
             )}
             Refresh
           </Button>
@@ -240,7 +240,7 @@ export default function ComprehensiveMetrics({
               size="sm"
               className="border-blue-200 text-blue-600 hover:bg-blue-50"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-5 w-5 mr-2" />
               Export
             </Button>
           )}

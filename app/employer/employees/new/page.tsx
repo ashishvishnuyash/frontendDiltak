@@ -234,7 +234,7 @@ export default function NewEmployeePage() {
         {/* Header */}
         <div className="mb-8">
           <Link href="/employer/employees" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Employees
           </Link>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Add New Employee</h1>
@@ -291,7 +291,7 @@ export default function NewEmployeePage() {
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address *</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <Input
                       id="email"
                       type="email"
@@ -359,7 +359,7 @@ export default function NewEmployeePage() {
                           return (
                             <SelectItem key={level.value} value={level.value}>
                               <div className="flex items-center space-x-2">
-                                <IconComponent className="h-4 w-4" />
+                                <IconComponent className="h-5 w-5" />
                                 <span>{level.label}</span>
                               </div>
                             </SelectItem>
@@ -504,12 +504,12 @@ export default function NewEmployeePage() {
                 <Button type="submit" disabled={loading}>
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Creating Account...
                     </>
                   ) : (
                     <>
-                      <UserPlus className="h-4 w-4 mr-2" />
+                      <UserPlus className="h-5 w-5 mr-2" />
                       Add Employee
                     </>
                   )}

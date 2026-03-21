@@ -287,7 +287,7 @@ export default function ExportReportPage() {
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-4" />
           <p className="text-gray-600">Failed to load report data</p>
           <Button onClick={() => router.back()} className="mt-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-5 w-5 mr-2" />
             Go Back
           </Button>
         </div>
@@ -314,9 +314,9 @@ export default function ExportReportPage() {
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {exporting ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
                 ) : (
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className="h-5 w-5 mr-2" />
                 )}
                 Export PDF
               </Button>
@@ -325,7 +325,7 @@ export default function ExportReportPage() {
                 variant="outline"
                 className="border-gray-300"
               >
-                <Printer className="h-4 w-4 mr-2" />
+                <Printer className="h-5 w-5 mr-2" />
                 Print
               </Button>
               <Button
@@ -333,7 +333,7 @@ export default function ExportReportPage() {
                 variant="outline"
                 className="border-gray-300"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="h-5 w-5 mr-2" />
                 Refresh
               </Button>
             </div>
@@ -873,7 +873,7 @@ export default function ExportReportPage() {
                     {report.comments && (
                       <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <h4 className="text-sm font-semibold text-blue-700 mb-2 flex items-center">
-                          <Sparkles className="h-4 w-4 mr-2" />
+                          <Sparkles className="h-5 w-5 mr-2" />
                           Your Notes
                         </h4>
                         <p className="text-sm text-gray-700">{report.comments}</p>
@@ -884,7 +884,7 @@ export default function ExportReportPage() {
                     {report.metrics && (
                       <div className="mb-6">
                         <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                          <Brain className="h-4 w-4 mr-2" />
+                          <Brain className="h-5 w-5 mr-2" />
                           AI Metrics Breakdown
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

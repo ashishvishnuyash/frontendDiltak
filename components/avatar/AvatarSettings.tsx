@@ -93,7 +93,7 @@ export default function AvatarSettings({
         className="fixed bottom-4 right-4 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700"
         title="Avatar Settings"
       >
-        <Settings className="h-4 w-4" />
+        <Settings className="h-5 w-5" />
       </Button>
     );
   }
@@ -104,7 +104,7 @@ export default function AvatarSettings({
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between text-sm text-gray-900 dark:text-gray-100">
             <div className="flex items-center space-x-2">
-              <Settings className="h-4 w-4" />
+              <Settings className="h-5 w-5" />
               <span>Avatar Settings</span>
             </div>
             <Button
@@ -123,7 +123,7 @@ export default function AvatarSettings({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="font-medium flex items-center space-x-2">
-                <QualityIcon className={`h-4 w-4 ${qualityInfo.color}`} />
+                <QualityIcon className={`h-5 w-5 ${qualityInfo.color}`} />
                 <span>Quality</span>
               </label>
               <Badge variant="outline" className="text-xs border-gray-300 dark:border-gray-600">
@@ -180,7 +180,7 @@ export default function AvatarSettings({
           {/* Interactive Features */}
           <div className="space-y-3">
             <h4 className="font-medium flex items-center space-x-2">
-              <MousePointer className="h-4 w-4" />
+              <MousePointer className="h-5 w-5" />
               <span>Interactive Features</span>
             </h4>
             
@@ -214,7 +214,7 @@ export default function AvatarSettings({
           {/* Animation Features */}
           <div className="space-y-3">
             <h4 className="font-medium flex items-center space-x-2">
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-5 w-5" />
               <span>Animations</span>
             </h4>
             
@@ -249,7 +249,7 @@ export default function AvatarSettings({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="font-medium flex items-center space-x-2">
-                <Palette className="h-4 w-4" />
+                <Palette className="h-5 w-5" />
                 <span>Emotion Intensity</span>
               </label>
               <span className="text-xs text-gray-500 dark:text-gray-400">{Math.round(config.emotionIntensity * 100)}%</span>

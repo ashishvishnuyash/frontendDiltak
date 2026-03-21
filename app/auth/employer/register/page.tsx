@@ -196,7 +196,7 @@ export default function EmployerRegisterPage() {
 
         {/* Notice */}
         <div className="flex items-start space-x-3 bg-card border border-border rounded-xl p-4 mb-8">
-          <Shield className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+          <Shield className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
             This registration is exclusively for employers and business owners. Employee accounts are created by employers after registration.
           </p>
@@ -227,7 +227,7 @@ export default function EmployerRegisterPage() {
                 {/* Company Info */}
                 <div className="space-y-4">
                   <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
-                    <Building className="h-4 w-4" />
+                    <Building className="h-5 w-5" />
                     <span>Company Information</span>
                   </h3>
 
@@ -261,7 +261,7 @@ export default function EmployerRegisterPage() {
                 {/* Personal Info */}
                 <div className="space-y-4">
                   <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
-                    <UserIcon className="h-4 w-4" />
+                    <UserIcon className="h-5 w-5" />
                     <span>Personal Information</span>
                   </h3>
 
@@ -279,7 +279,7 @@ export default function EmployerRegisterPage() {
                   <div className="space-y-2">
                     <Label htmlFor="businessEmail" className="text-sm font-medium text-foreground">Business Email *</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                       <Input id="businessEmail" type="email" placeholder="you@company.com" value={formData.businessEmail} onChange={(e) => handleInputChange('businessEmail', e.target.value)} className="pl-10" required />
                     </div>
                     <p className="text-xs text-muted-foreground">Please use your business email, not a personal email</p>
@@ -289,14 +289,14 @@ export default function EmployerRegisterPage() {
                     <div className="space-y-2">
                       <Label htmlFor="phone" className="text-sm font-medium text-foreground">Phone Number</Label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                         <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="pl-10" />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="address" className="text-sm font-medium text-foreground">Business Address</Label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                         <Input id="address" placeholder="123 Business St, City" value={formData.address} onChange={(e) => handleInputChange('address', e.target.value)} className="pl-10" />
                       </div>
                     </div>
@@ -312,7 +312,7 @@ export default function EmployerRegisterPage() {
                     <div className="relative">
                       <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Create a strong password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required />
                       <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
                   </div>
@@ -322,7 +322,7 @@ export default function EmployerRegisterPage() {
                     <div className="relative">
                       <Input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} placeholder="Confirm your password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required />
                       <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
                   </div>
@@ -342,13 +342,13 @@ export default function EmployerRegisterPage() {
                   >
                     {loading ? (
                       <span className="flex items-center justify-center">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         Creating Account...
                       </span>
                     ) : (
                       <span className="flex items-center justify-center">
                         Create Employer Account
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <ArrowRight className="ml-2 h-5 w-5" />
                       </span>
                     )}
                   </Button>

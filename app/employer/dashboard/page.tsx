@@ -335,9 +335,9 @@ function EmployerDashboardPage() {
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'improving': return <TrendingUp className="h-4 w-4 text-green-600" />;
-      case 'declining': return <TrendingUp className="h-4 w-4 text-red-600 rotate-180" />;
-      default: return <Activity className="h-4 w-4 text-yellow-600" />;
+      case 'improving': return <TrendingUp className="h-5 w-5 text-green-600" />;
+      case 'declining': return <TrendingUp className="h-5 w-5 text-red-600 rotate-180" />;
+      default: return <Activity className="h-5 w-5 text-yellow-600" />;
     }
   };
 
@@ -525,7 +525,7 @@ function EmployerDashboardPage() {
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                  <Users className="h-5 w-5 sm:h-5 sm:w-5 text-green-600" />
                 </motion.div>
               </CardHeader>
               <CardContent>
@@ -545,7 +545,7 @@ function EmployerDashboardPage() {
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                  <Activity className="h-5 w-5 sm:h-5 sm:w-5 text-blue-600" />
                 </motion.div>
               </CardHeader>
               <CardContent>
@@ -565,7 +565,7 @@ function EmployerDashboardPage() {
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <Target className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                  <Target className="h-5 w-5 sm:h-5 sm:w-5 text-purple-600" />
                 </motion.div>
               </CardHeader>
               <CardContent>
@@ -588,7 +588,7 @@ function EmployerDashboardPage() {
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                  <AlertTriangle className="h-5 w-5 sm:h-5 sm:w-5 text-red-600" />
                 </motion.div>
               </CardHeader>
               <CardContent>
@@ -719,7 +719,7 @@ function EmployerDashboardPage() {
                       onClick={() => router.push('/employer/reports?filter=high-risk')}
                     >
                       View High Risk Reports
-                      <ArrowRight className="h-4 w-4 ml-2" />
+                      <ArrowRight className="h-5 w-5 ml-2" />
                     </Button>
                   </motion.div>
                 </CardContent>
@@ -753,7 +753,7 @@ function EmployerDashboardPage() {
                       className="bg-card border-border text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400"
                     >
                       View All
-                      <ArrowRight className="h-4 w-4 ml-2" />
+                      <ArrowRight className="h-5 w-5 ml-2" />
                     </Button>
                   </motion.div>
                 </CardTitle>
@@ -847,7 +847,7 @@ function EmployerDashboardPage() {
                       variant="outline"
                       onClick={action.action || (() => router.push(action.route!))}
                     >
-                      <action.icon className={`h-4 w-4 mr-3 ${action.color}`} />
+                      <action.icon className={`h-5 w-5 mr-3 ${action.color}`} />
                       {action.label}
                     </Button>
                   </motion.div>

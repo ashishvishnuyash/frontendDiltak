@@ -239,9 +239,9 @@ export default function EmployeesPage() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'manager': return <Crown className="h-4 w-4 text-yellow-600" />;
-      case 'hr': return <Shield className="h-4 w-4 text-blue-600" />;
-      default: return <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
+      case 'manager': return <Crown className="h-5 w-5 text-yellow-600" />;
+      case 'hr': return <Shield className="h-5 w-5 text-blue-600" />;
+      default: return <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />;
     }
   };
 
@@ -280,9 +280,9 @@ export default function EmployeesPage() {
                 className="mr-3 p-1 h-6 w-6 bg-white/60 hover:bg-green-50"
               >
                 {isExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-5 w-5" />
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 )}
               </Button>
             </motion.div>
@@ -348,19 +348,19 @@ export default function EmployeesPage() {
                   whileTap={{ scale: 0.9 }}
                 >
                   <Button variant="ghost" size="sm" className="bg-white/60 hover:bg-green-50">
-                    <MoreVertical className="h-4 w-4" />
+                    <MoreVertical className="h-5 w-5" />
                   </Button>
                 </motion.div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-white/90 backdrop-blur-sm">
                 <DropdownMenuItem asChild>
                   <Link href={`/employer/employees/${employee.id}`} className="flex items-center">
-                    <Eye className="h-4 w-4 mr-2" />
+                    <Eye className="h-5 w-5 mr-2" />
                     View Details
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Edit className="h-4 w-4 mr-2" />
+                  <Edit className="h-5 w-5 mr-2" />
                   Edit Profile
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -648,7 +648,7 @@ export default function EmployeesPage() {
 
                   <Select value={filterDepartment} onValueChange={setFilterDepartment}>
                     <SelectTrigger className="bg-white/60 backdrop-blur-sm border-white/20">
-                      <Filter className="h-4 w-4 mr-2" />
+                      <Filter className="h-5 w-5 mr-2" />
                       <SelectValue placeholder="Filter by department" />
                     </SelectTrigger>
                     <SelectContent>
@@ -766,7 +766,7 @@ export default function EmployeesPage() {
                                 </motion.div>
                               </div>
                               <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2 sm:mb-3">
-                                <Mail className="h-4 w-4" />
+                                <Mail className="h-5 w-5" />
                                 <span>{employee.email}</span>
                               </div>
                               {employee.department && (
@@ -782,19 +782,19 @@ export default function EmployeesPage() {
                                 whileTap={{ scale: 0.9 }}
                               >
                                 <Button variant="ghost" size="sm" className="bg-white/60 hover:bg-green-50">
-                                  <MoreVertical className="h-4 w-4" />
+                                  <MoreVertical className="h-5 w-5" />
                                 </Button>
                               </motion.div>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-white/90 backdrop-blur-sm">
                               <DropdownMenuItem asChild>
                                 <Link href={`/employer/employees/${employee.id}`} className="flex items-center">
-                                  <Eye className="h-4 w-4 mr-2" />
+                                  <Eye className="h-5 w-5 mr-2" />
                                   View Details
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem>
-                                <Edit className="h-4 w-4 mr-2" />
+                                <Edit className="h-5 w-5 mr-2" />
                                 Edit Profile
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -839,7 +839,7 @@ export default function EmployeesPage() {
 
                           {employee.last_report_date && (
                             <div className="flex items-center space-x-1 text-sm text-gray-600">
-                              <Calendar className="h-4 w-4" />
+                              <Calendar className="h-5 w-5" />
                               <span>
                                 {new Date(employee.last_report_date).toLocaleDateString()}
                               </span>
@@ -912,7 +912,7 @@ export default function EmployeesPage() {
                       >
                         <Link href="/employer/employees/new">
                           <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg">
-                            <UserPlus className="h-4 w-4 mr-2" />
+                            <UserPlus className="h-5 w-5 mr-2" />
                             Add Your First Team Member
                           </Button>
                         </Link>

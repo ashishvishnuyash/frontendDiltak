@@ -361,7 +361,7 @@ export default function ManagerTeamReportsPage() {
                         <div className="text-sm text-gray-600 dark:text-gray-400">Overall Wellness</div>
                       </div>
                       <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
+                        <Eye className="h-5 w-5 mr-1" />
                         View Details
                       </Button>
                     </div>
@@ -545,7 +545,7 @@ export default function ManagerTeamReportsPage() {
                 }
               </p>
               <Button variant="outline">
-                <Users className="h-4 w-4 mr-2" />
+                <Users className="h-5 w-5 mr-2" />
                 View Team Members
               </Button>
             </CardContent>

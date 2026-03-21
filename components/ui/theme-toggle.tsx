@@ -37,7 +37,7 @@ export function ThemeToggle({ size = 'sm', variant = 'outline', className = '' }
                 className={`relative overflow-hidden ${className}`}
                 disabled
             >
-                <Sun className="h-4 w-4" />
+                <Sun className="h-5 w-5" />
             </Button>
         );
     }
@@ -59,7 +59,7 @@ export function ThemeToggle({ size = 'sm', variant = 'outline', className = '' }
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0 flex items-center justify-center"
             >
-                <Sun className="h-4 w-4" />
+                <Sun className="h-5 w-5" />
             </motion.div>
 
             <motion.div
@@ -71,12 +71,12 @@ export function ThemeToggle({ size = 'sm', variant = 'outline', className = '' }
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0 flex items-center justify-center"
             >
-                <Moon className="h-4 w-4" />
+                <Moon className="h-5 w-5" />
             </motion.div>
 
             {/* Invisible content to maintain button size */}
             <div className="opacity-0">
-                <Sun className="h-4 w-4" />
+                <Sun className="h-5 w-5" />
             </div>
         </Button>
     );

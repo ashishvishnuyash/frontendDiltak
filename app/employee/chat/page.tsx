@@ -1520,7 +1520,7 @@ export default function EmployeeChatPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-4 w-4 text-white" />
+                    <Sparkles className="h-5 w-5 text-white" />
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-gray-900 dark:text-gray-100 font-medium text-base truncate">Wellness Assistant</h2>
@@ -1560,7 +1560,7 @@ export default function EmployeeChatPage() {
                       className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                       title="Start voice call"
                     >
-                      <Phone className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                      <Phone className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                     </Button>
                   )}
                   
@@ -1574,7 +1574,7 @@ export default function EmployeeChatPage() {
                       className="h-8 w-8 p-0 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
                       title="End voice call"
                     >
-                      <PhoneOff className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      <PhoneOff className="h-5 w-5 text-red-600 dark:text-red-400" />
                     </Button>
                   )}
 
@@ -1602,7 +1602,7 @@ export default function EmployeeChatPage() {
                       className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                       title="More options"
                     >
-                      <Menu className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                      <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                     </Button>
                   )}
                 </div>
@@ -1708,7 +1708,7 @@ export default function EmployeeChatPage() {
                               onClick={() => setShowVoiceInstructions(false)}
                               className="ml-auto h-6 w-6 p-0 text-green-600 hover:text-green-800"
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-5 w-5" />
                             </Button>
                           </h4>
                           <ul className="text-sm text-green-800 dark:text-green-200 space-y-2">
@@ -1754,9 +1754,9 @@ export default function EmployeeChatPage() {
                         : "bg-gradient-to-br from-purple-500 to-blue-500"
                     }`}>
                       {message.sender === "user" ? (
-                        <User className="h-4 w-4 text-white" />
+                        <User className="h-5 w-5 text-white" />
                       ) : (
-                        <Sparkles className="h-4 w-4 text-white" />
+                        <Sparkles className="h-5 w-5 text-white" />
                       )}
                     </div>
 
@@ -1811,7 +1811,7 @@ export default function EmployeeChatPage() {
                 <Card className="bg-green-50 border-green-200">
                   <CardHeader className="p-2 sm:p-4">
                     <CardTitle className="text-base sm:text-lg text-green-900 flex items-center">
-                      <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                      <FileText className="h-5 w-5 sm:h-5 sm:w-5 mr-2" />
                       Session Complete!
                     </CardTitle>
                   </CardHeader>
@@ -1902,7 +1902,7 @@ export default function EmployeeChatPage() {
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                     <div className="relative flex-shrink-0">
-                      <Phone className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />
+                      <Phone className="h-5 w-5 sm:h-5 sm:w-5 animate-pulse" />
                       <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping"></div>
                     </div>
                     <div className="min-w-0">
@@ -1974,7 +1974,7 @@ export default function EmployeeChatPage() {
                 <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-blue-800 dark:text-blue-200 flex items-center">
-                      <Paperclip className="h-4 w-4 mr-1" />
+                      <Paperclip className="h-5 w-5 mr-1" />
                       {attachedFiles.length} file(s) attached
                     </span>
                     <Button
@@ -2003,7 +2003,7 @@ export default function EmployeeChatPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFile(index)}
-                          className="h-4 w-4 p-0 hover:bg-red-100 flex-shrink-0"
+                          className="h-5 w-5 p-0 hover:bg-red-100 flex-shrink-0"
                         >
                           <X className="h-2 w-2 text-red-500" />
                         </Button>
@@ -2099,9 +2099,9 @@ export default function EmployeeChatPage() {
                           }`}
                         >
                           {isRecording ? (
-                            <Square className="h-4 w-4" />
+                            <Square className="h-5 w-5" />
                           ) : (
-                            <Mic className="h-4 w-4" />
+                            <Mic className="h-5 w-5" />
                           )}
                         </Button>
                       )}
@@ -2113,7 +2113,7 @@ export default function EmployeeChatPage() {
                           disabled={loading || sessionEnded}
                           className="h-9 w-9 p-0 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md"
                         >
-                          <Send className="h-4 w-4" />
+                          <Send className="h-5 w-5" />
                         </Button>
                       )}
                     </div>
@@ -2165,7 +2165,7 @@ export default function EmployeeChatPage() {
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                            <Paperclip className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            <Paperclip className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                           </div>
                           <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Add photos & files</span>
                         </div>
@@ -2189,7 +2189,7 @@ export default function EmployeeChatPage() {
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                            <ImageIcon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            <ImageIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                           </div>
                           <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Add images</span>
                         </div>
@@ -2220,7 +2220,7 @@ export default function EmployeeChatPage() {
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                            <Search className="h-4 w-4 text-white animate-pulse" />
+                            <Search className="h-5 w-5 text-white animate-pulse" />
                           </div>
                           <div className="flex-1">
                             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Deep conversation</span>
@@ -2252,7 +2252,7 @@ export default function EmployeeChatPage() {
                         >
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                              <UserCircle className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                              <UserCircle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                             </div>
                             <div className="flex-1">
                               <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -2278,7 +2278,7 @@ export default function EmployeeChatPage() {
                         >
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                              <Settings className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                              <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                             </div>
                             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Avatar settings</span>
                           </div>
@@ -2301,7 +2301,7 @@ export default function EmployeeChatPage() {
                         >
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                              <Mic className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                              <Mic className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                             </div>
                             <div className="flex-1">
                               <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Test microphone</span>
@@ -2326,7 +2326,7 @@ export default function EmployeeChatPage() {
                         >
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                              <Volume2 className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                              <Volume2 className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                             </div>
                             <div className="flex-1">
                               <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Test TTS settings</span>
@@ -2354,7 +2354,7 @@ export default function EmployeeChatPage() {
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
-                            <PhoneOff className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            <PhoneOff className="h-5 w-5 text-red-600 dark:text-red-400" />
                           </div>
                           <div className="flex-1">
                             <span className="text-sm font-medium">End conversation</span>
@@ -2401,7 +2401,7 @@ export default function EmployeeChatPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <UserCircle className="h-4 w-4 text-white" />
+                      <UserCircle className="h-5 w-5 text-white" />
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">3D Avatar + Lip Sync</span>
                   </div>
@@ -2512,7 +2512,7 @@ export default function EmployeeChatPage() {
                 <div className="lg:hidden absolute bottom-4 left-4 bg-purple-600/80 text-white px-3 py-2 rounded-xl text-xs backdrop-blur-sm z-10 shadow-lg pointer-events-none">
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <UserCircle className="h-4 w-4" />
+                    <UserCircle className="h-5 w-5" />
                     <span className="font-medium">Avatar: {currentAvatarEmotion || 'IDLE'}</span>
                   </div>
                 </div>
@@ -2669,12 +2669,12 @@ export default function EmployeeChatPage() {
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   Analyzing...
                 </>
               ) : (
                 <>
-                  <PhoneOff className="h-4 w-4 mr-2" />
+                  <PhoneOff className="h-5 w-5 mr-2" />
                   End & Analyze
                 </>
               )}

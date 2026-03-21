@@ -102,7 +102,7 @@ export default function EmployeeDetailPage() {
                         </h1>
                         <Link href="/employer/employees">
                             <Button variant="outline">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                <ArrowLeft className="mr-2 h-5 w-5" />
                                 Back to Employees
                             </Button>
                         </Link>
@@ -119,7 +119,7 @@ export default function EmployeeDetailPage() {
                 <div className="mb-6">
                     <Link href="/employer/employees">
                         <Button variant="outline" className="mb-4">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            <ArrowLeft className="mr-2 h-5 w-5" />
                             Back to Employees
                         </Button>
                     </Link>
@@ -138,28 +138,28 @@ export default function EmployeeDetailPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center">
-                                <Mail className="mr-2 h-4 w-4 text-gray-500" />
+                                <Mail className="mr-2 h-5 w-5 text-gray-500" />
                                 <span>{employee.email}</span>
                             </div>
                             {employee.phone && (
                                 <div className="flex items-center">
-                                    <Phone className="mr-2 h-4 w-4 text-gray-500" />
+                                    <Phone className="mr-2 h-5 w-5 text-gray-500" />
                                     <span>{employee.phone}</span>
                                 </div>
                             )}
                             {employee.hire_date && (
                                 <div className="flex items-center">
-                                    <Calendar className="mr-2 h-4 w-4 text-gray-500" />
+                                    <Calendar className="mr-2 h-5 w-5 text-gray-500" />
                                     <span>Hired: {new Date(employee.hire_date).toLocaleDateString()}</span>
                                 </div>
                             )}
                             <div className="flex items-center">
-                                <Calendar className="mr-2 h-4 w-4 text-gray-500" />
+                                <Calendar className="mr-2 h-5 w-5 text-gray-500" />
                                 <span>Joined: {new Date(employee.created_at).toLocaleDateString()}</span>
                             </div>
                             {employee.last_login && (
                                 <div className="flex items-center">
-                                    <Calendar className="mr-2 h-4 w-4 text-gray-500" />
+                                    <Calendar className="mr-2 h-5 w-5 text-gray-500" />
                                     <span>Last Login: {new Date(employee.last_login).toLocaleDateString()}</span>
                                 </div>
                             )}

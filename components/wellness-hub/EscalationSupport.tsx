@@ -419,7 +419,7 @@ export default function EscalationSupport({ userRole, userId }: EscalationSuppor
                                             className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-full"
                                             whileHover={{ scale: 1.05 }}
                                         >
-                                            <Clock className="h-4 w-4" />
+                                            <Clock className="h-5 w-5" />
                                             <span className="font-medium">
                                                 {case_.timestamp.toLocaleDateString()} at {case_.timestamp.toLocaleTimeString()}
                                             </span>
@@ -429,7 +429,7 @@ export default function EscalationSupport({ userRole, userId }: EscalationSuppor
                                                 className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 px-3 py-2 rounded-full"
                                                 whileHover={{ scale: 1.05 }}
                                             >
-                                                <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                                 <span className="font-medium text-blue-700 dark:text-blue-300">
                                                     Assigned to: {case_.assignedTo}
                                                 </span>
@@ -446,7 +446,7 @@ export default function EscalationSupport({ userRole, userId }: EscalationSuppor
                                                 variant="outline"
                                                 className="bg-white/80 dark:bg-gray-700/80 hover:bg-gray-100 dark:hover:bg-gray-600 border-2 px-4 py-2 rounded-xl font-medium"
                                             >
-                                                <Calendar className="h-4 w-4 mr-2" />
+                                                <Calendar className="h-5 w-5 mr-2" />
                                                 Schedule Follow-up
                                             </Button>
                                         </motion.div>

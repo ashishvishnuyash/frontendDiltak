@@ -111,7 +111,7 @@ export default function ReportDetailPage() {
                         </h1>
                         <Link href="/employer/reports">
                             <Button variant="outline">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                <ArrowLeft className="mr-2 h-5 w-5" />
                                 Back to Reports
                             </Button>
                         </Link>
@@ -128,7 +128,7 @@ export default function ReportDetailPage() {
                 <div className="mb-6">
                     <Link href="/employer/reports">
                         <Button variant="outline" className="mb-4">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            <ArrowLeft className="mr-2 h-5 w-5" />
                             Back to Reports
                         </Button>
                     </Link>

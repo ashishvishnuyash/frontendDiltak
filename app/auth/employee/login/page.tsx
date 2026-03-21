@@ -126,7 +126,7 @@ export default function EmployeeLoginPage() {
 
           {/* Notice */}
           <div className="flex items-start space-x-3 bg-card border border-border rounded-xl p-4 mb-6">
-            <Info className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+            <Info className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
             <p className="text-xs text-muted-foreground">
               Use the login credentials provided by your employer. If you don&apos;t have an account, contact your HR department.
             </p>
@@ -157,7 +157,7 @@ export default function EmployeeLoginPage() {
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold text-foreground">Company Email</Label>
                   <div className="relative">
-                    <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'email' ? 'text-green-500' : 'text-muted-foreground'}`} />
+                    <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${focusedField === 'email' ? 'text-green-500' : 'text-muted-foreground'}`} />
                     <Input
                       id="email"
                       type="email"
@@ -176,7 +176,7 @@ export default function EmployeeLoginPage() {
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-semibold text-foreground">Password</Label>
                   <div className="relative">
-                    <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'password' ? 'text-green-500' : 'text-muted-foreground'}`} />
+                    <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${focusedField === 'password' ? 'text-green-500' : 'text-muted-foreground'}`} />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -195,7 +195,7 @@ export default function EmployeeLoginPage() {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       disabled={loading}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
@@ -208,13 +208,13 @@ export default function EmployeeLoginPage() {
                   >
                     {loading ? (
                       <span className="flex items-center justify-center">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         Signing In...
                       </span>
                     ) : (
                       <span className="flex items-center justify-center">
                         Sign In to Employee Portal
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <ArrowRight className="ml-2 h-5 w-5" />
                       </span>
                     )}
                   </Button>

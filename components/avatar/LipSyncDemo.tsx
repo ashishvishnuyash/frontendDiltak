@@ -255,12 +255,12 @@ export default function LipSyncDemo() {
                   <Button onClick={handleTTSSpeak} className="w-full">
                     {isTTSPlaying ? (
                       <>
-                        <Square className="h-4 w-4 mr-2" />
+                        <Square className="h-5 w-5 mr-2" />
                         Stop Speaking
                       </>
                     ) : (
                       <>
-                        <Play className="h-4 w-4 mr-2" />
+                        <Play className="h-5 w-5 mr-2" />
                         Start Speaking
                       </>
                     )}
@@ -322,12 +322,12 @@ export default function LipSyncDemo() {
                       >
                         {isAudioPlaying ? (
                           <>
-                            <Pause className="h-4 w-4 mr-2" />
+                            <Pause className="h-5 w-5 mr-2" />
                             Pause Audio
                           </>
                         ) : (
                           <>
-                            <Play className="h-4 w-4 mr-2" />
+                            <Play className="h-5 w-5 mr-2" />
                             Play Audio
                           </>
                         )}

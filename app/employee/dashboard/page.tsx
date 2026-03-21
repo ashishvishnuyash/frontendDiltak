@@ -82,7 +82,7 @@ function QuickAction({
           <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{label}</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{sub}</p>
         </div>
-        <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+        <ArrowRight className="h-5 w-5 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
       </div>
     </Link>
   );
@@ -164,7 +164,7 @@ function EmployeeDashboard() {
   ];
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-[1400px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-4 py-6 max-w-[1400px] mx-auto">
 
         {/* Welcome */}
         {/* <div className="mb-6">

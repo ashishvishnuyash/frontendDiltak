@@ -309,7 +309,7 @@ export default function AnalyticsPage() {
                 onClick={() => setUseDemoData(!useDemoData)}
                 className={useDemoData ? "bg-purple-600 hover:bg-purple-700" : "bg-white/60 backdrop-blur-sm hover:bg-green-50"}
               >
-                <Brain className="h-4 w-4 mr-2" />
+                <Brain className="h-5 w-5 mr-2" />
                 {useDemoData ? 'Demo Mode' : 'Use Demo'}
               </Button>
             </motion.div>
@@ -318,7 +318,7 @@ export default function AnalyticsPage() {
               whileTap={{ scale: 0.95 }}
             >
               <Button variant="outline" onClick={fetchAnalytics} className="bg-white/60 backdrop-blur-sm hover:bg-green-50">
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="h-5 w-5 mr-2" />
                 Refresh
               </Button>
             </motion.div>
@@ -327,7 +327,7 @@ export default function AnalyticsPage() {
               whileTap={{ scale: 0.95 }}
             >
               <Button variant="outline" onClick={exportData} className="bg-white/60 backdrop-blur-sm hover:bg-green-50">
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="h-5 w-5 mr-2" />
                 Export
               </Button>
             </motion.div>
@@ -336,7 +336,7 @@ export default function AnalyticsPage() {
               whileTap={{ scale: 0.95 }}
             >
               <Button onClick={() => router.push('/employer/reports/custom')} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg">
-                <BarChart3 className="h-4 w-4 mr-2" />
+                <BarChart3 className="h-5 w-5 mr-2" />
                 Custom Report
               </Button>
             </motion.div>
@@ -358,7 +358,7 @@ export default function AnalyticsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Time Range</label>
                     <Select value={timeRange} onValueChange={setTimeRange}>
                       <SelectTrigger className="bg-white/60 backdrop-blur-sm border-white/20">
-                        <Calendar className="h-4 w-4 mr-2" />
+                        <Calendar className="h-5 w-5 mr-2" />
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -374,7 +374,7 @@ export default function AnalyticsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
                     <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
                       <SelectTrigger className="bg-white/60 backdrop-blur-sm border-white/20">
-                        <Filter className="h-4 w-4 mr-2" />
+                        <Filter className="h-5 w-5 mr-2" />
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

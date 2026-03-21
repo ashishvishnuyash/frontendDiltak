@@ -47,13 +47,13 @@ const UserCard: React.FC<UserCardProps> = ({
     switch (role) {
       case 'employer':
       case 'admin':
-        return <Crown className="h-4 w-4 text-yellow-600" />;
+        return <Crown className="h-5 w-5 text-yellow-600" />;
       case 'hr':
-        return <Shield className="h-4 w-4 text-blue-600" />;
+        return <Shield className="h-5 w-5 text-blue-600" />;
       case 'manager':
-        return <Users className="h-4 w-4 text-green-600" />;
+        return <Users className="h-5 w-5 text-green-600" />;
       default:
-        return <UserIcon className="h-4 w-4 text-gray-600" />;
+        return <UserIcon className="h-5 w-5 text-gray-600" />;
     }
   };
 
@@ -98,9 +98,9 @@ const UserCard: React.FC<UserCardProps> = ({
                   className="p-1 h-6 w-6 flex-shrink-0"
                 >
                   {isExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-5 w-5" />
                   ) : (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-5 w-5" />
                   )}
                 </Button>
               )}

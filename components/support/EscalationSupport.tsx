@@ -152,15 +152,15 @@ export default function EscalationSupport() {
               className="space-y-3 text-sm text-green-700 dark:text-green-400 mb-8"
             >
               <div className="flex items-center justify-center gap-2">
-                <Mail className="h-4 w-4" />
+                <Mail className="h-5 w-5" />
                 <p>You will receive updates via email</p>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-5 w-5" />
                 <p>Response time: <strong>{formData.priority === 'urgent' ? 'Within 2 hours' : 'Within 24 hours'}</strong></p>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <Shield className="h-4 w-4" />
+                <Shield className="h-5 w-5" />
                 <p>All information is kept confidential</p>
               </div>
             </motion.div>

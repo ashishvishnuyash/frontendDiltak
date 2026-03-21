@@ -216,7 +216,7 @@ export default function DemoPage() {
               </Button>
               <Link href="/">
                 <Button variant="ghost" className="flex items-center space-x-2 hover:bg-gray-50">
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                   <span>Back to Home</span>
                 </Button>
               </Link>
@@ -236,7 +236,7 @@ export default function DemoPage() {
         >
           <motion.div variants={itemVariants} className="mb-8">
             <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-green-200 mb-6">
-              <Sparkles className="h-4 w-4 text-green-600" />
+              <Sparkles className="h-5 w-5 text-green-600" />
               <span className="text-sm font-medium text-green-700">Interactive Demo Available</span>
             </div>
           <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 mb-6">
@@ -311,7 +311,7 @@ export default function DemoPage() {
                       className="mt-3"
                       whileHover={{ x: 5 }}
                     >
-                      <ArrowRight className="h-4 w-4 mx-auto text-gray-400" />
+                      <ArrowRight className="h-5 w-5 mx-auto text-gray-400" />
                     </motion.div>
                   </CardContent>
                 </Card>
@@ -364,7 +364,7 @@ export default function DemoPage() {
                   <CardContent className="space-y-6">
                     <div>
                       <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                        <Target className="h-4 w-4 mr-2 text-green-600" />
+                        <Target className="h-5 w-5 mr-2 text-green-600" />
                         Demo Features:
                       </h4>
                       <div className="grid grid-cols-1 gap-2">
@@ -376,7 +376,7 @@ export default function DemoPage() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: featureIndex * 0.1 }}
                           >
-                            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
                             <span>{feature}</span>
                           </motion.div>
                         ))}

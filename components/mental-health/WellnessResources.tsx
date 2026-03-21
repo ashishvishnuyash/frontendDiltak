@@ -213,7 +213,7 @@ const WellnessResources = () => {
                       <CardHeader className="pb-3 sm:pb-4">
                         <div className="flex items-center justify-between mb-3 sm:mb-4">
                           <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${category.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                            <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                            <item.icon className="h-5 w-5 sm:h-5 sm:w-5 text-white" />
                           </div>
                           <div className="flex items-center space-x-1">
                             {renderStars(item.rating)}
@@ -309,7 +309,7 @@ const WellnessResources = () => {
                   className="w-full sm:w-auto bg-white text-green-600 hover:bg-gray-100 px-6 sm:px-8 py-3 font-semibold text-sm sm:text-base"
                 >
                   Explore All Programs
-                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  <ArrowRight className="ml-2 h-5 w-5 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
             </div>

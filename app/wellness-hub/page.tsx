@@ -90,7 +90,7 @@ export default function WellnessHubLanding() {
             <div className="space-y-4">
               <Link href="/">
                 <Button variant="outline" className="w-full border-2 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="h-5 w-5 mr-2" />
                   Back to Home
                 </Button>
               </Link>
@@ -153,7 +153,7 @@ export default function WellnessHubLanding() {
 
             <Link href="/">
               <Button variant="ghost" className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-5 w-5" />
                 <span>Back to Home</span>
               </Button>
             </Link>
@@ -186,7 +186,7 @@ export default function WellnessHubLanding() {
                     Full Name
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                     <Input
                       id="name"
                       name="name"
@@ -205,7 +205,7 @@ export default function WellnessHubLanding() {
                     Email Address
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                     <Input
                       id="email"
                       name="email"
@@ -224,7 +224,7 @@ export default function WellnessHubLanding() {
                     Company Name
                   </Label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                     <Input
                       id="company"
                       name="company"
@@ -246,7 +246,7 @@ export default function WellnessHubLanding() {
                   >
                   {isSubmitting ? (
                     <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Submitting...</span>
                     </div>
                   ) : (
@@ -276,7 +276,7 @@ export default function WellnessHubLanding() {
               whileHover={{ scale: 1.05, y: -5 }}
             >
               <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">AI-Powered Analytics</p>
             </motion.div>
@@ -286,7 +286,7 @@ export default function WellnessHubLanding() {
               whileHover={{ scale: 1.05, y: -5 }}
             >
               <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">Enterprise Security</p>
             </motion.div>
@@ -296,7 +296,7 @@ export default function WellnessHubLanding() {
               whileHover={{ scale: 1.05, y: -5 }}
             >
               <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <CheckCircle className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">24/7 Support</p>
             </motion.div>

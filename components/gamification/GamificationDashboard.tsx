@@ -215,7 +215,7 @@ export default function GamificationDashboard() {
             <><ButtonLoader message="Checking In..." /></>
           ) : (
             <>
-              <CheckCircle className="h-4 w-4 mr-2" />
+              <CheckCircle className="h-5 w-5 mr-2" />
               Start Your Journey
             </>
           )}
@@ -325,7 +325,7 @@ export default function GamificationDashboard() {
               <><ButtonLoader message="Checking In..." /></>
             ) : (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle className="h-5 w-5 mr-2" />
                 Manual Check-in
               </>
             )}
@@ -396,15 +396,15 @@ export default function GamificationDashboard() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                       <div className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
+                        <Clock className="h-5 w-5" />
                         <span>{challenge.duration_days} days</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4" />
+                        <Star className="h-5 w-5" />
                         <span>{challenge.points_reward} points</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Users className="h-4 w-4" />
+                        <Users className="h-5 w-5" />
                         <span>{challenge.participants.length} participants</span>
                       </div>
                     </div>

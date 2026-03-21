@@ -183,13 +183,13 @@ export function ContactFormModal({ isOpen, onClose }: ContactFormModalProps) {
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                           className="mr-2"
                         >
-                          <Send className="h-4 w-4" />
+                          <Send className="h-5 w-5" />
                         </motion.div>
                         Submitting...
                       </>
                     ) : (
                       <>
-                        <Send className="h-4 w-4 mr-2" />
+                        <Send className="h-5 w-5 mr-2" />
                         Get Support
                       </>
                     )}

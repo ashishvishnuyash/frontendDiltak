@@ -255,7 +255,7 @@ export default function ManagerAnalyticsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
             <Link href="/manager/dashboard" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-5 w-5 mr-2" />
               Back to Dashboard
             </Link>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Team Analytics</h1>
@@ -266,11 +266,11 @@ export default function ManagerAnalyticsPage() {
 
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
             <Button variant="outline" onClick={fetchAnalytics}>
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className="h-5 w-5 mr-2" />
               Refresh
             </Button>
             <Button variant="outline">
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-5 w-5 mr-2" />
               Export
             </Button>
           </div>
@@ -283,7 +283,7 @@ export default function ManagerAnalyticsPage() {
               <label className="text-sm font-medium text-gray-700">Time Range:</label>
               <Select value={timeRange} onValueChange={setTimeRange}>
                 <SelectTrigger className="w-48">
-                  <Calendar className="h-4 w-4 mr-2" />
+                  <Calendar className="h-5 w-5 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

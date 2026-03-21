@@ -353,13 +353,13 @@ export default function LoginPage() {
                             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                             className="flex items-center justify-center"
                           >
-                            <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                            <Loader2 className="mr-2 h-5 w-5 sm:h-5 sm:w-5" />
                             <span className="text-sm sm:text-base">Signing In...</span>
                           </motion.div>
                         ) : (
                           <div className="flex items-center justify-center">
                             <span>Sign In</span>
-                            <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                            <ArrowRight className="ml-2 h-5 w-5 sm:h-5 sm:w-5" />
                           </div>
                         )}
                       </Button>

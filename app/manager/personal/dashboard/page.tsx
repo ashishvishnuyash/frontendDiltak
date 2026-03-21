@@ -220,13 +220,13 @@ function EmployeeDashboard() {
               >
                 <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
                   <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 sm:p-3 rounded-xl shadow-lg flex-shrink-0">
-                    <Heart className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
+                    <Heart className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm sm:text-base truncate">New Wellness Check</h3>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 truncate">Record your current state</p>
                   </div>
-                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                  <ArrowRight className="h-5 w-5 sm:h-5 sm:w-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
                 </div>
               </motion.div>
           </Link>
@@ -417,7 +417,7 @@ function EmployeeDashboard() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <Smile className="h-4 w-4 text-blue-600 mb-1" />
+                        <Smile className="h-5 w-5 text-blue-600 mb-1" />
                         <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                           {latestReport.mood_rating}
                         </span>
@@ -459,7 +459,7 @@ function EmployeeDashboard() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <Battery className="h-4 w-4 text-green-600 mb-1" />
+                        <Battery className="h-5 w-5 text-green-600 mb-1" />
                         <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                           {latestReport.energy_level}
                         </span>
@@ -501,7 +501,7 @@ function EmployeeDashboard() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <AlertTriangle className="h-4 w-4 text-red-600 mb-1" />
+                        <AlertTriangle className="h-5 w-5 text-red-600 mb-1" />
                         <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                           {latestReport.stress_level}
                         </span>
@@ -543,7 +543,7 @@ function EmployeeDashboard() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <Brain className="h-4 w-4 text-purple-600 mb-1" />
+                        <Brain className="h-5 w-5 text-purple-600 mb-1" />
                         <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                           {latestReport.overall_wellness}
                         </span>
@@ -624,7 +624,7 @@ function EmployeeDashboard() {
                     <p className="text-sm mb-4">Create your first wellness check to see trends.</p>
                     <Button className="bg-green-600 hover:bg-green-700 text-white" asChild>
                       <Link href="/manager/personal/reports/new">
-                        <Sparkles className="h-4 w-4 mr-2" />
+                        <Sparkles className="h-5 w-5 mr-2" />
                         Create Report
                       </Link>
                     </Button>
@@ -645,7 +645,7 @@ function EmployeeDashboard() {
                 <Button variant="outline" size="sm" className="border-green-200 text-green-600 hover:bg-green-50" asChild>
                   <Link href="/manager/personal/reports">
                     View All
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="h-5 w-5 ml-2" />
                   </Link>
                 </Button>
               </CardTitle>
@@ -678,7 +678,7 @@ function EmployeeDashboard() {
                   <p className="text-lg font-medium text-gray-500 mb-4">No reports yet</p>
                   <Button className="bg-green-600 hover:bg-green-700 text-white" asChild>
                     <Link href="/manager/personal/reports/new">
-                      <Sparkles className="h-4 w-4 mr-2" />
+                      <Sparkles className="h-5 w-5 mr-2" />
                       Create Your First Report
                     </Link>
                   </Button>

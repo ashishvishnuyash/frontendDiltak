@@ -553,7 +553,7 @@ export default function EmployerReportsPage() {
 
                   <Select value={filterRisk} onValueChange={setFilterRisk}>
                     <SelectTrigger className="border-green-200 text-green-600 border-white/20">
-                      <Filter className="h-4 w-4 mr-2" />
+                      <Filter className="h-5 w-5 mr-2" />
                       <SelectValue placeholder="Filter by risk" />
                     </SelectTrigger>
                     <SelectContent>
@@ -639,7 +639,7 @@ export default function EmployerReportsPage() {
                             </h3>
                             <div className="flex items-center space-x-4 text-sm text-gray-600">
                               <span className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-1" />
+                                <Calendar className="h-5 w-5 mr-1" />
                                 {new Date(report.created_at).toLocaleDateString('en-US', {
                                   weekday: 'long',
                                   year: 'numeric',
@@ -674,9 +674,9 @@ export default function EmployerReportsPage() {
                           >
                             <Link href={`/employer/reports/${report.id}`}>
                               <Button variant="outline" size="sm" className="bg-white/60 dark:bg-gray-800/60 hover:bg-green-50 dark:hover:bg-green-900/20 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
-                                <Eye className="h-4 w-4 mr-2" />
+                                <Eye className="h-5 w-5 mr-2" />
                                 View Details
-                                <ArrowRight className="h-4 w-4 ml-2" />
+                                <ArrowRight className="h-5 w-5 ml-2" />
                               </Button>
                             </Link>
                           </motion.div>
@@ -767,7 +767,7 @@ export default function EmployerReportsPage() {
                           transition={{ delay: 0.2 }}
                         >
                           <h4 className="text-sm font-semibold text-blue-700 mb-2 flex items-center">
-                            <Sparkles className="h-4 w-4 mr-2" />
+                            <Sparkles className="h-5 w-5 mr-2" />
                             AI Insights:
                           </h4>
                           <p className="text-sm text-blue-600">{report.ai_analysis}</p>

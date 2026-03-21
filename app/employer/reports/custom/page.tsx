@@ -692,13 +692,13 @@ export default function CustomReportPage() {
                     {loading ? (
                       <ButtonLoader message="Generating..." />
                     ) : (
-                      <Play className="h-4 w-4 mr-2" />
+                      <Play className="h-5 w-5 mr-2" />
                     )}
                     {!loading && 'Generate Report'}
                   </Button>
                   
                   <Button variant="outline" className="w-full">
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="h-5 w-5 mr-2" />
                     Save Template
                   </Button>
                 </div>

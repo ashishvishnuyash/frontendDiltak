@@ -203,12 +203,12 @@ export default function InteractiveAvatarDemo() {
                   <div className="absolute top-4 right-4 bg-black/80 text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-2 z-10">
                     {demoMode === 'microphone' ? (
                       <>
-                        <Mic className="h-4 w-4 text-red-400" />
+                        <Mic className="h-5 w-5 text-red-400" />
                         <span>Listening</span>
                       </>
                     ) : (
                       <>
-                        <Volume2 className="h-4 w-4 text-blue-400" />
+                        <Volume2 className="h-5 w-5 text-blue-400" />
                         <span>Speaking</span>
                       </>
                     )}
@@ -298,12 +298,12 @@ export default function InteractiveAvatarDemo() {
                   >
                     {isTTSPlaying ? (
                       <>
-                        <Square className="h-4 w-4 mr-2" />
+                        <Square className="h-5 w-5 mr-2" />
                         Stop Speaking
                       </>
                     ) : (
                       <>
-                        <Play className="h-4 w-4 mr-2" />
+                        <Play className="h-5 w-5 mr-2" />
                         Start Speaking
                       </>
                     )}
@@ -369,7 +369,7 @@ export default function InteractiveAvatarDemo() {
                       variant="outline"
                       className="w-full"
                     >
-                      <Settings className="h-4 w-4 mr-2" />
+                      <Settings className="h-5 w-5 mr-2" />
                       Advanced Settings
                     </Button>
                   </div>

@@ -163,9 +163,9 @@ export default function EmployeeReportsPage() {
   };
 
   const getTrendIcon = (current: number, previous: number) => {
-    if (current > previous) return <TrendingUp className="h-4 w-4 text-green-600" />;
-    if (current < previous) return <TrendingDown className="h-4 w-4 text-red-600" />;
-    return <Minus className="h-4 w-4 text-gray-400" />;
+    if (current > previous) return <TrendingUp className="h-5 w-5 text-green-600" />;
+    if (current < previous) return <TrendingDown className="h-5 w-5 text-red-600" />;
+    return <Minus className="h-5 w-5 text-gray-400" />;
   };
 
   const filteredReports = reports.filter(report => {
@@ -252,7 +252,7 @@ export default function EmployeeReportsPage() {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                   }`}
               >
-                <BarChart3 className="h-4 w-4 mr-2 inline" />
+                <BarChart3 className="h-5 w-5 mr-2 inline" />
                 Interactive Analytics
               </button>
               <button
@@ -262,7 +262,7 @@ export default function EmployeeReportsPage() {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                   }`}
               >
-                <Calendar className="h-4 w-4 mr-2 inline" />
+                <Calendar className="h-5 w-5 mr-2 inline" />
                 Report List
               </button>
             </div>
@@ -323,7 +323,7 @@ export default function EmployeeReportsPage() {
 
                   <Select value={filterRisk} onValueChange={setFilterRisk}>
                     <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-green-500 focus:ring-green-500 text-gray-900 dark:text-gray-100">
-                      <Filter className="h-4 w-4 mr-2" />
+                      <Filter className="h-5 w-5 mr-2" />
                       <SelectValue placeholder="Filter by risk" />
                     </SelectTrigger>
                     <SelectContent>
@@ -428,7 +428,7 @@ export default function EmployeeReportsPage() {
                       {r.metrics ? (
                         <div className="mb-6">
                           <h4 className="text-md font-semibold text-green-700 mb-2 flex items-center">
-                            <Sparkles className="h-4 w-4 mr-2" />AI Metrics Breakdown
+                            <Sparkles className="h-5 w-5 mr-2" />AI Metrics Breakdown
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             {Object.entries(r.metrics).map(([key, value]) => {
@@ -603,7 +603,7 @@ export default function EmployeeReportsPage() {
                           transition={{ delay: 0.2 }}
                         >
                           <h4 className="text-sm font-semibold text-blue-700 mb-2 flex items-center">
-                            <Sparkles className="h-4 w-4 mr-2" />
+                            <Sparkles className="h-5 w-5 mr-2" />
                             Your Notes
                           </h4>
                           <p className="text-gray-700 text-sm leading-relaxed">{report.comments}</p>

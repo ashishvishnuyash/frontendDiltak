@@ -101,11 +101,11 @@ export default function TestAIPage() {
                 onKeyPress={(e) => e.key === 'Enter' && !loading && testPerplexity()}
               />
               <Button onClick={testPerplexity} disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Globe className="h-5 w-5" />}
                 Test Perplexity
               </Button>
               <Button onClick={testOpenAI} disabled={loading} variant="outline">
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Brain className="h-5 w-5" />}
                 Test OpenAI
               </Button>
             </div>

@@ -345,7 +345,7 @@ index a18ea2c..734d332 100644
 +                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
 +                    disabled={loading}
 +                  >
-+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
++                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
 +                  </button>
 +                </div>
                </div>

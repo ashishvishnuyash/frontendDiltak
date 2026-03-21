@@ -145,7 +145,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                       onClick={handleTryDifferentEmail}
                       className="w-full"
                     >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      <ArrowLeft className="h-5 w-5 mr-2" />
                       Try Different Email
                     </Button>
                   </div>
@@ -188,7 +188,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                         Email Address
                       </Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                         <Input
                           id="reset-email"
                           type="email"
@@ -222,7 +222,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                       >
                         {loading ? (
                           <div className="flex items-center space-x-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-5 w-5 animate-spin" />
                             <span>Sending...</span>
                           </div>
                         ) : (

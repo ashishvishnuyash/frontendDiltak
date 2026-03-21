@@ -229,7 +229,7 @@ export default function ContactAdministratorModal({ isOpen, onClose }: ContactAd
                           Email Address *
                         </Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                           <Input
                             id="email"
                             type="email"
@@ -256,7 +256,7 @@ export default function ContactAdministratorModal({ isOpen, onClose }: ContactAd
                             Company Name *
                           </Label>
                           <div className="relative">
-                            <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                             <Input
                               id="companyName"
                               placeholder="Acme Corporation"
@@ -329,7 +329,7 @@ export default function ContactAdministratorModal({ isOpen, onClose }: ContactAd
                       >
                         {loading ? (
                           <div className="flex items-center space-x-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-5 w-5 animate-spin" />
                             <span>Submitting...</span>
                           </div>
                         ) : (

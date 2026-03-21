@@ -256,7 +256,7 @@ export default function CommunitySpaces({ userRole, userId }: CommunitySpacesPro
                           {post.author}
                         </p>
                         <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-5 w-5" />
                           {post.timestamp.toLocaleDateString()} at {post.timestamp.toLocaleTimeString()}
                         </div>
                       </div>
@@ -292,7 +292,7 @@ export default function CommunitySpaces({ userRole, userId }: CommunitySpacesPro
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
+                        <Heart className={`h-5 w-5 ${post.isLiked ? 'fill-current' : ''}`} />
                         {post.likes}
                       </motion.button>
                       
@@ -301,7 +301,7 @@ export default function CommunitySpaces({ userRole, userId }: CommunitySpacesPro
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <MessageSquare className="h-4 w-4" />
+                        <MessageSquare className="h-5 w-5" />
                         {post.comments}
                       </motion.button>
                     </div>
@@ -311,7 +311,7 @@ export default function CommunitySpaces({ userRole, userId }: CommunitySpacesPro
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <Share className="h-4 w-4" />
+                      <Share className="h-5 w-5" />
                       Share
                     </motion.button>
                   </div>
@@ -360,7 +360,7 @@ export default function CommunitySpaces({ userRole, userId }: CommunitySpacesPro
                     </p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1 text-sm text-gray-500">
-                        <Users className="h-4 w-4" />
+                        <Users className="h-5 w-5" />
                         {space.memberCount} members
                       </div>
                       <Button
