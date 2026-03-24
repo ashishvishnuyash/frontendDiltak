@@ -12,6 +12,7 @@ import { SectionLoader } from '@/components/loader';
 import Link from 'next/link';
 import { useUser } from '@/hooks/use-user';
 import type { MentalHealthReport } from '@/types';
+import { Navbar } from '@/components/newcomponents';
 
 export default function ReportDetailPage() {
     const params = useParams();

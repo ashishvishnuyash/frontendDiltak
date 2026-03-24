@@ -38,6 +38,7 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { SectionLoader } from '@/components/loader';
+import Navbar from '@/components/newcomponents/Navbar';
 
 const COLORS = {
   primary: '#3B82F6',
@@ -237,7 +238,7 @@ export default function ManagerAnalyticsPage() {
         />
       </div>
 
-      <Navbar user={currentUser} />
+    <Navbar user={currentUser} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}

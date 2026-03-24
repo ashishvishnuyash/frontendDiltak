@@ -19,6 +19,7 @@ import { useUser } from '@/hooks/use-user';
 import { updateReportingChain } from '@/lib/hierarchy-service';
 import { toast } from 'sonner';
 import type { User } from '@/types/index';
+import { Navbar } from '@/components/newcomponents';
 export default function NewEmployeePage() {
   const { user } = useUser();
   const router = useRouter();

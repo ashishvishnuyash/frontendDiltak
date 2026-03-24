@@ -12,6 +12,7 @@ import { SectionLoader } from '@/components/loader';
 import Link from 'next/link';
 import { useUser } from '@/hooks/use-user';
 import type { User as UserType } from '@/types';
+import { Navbar } from '@/components/newcomponents';
 
 interface Employee extends UserType {
     // Additional employee-specific fields if needed

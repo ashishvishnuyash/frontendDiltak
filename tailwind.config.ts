@@ -19,13 +19,13 @@ const config: Config = {
     },
     extend: {
       // ── Font family ──────────────────────────────────────────────────────
-      fontFamily: typography.fontFamily,
+      fontFamily: typography.fontFamily as any,
 
       // ── Font sizes (maps to token scale) ─────────────────────────────────
-      fontSize: typography.fontSize as Config['theme']['fontSize'],
+      fontSize: typography.fontSize as any,
 
       // ── Spacing (token scale merged on top of Tailwind defaults) ─────────
-      spacing: spacing as Config['theme']['spacing'],
+      spacing: spacing as any,
 
       // ── Border radius ─────────────────────────────────────────────────────
       borderRadius: {
