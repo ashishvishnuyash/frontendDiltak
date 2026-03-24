@@ -280,7 +280,7 @@ export default function LoginPage() {
                         Email Address
                       </Label>
                       <div className="relative">
-                        <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 transition-colors ${focusedField === 'email' ? 'text-green-500 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'
+                        <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 sm:h-4 sm:w-4 transition-colors ${focusedField === 'email' ? 'text-green-500 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'
                           }`} />
                         <Input
                           id="email"

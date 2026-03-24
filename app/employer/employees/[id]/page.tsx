@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Mail, Phone, Calendar, User as UserIcon } from 'lucide-react';
+import { SectionLoader } from '@/components/loader';
 import Link from 'next/link';
 import { useUser } from '@/hooks/use-user';
 import type { User as UserType } from '@/types';
@@ -78,13 +79,7 @@ export default function EmployeeDetailPage() {
     }, [employeeId, user]);
 
     if (userLoading || loading) {
-        return (
-            <div className="min-h-screen bg-gray-50">
-                <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-                </div>
-            </div>
-        );
+        return <SectionLoader size="lg" message="Loading employee..." color="text-blue-600" />;
     }
 
     if (!user) {

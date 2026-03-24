@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { MentalHealthReport, User as UserType } from '@/types';
-import { ButtonLoader } from '@/components/loader';
+import { ButtonLoader, SectionLoader } from '@/components/loader';
 
 interface CustomReportConfig {
   name: string;
@@ -387,11 +387,7 @@ export default function CustomReportPage() {
   };
 
   if (userLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600" />
-      </div>
-    );
+    return <SectionLoader size="lg" message="Loading..." color="text-blue-600" />;
   }
 
   if (!user || user.role !== 'employer') {

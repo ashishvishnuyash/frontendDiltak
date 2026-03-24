@@ -2,10 +2,6 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Trophy, Target, Users, Zap, Star, Medal, Gift, Calendar } from 'lucide-react';
 
 interface GamificationHubProps {
@@ -23,7 +19,6 @@ interface Challenge {
   maxProgress: number;
   reward: string;
   participants: number;
-  isActive: boolean;
 }
 
 interface Achievement {
@@ -35,520 +30,203 @@ interface Achievement {
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
+const rarityColor: Record<string, string> = {
+  common: 'text-gray-500 bg-gray-100 dark:bg-gray-800',
+  rare: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+  epic: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20',
+  legendary: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
+};
+const typeColor: Record<string, string> = {
+  individual: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
+  team: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+  company: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20',
+};
+
+const subTabs = [
+  { id: 'challenges',   label: 'Challenges',   icon: Target },
+  { id: 'achievements', label: 'Achievements', icon: Trophy },
+  { id: 'leaderboard',  label: 'Leaderboard',  icon: Users },
+];
+
 export default function GamificationHub({ userRole, userId }: GamificationHubProps) {
   const [activeTab, setActiveTab] = useState<'challenges' | 'achievements' | 'leaderboard'>('challenges');
-  
-  const [challenges, setChallenges] = useState<Challenge[]>([
-    {
-      id: '1',
-      title: 'Mindful Mornings',
-      description: 'Complete 5 minutes of meditation for 7 consecutive days',
-      type: 'individual',
-      duration: '7 days',
-      progress: 4,
-      maxProgress: 7,
-      reward: '50 wellness points + Zen Master badge',
-      participants: 1,
-      isActive: true
-    },
-    {
-      id: '2',
-      title: 'Team Wellness Warriors',
-      description: 'Team completes 100 wellness activities collectively',
-      type: 'team',
-      duration: '2 weeks',
-      progress: 67,
-      maxProgress: 100,
-      reward: 'Team lunch + 100 points each',
-      participants: 8,
-      isActive: true
-    },
-    {
-      id: '3',
-      title: '7-Day Mindful Break Challenge',
-      description: 'Take mindful breaks every 2 hours during work days',
-      type: 'individual',
-      duration: '7 days',
-      progress: 3,
-      maxProgress: 7,
-      reward: 'Mindfulness Master badge + 75 points',
-      participants: 1,
-      isActive: true
-    },
-    {
-      id: '4',
-      title: 'Gratitude Journal Streak',
-      description: 'Write 3 things you\'re grateful for each day',
-      type: 'individual',
-      duration: '14 days',
-      progress: 8,
-      maxProgress: 14,
-      reward: 'Gratitude Guru badge + wellness book',
-      participants: 1,
-      isActive: true
-    },
-    {
-      id: '5',
-      title: 'Company-wide Wellness Month',
-      description: 'Entire company participates in wellness activities',
-      type: 'company',
-      duration: '30 days',
-      progress: 245,
-      maxProgress: 500,
-      reward: 'Extra wellness day off for everyone',
-      participants: 156,
-      isActive: true
-    }
-  ]);
 
-  const [achievements, setAchievements] = useState<Achievement[]>([
-    {
-      id: '1',
-      title: 'First Steps',
-      description: 'Completed your first wellness activity',
-      icon: '🎯',
-      unlockedAt: new Date('2024-01-10'),
-      rarity: 'common'
-    },
-    {
-      id: '2',
-      title: 'Streak Master',
-      description: 'Maintained a 7-day wellness streak',
-      icon: '🔥',
-      unlockedAt: new Date('2024-01-12'),
-      rarity: 'rare'
-    },
-    {
-      id: '3',
-      title: 'Community Helper',
-      description: 'Helped 5 colleagues with wellness tips',
-      icon: '🤝',
-      unlockedAt: new Date('2024-01-14'),
-      rarity: 'epic'
-    }
-  ]);
+  const challenges: Challenge[] = [
+    { id: '1', title: 'Mindful Mornings',           description: 'Complete 5 minutes of meditation for 7 consecutive days',    type: 'individual', duration: '7 days',  progress: 4,   maxProgress: 7,   reward: '50 pts + Zen Master badge',       participants: 1 },
+    { id: '2', title: 'Team Wellness Warriors',      description: 'Team completes 100 wellness activities collectively',         type: 'team',       duration: '2 weeks', progress: 67,  maxProgress: 100, reward: 'Team lunch + 100 pts each',       participants: 8 },
+    { id: '3', title: '7-Day Mindful Break',         description: 'Take mindful breaks every 2 hours during work days',         type: 'individual', duration: '7 days',  progress: 3,   maxProgress: 7,   reward: 'Mindfulness Master + 75 pts',     participants: 1 },
+    { id: '4', title: 'Gratitude Journal Streak',    description: "Write 3 things you're grateful for each day",               type: 'individual', duration: '14 days', progress: 8,   maxProgress: 14,  reward: 'Gratitude Guru badge + book',     participants: 1 },
+    { id: '5', title: 'Company Wellness Month',      description: 'Entire company participates in wellness activities',         type: 'company',    duration: '30 days', progress: 245, maxProgress: 500, reward: 'Extra wellness day off',           participants: 156 },
+  ];
 
-  const [userStats] = useState({
-    totalPoints: 1250,
-    level: 8,
-    rank: 15,
-    streakDays: 12,
-    completedChallenges: 7
-  });
+  const achievements: Achievement[] = [
+    { id: '1', title: 'First Steps',      description: 'Completed your first wellness activity',  icon: '🎯', unlockedAt: new Date('2024-01-10'), rarity: 'common' },
+    { id: '2', title: 'Streak Master',    description: 'Maintained a 7-day wellness streak',      icon: '🔥', unlockedAt: new Date('2024-01-12'), rarity: 'rare' },
+    { id: '3', title: 'Community Helper', description: 'Helped 5 colleagues with wellness tips',  icon: '🤝', unlockedAt: new Date('2024-01-14'), rarity: 'epic' },
+  ];
 
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'common': return 'bg-gray-100 text-gray-800';
-      case 'rare': return 'bg-blue-100 text-blue-800';
-      case 'epic': return 'bg-purple-100 text-purple-800';
-      case 'legendary': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const userStats = { totalPoints: 1250, level: 8, rank: 15, streakDays: 12, completedChallenges: 7 };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'individual': return 'bg-green-100 text-green-800';
-      case 'team': return 'bg-blue-100 text-blue-800';
-      case 'company': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const leaderboard = [
+    { rank: 1, name: 'Sarah Johnson',   points: 2150, isUser: false },
+    { rank: 2, name: 'Mike Chen',       points: 1980, isUser: false },
+    { rank: 3, name: 'Emily Davis',     points: 1875, isUser: false },
+    { rank: 4, name: 'Alex Rodriguez',  points: 1650, isUser: false },
+    { rank: 5, name: 'You',             points: userStats.totalPoints, isUser: true },
+  ];
 
   return (
-    <div className="space-y-8">
-      {/* Enhanced User Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-        <motion.div
-          whileHover={{ scale: 1.05, rotate: [0, -1, 1, 0] }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 text-white shadow-2xl border-0 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white/20 rounded-full -translate-y-8 translate-x-8" />
-            <CardContent className="p-6 text-center relative z-10">
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              >
-                <Trophy className="h-10 w-10 mx-auto mb-3 drop-shadow-lg" />
-              </motion.div>
-              <div className="text-3xl font-bold mb-1">{userStats.totalPoints.toLocaleString()}</div>
-              <div className="text-sm opacity-90 font-medium">Total Points</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.05, rotate: [0, 1, -1, 0] }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 text-white shadow-2xl border-0 overflow-hidden relative">
-            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/20 rounded-full translate-y-6 -translate-x-6" />
-            <CardContent className="p-6 text-center relative z-10">
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Star className="h-10 w-10 mx-auto mb-3 drop-shadow-lg fill-current" />
-              </motion.div>
-              <div className="text-3xl font-bold mb-1">Level {userStats.level}</div>
-              <div className="text-sm opacity-90 font-medium">Current Level</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.05, rotate: [0, -1, 1, 0] }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 text-white shadow-2xl border-0 overflow-hidden relative">
-            <div className="absolute top-1/2 right-0 w-10 h-10 bg-white/20 rounded-full translate-x-5" />
-            <CardContent className="p-6 text-center relative z-10">
-              <motion.div
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Medal className="h-10 w-10 mx-auto mb-3 drop-shadow-lg" />
-              </motion.div>
-              <div className="text-3xl font-bold mb-1">#{userStats.rank}</div>
-              <div className="text-sm opacity-90 font-medium">Leaderboard</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.05, rotate: [0, 1, -1, 0] }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="bg-gradient-to-br from-pink-500 via-rose-500 to-red-600 text-white shadow-2xl border-0 overflow-hidden relative">
-            <div className="absolute top-0 left-1/3 w-8 h-8 bg-white/20 rounded-full -translate-y-4" />
-            <CardContent className="p-6 text-center relative z-10">
-              <motion.div
-                animate={{ rotate: [0, 15, -15, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                <Zap className="h-10 w-10 mx-auto mb-3 drop-shadow-lg fill-current" />
-              </motion.div>
-              <div className="text-3xl font-bold mb-1">{userStats.streakDays}</div>
-              <div className="text-sm opacity-90 font-medium">Day Streak</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.05, rotate: [0, -1, 1, 0] }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="bg-gradient-to-br from-purple-500 via-violet-500 to-indigo-600 text-white shadow-2xl border-0 overflow-hidden relative">
-            <div className="absolute bottom-0 right-1/4 w-14 h-14 bg-white/20 rounded-full translate-y-7" />
-            <CardContent className="p-6 text-center relative z-10">
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2.5, repeat: Infinity }}
-              >
-                <Target className="h-10 w-10 mx-auto mb-3 drop-shadow-lg" />
-              </motion.div>
-              <div className="text-3xl font-bold mb-1">{userStats.completedChallenges}</div>
-              <div className="text-sm opacity-90 font-medium">Completed</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Enhanced Navigation Tabs */}
-      <div className="flex justify-center">
-        <div className="flex space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-2xl shadow-xl border-0">
-          {[
-            { id: 'challenges', label: 'Active Challenges', icon: Target, color: 'from-green-500 to-emerald-500' },
-            { id: 'achievements', label: 'Achievements', icon: Trophy, color: 'from-yellow-500 to-orange-500' },
-            { id: 'leaderboard', label: 'Leaderboard', icon: Users, color: 'from-purple-500 to-pink-500' }
-          ].map((tab) => (
-            <motion.button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-3 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
-                activeTab === tab.id
-                  ? `bg-gradient-to-r ${tab.color} text-white shadow-lg`
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <tab.icon className="h-5 w-5" />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </motion.button>
-          ))}
-        </div>
-      </div>
-
-      {/* Enhanced Active Challenges */}
-      {activeTab === 'challenges' && (
-        <div className="space-y-6">
-          {challenges.map((challenge, index) => (
-            <motion.div
-              key={challenge.id}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-            >
-              <Card className="bg-gradient-to-r from-white/90 to-gray-50/90 dark:from-gray-800/90 dark:to-gray-700/90 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
-                
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-3 text-xl mb-2">
-                        <motion.div
-                          animate={{ rotate: [0, 5, -5, 0] }}
-                          transition={{ duration: 3, repeat: Infinity }}
-                        >
-                          🎯
-                        </motion.div>
-                        {challenge.title}
-                        <Badge className={`${getTypeColor(challenge.type)} px-3 py-1 text-xs font-semibold`}>
-                          {challenge.type}
-                        </Badge>
-                      </CardTitle>
-                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{challenge.description}</p>
-                    </div>
-                    <div className="text-right ml-4">
-                      <motion.div 
-                        className="flex items-center gap-2 text-sm text-gray-500 mb-2 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <Calendar className="h-5 w-5" />
-                        {challenge.duration}
-                      </motion.div>
-                      {challenge.type !== 'individual' && (
-                        <motion.div 
-                          className="flex items-center gap-2 text-sm text-gray-500 bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full"
-                          whileHover={{ scale: 1.05 }}
-                        >
-                          <Users className="h-5 w-5" />
-                          {challenge.participants} participants
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-2 font-medium">
-                        <span className="text-gray-700 dark:text-gray-300">Progress</span>
-                        <span className="text-indigo-600 dark:text-indigo-400">
-                          {challenge.progress}/{challenge.maxProgress}
-                        </span>
-                      </div>
-                      <div className="relative">
-                        <Progress 
-                          value={(challenge.progress / challenge.maxProgress) * 100} 
-                          className="h-3 bg-gray-200 dark:bg-gray-700"
-                        />
-                        <motion.div
-                          className="absolute top-0 left-0 h-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(challenge.progress / challenge.maxProgress) * 100}%` }}
-                          transition={{ duration: 1, delay: index * 0.2 }}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between pt-2">
-                      <motion.div 
-                        className="flex items-center gap-2 text-sm bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 px-4 py-2 rounded-full"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <Gift className="h-5 w-5 text-green-600 dark:text-green-400" />
-                        <span className="text-green-700 dark:text-green-300 font-medium">
-                          Reward: {challenge.reward}
-                        </span>
-                      </motion.div>
-                      
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button 
-                          size="sm" 
-                          className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
-                          Continue Challenge
-                        </Button>
-                      </motion.div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      {/* Enhanced Achievements */}
-      {activeTab === 'achievements' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {achievements.map((achievement, index) => (
-            <motion.div
-              key={achievement.id}
-              initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
-              whileHover={{ 
-                scale: 1.08, 
-                rotateY: [0, 5, -5, 0],
-                transition: { duration: 0.5 }
-              }}
-            >
-              <Card className="text-center bg-gradient-to-br from-white/90 to-gray-50/90 dark:from-gray-800/90 dark:to-gray-700/90 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative">
-                {/* Rarity glow effect */}
-                <div className={`absolute inset-0 opacity-20 ${
-                  achievement.rarity === 'legendary' ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
-                  achievement.rarity === 'epic' ? 'bg-gradient-to-br from-purple-500 to-pink-500' :
-                  achievement.rarity === 'rare' ? 'bg-gradient-to-br from-blue-500 to-cyan-500' :
-                  'bg-gradient-to-br from-gray-400 to-gray-500'
-                }`} />
-                
-                <CardContent className="p-8 relative z-10">
-                  <motion.div 
-                    className="text-6xl mb-4"
-                    animate={{ 
-                      rotate: [0, 10, -10, 0],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ 
-                      duration: 3, 
-                      repeat: Infinity,
-                      repeatType: "reverse"
-                    }}
-                  >
-                    {achievement.icon}
-                  </motion.div>
-                  
-                  <h3 className="font-bold text-xl mb-3 text-gray-900 dark:text-gray-100">
-                    {achievement.title}
-                  </h3>
-                  
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
-                    {achievement.description}
-                  </p>
-                  
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <Badge className={`${getRarityColor(achievement.rarity)} px-4 py-2 text-sm font-bold uppercase tracking-wide shadow-lg`}>
-                      ✨ {achievement.rarity}
-                    </Badge>
-                  </motion.div>
-                  
-                  <motion.p 
-                    className="text-xs text-gray-500 dark:text-gray-400 mt-4 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full inline-block"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    🗓️ Unlocked {achievement.unlockedAt.toLocaleDateString()}
-                  </motion.p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      {/* Enhanced Leaderboard */}
-      {activeTab === 'leaderboard' && (
-        <Card className="bg-gradient-to-br from-white/90 to-gray-50/90 dark:from-gray-800/90 dark:to-gray-700/90 backdrop-blur-md border-0 shadow-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              >
-                🏆
-              </motion.div>
-              Weekly Leaderboard
-            </CardTitle>
-            <p className="text-indigo-100">See how you stack up against your peers!</p>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              {[
-                { rank: 1, name: 'Sarah Johnson', points: 2150, badge: '🥇', gradient: 'from-yellow-400 to-orange-500' },
-                { rank: 2, name: 'Mike Chen', points: 1980, badge: '🥈', gradient: 'from-gray-400 to-gray-600' },
-                { rank: 3, name: 'Emily Davis', points: 1875, badge: '🥉', gradient: 'from-orange-400 to-red-500' },
-                { rank: 4, name: 'Alex Rodriguez', points: 1650, badge: '4️⃣', gradient: 'from-blue-400 to-blue-600' },
-                { rank: 5, name: 'You', points: userStats.totalPoints, badge: '5️⃣', gradient: 'from-purple-400 to-purple-600', isUser: true }
-              ].map((user, index) => (
-                <motion.div
-                  key={user.rank}
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02, x: 10 }}
-                  className={`group flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${
-                    user.isUser 
-                      ? 'bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600 shadow-lg' 
-                      : 'bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 shadow-md hover:shadow-lg'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <motion.div 
-                      className={`w-12 h-12 bg-gradient-to-br ${user.gradient} rounded-full flex items-center justify-center font-bold text-white shadow-lg text-lg`}
-                      whileHover={{ 
-                        rotate: [0, -10, 10, 0],
-                        scale: 1.1
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {user.badge}
-                    </motion.div>
-                    <div>
-                      <p className={`font-bold text-lg ${
-                        user.isUser 
-                          ? 'text-indigo-900 dark:text-indigo-100' 
-                          : 'text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
-                      }`}>
-                        {user.name}
-                        {user.isUser && (
-                          <motion.span 
-                            className="ml-2 text-sm bg-indigo-500 text-white px-2 py-1 rounded-full"
-                            animate={{ scale: [1, 1.1, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          >
-                            You!
-                          </motion.span>
-                        )}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Rank #{user.rank}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <motion.p 
-                      className="font-bold text-2xl text-gray-900 dark:text-gray-100"
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      {user.points.toLocaleString()}
-                    </motion.p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">points</p>
-                  </div>
-                </motion.div>
-              ))}
+    <div className="space-y-5">
+      {/* Stats strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {[
+          { label: 'Total Points', value: userStats.totalPoints.toLocaleString(), icon: Trophy,  color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
+          { label: 'Level',        value: `Lv. ${userStats.level}`,               icon: Star,    color: 'text-blue-500',   bg: 'bg-blue-50 dark:bg-blue-900/20' },
+          { label: 'Rank',         value: `#${userStats.rank}`,                   icon: Medal,   color: 'text-emerald-500',bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+          { label: 'Day Streak',   value: `${userStats.streakDays}d`,             icon: Zap,     color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+          { label: 'Completed',    value: `${userStats.completedChallenges}`,     icon: Target,  color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
+        ].map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center flex-shrink-0`}>
+                <Icon className={`h-4 w-4 ${s.color}`} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{s.value}</p>
+                <p className="text-[11px] text-gray-400">{s.label}</p>
+              </div>
             </div>
-            
-            {/* Motivational message */}
-            <motion.div 
-              className="mt-6 p-4 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl border border-green-200 dark:border-green-700"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+          );
+        })}
+      </div>
+
+      {/* Sub-tabs */}
+      <div className="flex gap-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-1">
+        {subTabs.map(t => {
+          const Icon = t.icon;
+          const active = activeTab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id as any)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all flex-1 justify-center ${
+                active ? 'bg-emerald-500 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+              }`}
             >
-              <p className="text-center text-green-800 dark:text-green-200 font-medium">
-                🌟 Keep going! Complete more challenges to climb the leaderboard! 🌟
-              </p>
+              <Icon className="h-3.5 w-3.5" />{t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Challenges */}
+      {activeTab === 'challenges' && (
+        <div className="space-y-3">
+          {challenges.map((ch, i) => {
+            const pct = Math.round((ch.progress / ch.maxProgress) * 100);
+            return (
+              <motion.div
+                key={ch.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4"
+              >
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{ch.title}</p>
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize ${typeColor[ch.type]}`}>{ch.type}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{ch.description}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0 text-[11px] text-gray-400">
+                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{ch.duration}</span>
+                    {ch.type !== 'individual' && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{ch.participants}</span>}
+                  </div>
+                </div>
+                <div className="mb-2">
+                  <div className="flex justify-between text-[11px] text-gray-400 mb-1">
+                    <span>Progress</span>
+                    <span>{ch.progress}/{ch.maxProgress} ({pct}%)</span>
+                  </div>
+                  <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-emerald-400 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.7, delay: i * 0.08 }}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+                    <Gift className="h-3 w-3" />{ch.reward}
+                  </span>
+                  <button className="text-xs px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
+                    Continue
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Achievements */}
+      {activeTab === 'achievements' && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {achievements.map((a, i) => (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.07 }}
+              className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 text-center"
+            >
+              <div className="text-3xl mb-2">{a.icon}</div>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">{a.title}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">{a.description}</p>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase ${rarityColor[a.rarity]}`}>{a.rarity}</span>
+              <p className="text-[11px] text-gray-400 mt-2">{a.unlockedAt.toLocaleDateString()}</p>
             </motion.div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Leaderboard */}
+      {activeTab === 'leaderboard' && (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-yellow-500" />
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Weekly Leaderboard</h2>
+          </div>
+          <div className="divide-y divide-gray-50 dark:divide-gray-800">
+            {leaderboard.map((u, i) => (
+              <motion.div
+                key={u.rank}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.06 }}
+                className={`flex items-center gap-3 px-4 py-3 ${u.isUser ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
+              >
+                <span className={`w-6 text-center text-xs font-bold ${i < 3 ? ['text-yellow-500','text-gray-400','text-orange-400'][i] : 'text-gray-400'}`}>
+                  {i < 3 ? ['🥇','🥈','🥉'][i] : `#${u.rank}`}
+                </span>
+                <div className="flex-1">
+                  <p className={`text-sm font-medium ${u.isUser ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-800 dark:text-gray-100'}`}>
+                    {u.name}{u.isUser && <span className="ml-1.5 text-[10px] bg-indigo-500 text-white px-1.5 py-0.5 rounded-full">You</span>}
+                  </p>
+                </div>
+                <p className="text-sm font-bold text-gray-700 dark:text-gray-200">{u.points.toLocaleString()} <span className="text-xs font-normal text-gray-400">pts</span></p>
+              </motion.div>
+            ))}
+          </div>
+          <div className="px-4 py-3 bg-emerald-50 dark:bg-emerald-900/10 border-t border-emerald-100 dark:border-emerald-800">
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 text-center">Complete more challenges to climb the leaderboard</p>
+          </div>
+        </div>
       )}
     </div>
   );

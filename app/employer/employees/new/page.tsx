@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, UserPlus, Mail, User as UserIcon, Building, Users, Shield, Crown } from 'lucide-react';
+import { Spinner, SectionLoader } from '@/components/loader';
 import { auth, db } from '@/lib/firebase'; // Import Firebase auth and db
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { collection, doc, setDoc, query, where, getDocs } from 'firebase/firestore'; // Import Firestore functions
@@ -200,17 +201,7 @@ export default function NewEmployeePage() {
   };
 
   if (!user) {
-    // Show a loading spinner while user info is being fetched
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
-          </div>
-          <p className="text-gray-600 mb-4">Loading user information...</p>
-        </div>
-      </div>
-    );
+    return <SectionLoader size="md" message="Loading user information..." color="text-gray-400" />;
   }
 
   if (!['employer', 'hr', 'admin', 'manager'].includes(user.role)) {
@@ -504,7 +495,7 @@ export default function NewEmployeePage() {
                 <Button type="submit" disabled={loading}>
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      <Spinner size="sm" color="border-white" className="mr-2" />
                       Creating Account...
                     </>
                   ) : (

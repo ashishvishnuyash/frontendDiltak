@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, CheckCircle, Building2, Mail, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Spinner } from '@/components/loader';
 
 export default function WellnessHubLanding() {
   const [formData, setFormData] = useState({
@@ -246,7 +247,7 @@ export default function WellnessHubLanding() {
                   >
                   {isSubmitting ? (
                     <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <Spinner size="sm" color="border-white" />
                       <span>Submitting...</span>
                     </div>
                   ) : (

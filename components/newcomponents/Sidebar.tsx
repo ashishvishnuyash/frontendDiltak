@@ -135,14 +135,14 @@ function Sidebar({
               'absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm transition-opacity duration-200',
               logoHovered ? 'opacity-0' : 'opacity-100'
             )}>
-              <span className="text-white font-bold text-sm leading-none">D</span>
+              <span className="text-black font-bold text-sm leading-none">D</span>
             </div>
             {/* Expand icon overlay on hover */}
             <div className={cn(
               'absolute inset-0 bg-violet-100 dark:bg-violet-900/40 rounded-xl flex items-center justify-center transition-opacity duration-200',
               logoHovered ? 'opacity-100' : 'opacity-0'
             )}>
-              <ChevronRight className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              <ChevronRight className="h-8 w-8 text-violet-600 dark:text-violet-400" />
             </div>
           </button>
         ) : (

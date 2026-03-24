@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 import { Navbar } from '@/components/shared/navbar';
+import { SectionLoader, Spinner } from '@/components/loader';
 import { PDFExportService, extractChartElements, generateAnalyticsFromReports } from '@/lib/pdf-export-service';
 import type { MentalHealthReport, User } from '@/types';
 import {
@@ -270,14 +271,7 @@ export default function ExportReportPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading report data...</p>
-        </div>
-      </div>
-    );
+    return <SectionLoader size="md" message="Loading report data..." color="text-gray-600" />;
   }
 
   if (!data) {

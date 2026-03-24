@@ -37,6 +37,7 @@ import {
   Cell
 } from 'recharts';
 import { motion } from 'framer-motion';
+import { SectionLoader } from '@/components/loader';
 
 const COLORS = {
   primary: '#3B82F6',
@@ -200,19 +201,7 @@ export default function ManagerAnalyticsPage() {
   const currentUser = user || getDemoUser('manager');
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 dark:from-gray-950 dark:via-slate-900 dark:to-teal-950 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-400">Loading analytics...</p>
-        </motion.div>
-      </div>
-    );
+    return <SectionLoader size="lg" message="Loading analytics..." color="text-green-600" />;
   }
 
   return (

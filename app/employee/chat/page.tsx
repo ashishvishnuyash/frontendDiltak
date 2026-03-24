@@ -42,6 +42,8 @@ import {
   UserCircle, // Replace User3D with UserCircle
   Settings,
   CheckCircle,
+  Heart,
+  Plus,
 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { toast } from "sonner";
@@ -1504,230 +1506,93 @@ export default function EmployeeChatPage() {
         currentText={currentTTSText || lastAIMessage}
       />
 
-
-
       {/* Full Screen Chat Container */}
-      <div className="flex flex-col flex-1 relative" style={{ overflow: 'hidden' }}>
-        {/* Responsive Layout - Split on desktop, overlay on mobile */}
-        <div className="flex flex-col lg:flex-row flex-1 min-h-0 relative" style={{ height: '100%' }}>
-          {/* Chat Section - Equal 50% width on desktop */}
-          <div
-            className="flex flex-col w-full lg:w-1/2 bg-white dark:bg-gray-900 min-h-0"
-            style={{ height: '100%', maxHeight: '100vh' }}
-          >
-            {/* Chat Header - Modern Clean Design */}
-            <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 sm:px-6 py-3 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3 min-w-0 flex-1">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-gray-900 dark:text-gray-100 font-medium text-base truncate">Wellness Assistant</h2>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Always here to listen</p>
-                  </div>
+      <div className="flex flex-col flex-1 relative px-6 py-4 bg-[#eef7f5] dark:bg-gray-950" style={{ overflow: 'hidden' }}>
+        {/* Centered chat card */}
+        <div className="flex flex-col flex-1 min-h-0 relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden mx-auto w-full" style={{ maxWidth: 760, height: '100%' }}>
+          {/* Chat Section */}
+          <div className="flex flex-col w-full min-h-0" style={{ height: '100%' }}>
+
+            {/* Chat Header */}
+            <div className="bg-white dark:bg-gray-900 px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Sparkles className="h-5 w-5 text-white" />
                 </div>
+                <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">Wellness Assistant</span>
+              </div>
 
-                {/* Status Indicators and Controls */}
-                <div className="flex items-center space-x-2">
-                  {isVoiceMode && (
-                    <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                      {isRecording && (
-                        <div className="flex items-center space-x-1 text-red-600 dark:text-red-400">
-                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                          <span className="hidden sm:inline font-medium">Recording</span>
-                        </div>
-                      )}
-                      {isSpeaking && !isRecording && (
-                        <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                          <span className="hidden sm:inline font-medium">Speaking</span>
-                        </div>
-                      )}
-                      {!isRecording && !isSpeaking && (
-                        <span className="font-mono font-medium">{formatCallDuration(callDuration)}</span>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Voice Call Toggle Button - Clean Icon Style */}
-                  {!sessionEnded && !isVoiceMode && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={startCall}
-                      disabled={loading}
-                      className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                      title="Start voice call"
-                    >
-                      <Phone className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    </Button>
-                  )}
-                  
-                  {/* End Call Button - Clean Icon Style */}
-                  {!sessionEnded && isVoiceMode && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={endCall}
-                      disabled={loading}
-                      className="h-8 w-8 p-0 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
-                      title="End voice call"
-                    >
-                      <PhoneOff className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    </Button>
-                  )}
+              <div className="flex items-center gap-2">
+                {isVoiceMode && (
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    {isRecording && <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />}
+                    {isSpeaking && !isRecording && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />}
+                    <span className="font-mono text-[11px]">{formatCallDuration(callDuration)}</span>
+                  </div>
+                )}
+                {!sessionEnded && (
+                  <button
+                    onClick={() => setShowEndConfirmation(true)}
+                    disabled={loading || messages.length === 0}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+                  >
+                    {/* <span className="text-red-400">♡</span> */}
+                                            <Heart className="h-5 w-5 text-red-400" />
 
-                  {/* End Conversation Button - Text Mode */}
-                  {!sessionEnded && !isVoiceMode && messages.length > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowEndConfirmation(true)}
-                      disabled={loading}
-                      className="h-8 px-3 text-xs sm:text-sm rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
-                      title="End conversation and generate report"
-                    >
-                      <PhoneOff className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
-                      <span className="hidden sm:inline">End</span>
-                    </Button>
-                  )}
-
-                  {/* Settings Menu */}
-                  {!sessionEnded && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowOptionsPanel(!showOptionsPanel)}
-                      className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                      title="More options"
-                    >
-                      <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    </Button>
-                  )}
-                </div>
+                    New Wellness Check
+                    {/* <span className="text-gray-400 font-bold">+</span> */}
+                    <Plus className=" h-5 w-5 text-gray-400 font-bold" />
+                  </button>
+                )}
+                {!sessionEnded && (
+                  <button
+                    onClick={() => setShowOptionsPanel(!showOptionsPanel)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Chat Messages - Clean Modern Layout */}
+            {/* Chat Messages */}
             <div 
               ref={chatContainerRef}
-              className={`flex-1 overflow-y-scroll overflow-x-hidden chat-scrollbar px-4 sm:px-6 py-6 min-h-0 ${
-                isAvatarMode 
-                  ? 'bg-transparent lg:bg-white lg:dark:bg-gray-900' 
-                  : 'bg-white dark:bg-gray-900'
-              }`}
-              style={{ 
-                height: '100%',
-                maxHeight: 'calc(100vh - 200px)',
-                boxShadow: '0px 4px 12px 0px rgba(0, 0, 0, 0.15)',
-                touchAction: 'pan-y'
-              }}
-              onWheel={(e) => {
-                // Ensure wheel events work for scrolling
-                e.stopPropagation();
-              }}
+              className="flex-1 overflow-y-auto overflow-x-hidden chat-scrollbar px-6 py-4 min-h-0 bg-[#eef7f5] dark:bg-gray-950"
+              style={{ touchAction: 'pan-y' }}
+              onWheel={(e) => { e.stopPropagation(); }}
             >
               {messages.length === 0 && !loading && (
-                <div className="flex items-center justify-center h-full min-h-[calc(100vh-16rem)] px-4">
-                  <motion.div
-                    className="text-center max-w-2xl"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {/* Logo */}
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                      <Sparkles className="h-8 w-8 text-white" />
+                <div className="flex items-center justify-center h-full min-h-[200px]">
+                  <div className="text-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Sparkles className="h-6 w-6 text-white" />
                     </div>
-                    
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
-                      How can I help you today?
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400 text-base mb-8">
-                      I&apos;m your AI wellness assistant. Share your thoughts, feelings, or anything on your mind.
-                    </p>
-                    
-                    {/* Suggestion Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-                      {[
-                        { icon: "💬", text: "I'd like to talk about my day" },
-                        { icon: "🎯", text: "Help me with stress management" },
-                        { icon: "😊", text: "I want to improve my wellbeing" },
-                        { icon: "🎙️", text: "Start a voice conversation" },
-                      ].map((suggestion, i) => (
-                        <motion.button
-                          key={i}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 * i }}
-                          onClick={() => {
-                            if (i === 3) {
-                              startCall();
-                            } else {
-                              setCurrentMessage(suggestion.text);
-                            }
-                          }}
-                          className="p-4 text-left bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <span className="text-2xl">{suggestion.icon}</span>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">{suggestion.text}</span>
-                          </div>
-                        </motion.button>
-                      ))}
-                    </div>
-
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
-                      Your conversations are confidential and designed to support your mental wellbeing
-                    </p>
-                  </motion.div>
+                    <p className="text-xs text-gray-400">Start a conversation with your Wellness Assistant</p>
+                  </div>
                 </div>
               )}
 
               {/* Voice Mode Instructions Card */}
               {isVoiceMode && showVoiceInstructions && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="mb-4"
-                >
-                  <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
-                    <CardContent className="p-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                          <Mic className="h-5 w-5 text-white" />
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="mb-3">
+                  <Card className="bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800">
+                    <CardContent className="p-3">
+                      <div className="flex items-start gap-2">
+                        <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Mic className="h-3.5 w-3.5 text-white" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2 flex items-center">
-                            Voice Call Guide
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setShowVoiceInstructions(false)}
-                              className="ml-auto h-6 w-6 p-0 text-green-600 hover:text-green-800"
-                            >
-                              <X className="h-5 w-5" />
-                            </Button>
-                          </h4>
-                          <ul className="text-sm text-green-800 dark:text-green-200 space-y-2">
-                            <li className="flex items-start">
-                              <span className="mr-2">1️⃣</span>
-                              <span>Click the <strong>green microphone button</strong> to start recording</span>
-                            </li>
-                            <li className="flex items-start">
-                              <span className="mr-2">2️⃣</span>
-                              <span>Speak naturally - the AI will transcribe and respond</span>
-                            </li>
-                            <li className="flex items-start">
-                              <span className="mr-2">3️⃣</span>
-                              <span>Click the <strong>red square button</strong> to stop recording</span>
-                            </li>
-                            <li className="flex items-start">
-                              <span className="mr-2">💡</span>
-                              <span>The AI will speak responses - use the speaker icon to mute/unmute</span>
-                            </li>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-semibold text-emerald-900 dark:text-emerald-100">Voice Call Guide</span>
+                            <button onClick={() => setShowVoiceInstructions(false)} className="text-emerald-600 hover:text-emerald-800">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <ul className="text-xs text-emerald-800 dark:text-emerald-200 space-y-1">
+                            <li>1. Click the green mic to start recording</li>
+                            <li>2. Speak naturally — AI will transcribe and respond</li>
+                            <li>3. Click the red square to stop recording</li>
                           </ul>
                         </div>
                       </div>
@@ -1736,69 +1601,65 @@ export default function EmployeeChatPage() {
                 </motion.div>
               )}
 
+              {/* Date separator */}
+              {messages.length > 0 && (
+                <div className="flex items-center justify-center mb-3">
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500 bg-[#eef7f5] dark:bg-gray-950 px-2">
+                    {new Date(messages[0]?.timestamp || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  </span>
+                </div>
+              )}
+
               {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex mb-6 ${message.sender === "user" ? "justify-end" : "justify-start"
-                    }`}
-                >
-                  <div
-                    className={`flex items-start space-x-3 max-w-[85%] sm:max-w-[75%] ${
-                      message.sender === "user" ? "flex-row-reverse space-x-reverse" : ""
-                    }`}
-                  >
-                    {/* Avatar - Minimal */}
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.sender === "user" 
-                        ? "bg-blue-600" 
-                        : "bg-gradient-to-br from-purple-500 to-blue-500"
+                <div key={message.id} className={`flex mb-2.5 ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`flex items-end gap-1.5 max-w-[75%] ${message.sender === "user" ? "flex-row-reverse" : ""}`}>
+                    {/* Avatar */}
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mb-3.5 ${
+                      message.sender === "user"
+                        ? "bg-amber-400"
+                        : "bg-gradient-to-br from-green-400 to-emerald-600"
                     }`}>
                       {message.sender === "user" ? (
-                        <User className="h-5 w-5 text-white" />
+                        <User className="h-3 w-3 text-white" />
                       ) : (
-                        <Sparkles className="h-5 w-5 text-white" />
+                        <Sparkles className="h-3 w-3 text-white" />
                       )}
                     </div>
 
-                    {/* Message Bubble - Clean ChatGPT Style */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className={`rounded-2xl px-4 py-3 ${
-                        message.sender === "user"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      }`}
-                    >
-                      {message.sender === "ai" ? (
-                        <div>
-                          {renderMessageContent(message.content)}
-                        </div>
-                      ) : (
-                        renderMessageContent(message.content)
-                      )}
-                    </motion.div>
+                    {/* Bubble + timestamp */}
+                    <div className={`flex flex-col gap-0.5 ${message.sender === "user" ? "items-end" : "items-start"}`}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2 shadow-sm border border-gray-100 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-200 leading-relaxed"
+                      >
+                        {message.sender === "ai" ? (
+                          <div>{renderMessageContent(message.content)}</div>
+                        ) : (
+                          renderMessageContent(message.content)
+                        )}
+                      </motion.div>
+                      <span className="text-[9px] text-gray-400 px-0.5">
+                        {new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
 
               {/* AI Typing / Audio Processing */}
               {(loading || processingAudio) && (
-                <div className="flex justify-start">
-                  <div className="flex items-start space-x-2 sm:space-x-3 max-w-[85%] sm:max-w-[75%]">
-                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                      <AvatarFallback>
-                        <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="bg-white rounded-xl px-3 py-2 sm:p-3 border shadow-sm">
-                      <div className="flex space-x-1 items-center">
-                        <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin text-blue-500" />
-                        <span className="text-xs text-gray-500">
-                          {processingAudio
-                            ? "Processing audio..."
-                            : "AI is thinking..."}
+                <div className="flex justify-start mb-2.5">
+                  <div className="flex items-end gap-1.5">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2 border border-gray-100 dark:border-gray-700 shadow-sm">
+                      <div className="flex items-center gap-1.5">
+                        <Loader2 className="w-3 h-3 animate-spin text-emerald-500" />
+                        <span className="text-[11px] text-gray-400">
+                          {processingAudio ? "Processing audio..." : "AI is thinking..."}
                         </span>
                       </div>
                     </div>
@@ -1963,408 +1824,270 @@ export default function EmployeeChatPage() {
                 </motion.div>
             )}
 
-            {/* Chat Input Area - Clean Modern Design */}
-            <div className={`border-t border-gray-200 dark:border-gray-700 p-4 sm:p-6 ${
-              isAvatarMode 
-                ? 'bg-white/95 lg:bg-white dark:bg-gray-900/95 lg:dark:bg-gray-900 backdrop-blur-sm' 
-                : 'bg-white dark:bg-gray-900'
-            }`}>
+            {/* Chat Input Area */}
+            <div className="bg-white dark:bg-gray-900 px-4 pb-4 pt-3 flex-shrink-0 border-t border-gray-100 dark:border-gray-800">
               {/* File Attachments Preview */}
               {attachedFiles.length > 0 && (
-                <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-blue-800 dark:text-blue-200 flex items-center">
-                      <Paperclip className="h-5 w-5 mr-1" />
-                      {attachedFiles.length} file(s) attached
+                <div className="mb-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-medium text-gray-500 flex items-center gap-1">
+                      <Paperclip className="h-3 w-3" />{attachedFiles.length} file(s)
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setAttachedFiles([])}
-                      className="text-blue-600 hover:text-blue-800 h-6 w-6 p-0"
-                    >
+                    <button onClick={() => setAttachedFiles([])} className="text-gray-400 hover:text-gray-600">
                       <X className="h-3 w-3" />
-                    </Button>
+                    </button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1">
                     {attachedFiles.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-2 py-1 rounded border text-xs"
-                      >
-                        <FileText className="h-3 w-3 text-gray-500 flex-shrink-0" />
-                        <span className="text-gray-700 dark:text-gray-300 truncate max-w-32">
-                          {file.name}
-                        </span>
-                        <span className="text-gray-500">
-                          ({formatFileSize(file.size)})
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFile(index)}
-                          className="h-5 w-5 p-0 hover:bg-red-100 flex-shrink-0"
-                        >
-                          <X className="h-2 w-2 text-red-500" />
-                        </Button>
+                      <div key={index} className="flex items-center gap-1 bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded text-[10px] text-gray-500 border border-gray-200 dark:border-gray-600">
+                        <FileText className="h-2.5 w-2.5 flex-shrink-0" />
+                        <span className="truncate max-w-20">{file.name}</span>
+                        <button onClick={() => removeFile(index)} className="text-gray-400 hover:text-red-500">
+                          <X className="h-2 w-2" />
+                        </button>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Predefined Starting Messages */}
-              {messages.length > 0 && currentMessage.length === 0 && !sessionEnded && (
-                <div className="mb-3 px-2 sm:px-4 md:px-6">
-                  <div className="max-w-4xl mx-auto">
-                    <div className="flex flex-wrap gap-2 sm:gap-2.5 md:gap-3 justify-center items-center">
-                      {predefinedMessages.map((message, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setCurrentMessage(message);
-                            // Auto-send after a brief delay for better UX
-                            setTimeout(() => {
-                              handleSendMessage(message);
-                            }, 100);
-                          }}
-                          disabled={loading || sessionEnded}
-                          className="text-xs sm:text-sm px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 h-auto min-h-[44px] rounded-full border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500 transition-colors flex-shrink-0 w-full sm:w-auto"
-                        >
-                          <span className="block text-center whitespace-nowrap">{message}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+              {/* Quick reply chips — shown when no message typed */}
+              {!sessionEnded && currentMessage.length === 0 && messages.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3 justify-end">
+                  {predefinedMessages.slice(0, 3).map((msg, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setCurrentMessage(msg); setTimeout(() => handleSendMessage(msg), 80); }}
+                      disabled={loading}
+                      className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-700 dark:hover:text-emerald-300 border border-gray-200 dark:border-gray-700 rounded-full transition-colors disabled:opacity-50"
+                    >
+                      {msg}
+                    </button>
+                  ))}
                 </div>
               )}
 
-              {/* Main Input Container */}
-              <div className="relative">
-                {/* Mobile Avatar Mode Indicator */}
-                {isAvatarMode && (
-                  <div className="lg:hidden absolute -top-8 left-0 right-0 flex justify-center">
-                    <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-xs flex items-center space-x-1 backdrop-blur-sm">
-                      <UserCircle className="h-3 w-3" />
-                      <span>3D Avatar Background Active</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Input Container - Modern ChatGPT Style */}
-                <div className="relative max-w-4xl mx-auto">
-                  <div className="relative flex items-center bg-gray-100 dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus-within:border-blue-500 dark:focus-within:border-blue-500 transition-colors">
-                    {/* Attachment Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowOptionsPanel(!showOptionsPanel)}
-                      disabled={loading || sessionEnded}
-                      className="h-10 w-10 p-0 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-transparent flex-shrink-0 ml-2"
-                    >
-                      <Paperclip className="h-5 w-5" />
-                    </Button>
-
-                    {/* Text Input */}
-                    <input
-                      type="text"
-                      placeholder={isVoiceMode ? "Speak or type your message..." : "Message Wellness Assistant..."}
-                      value={currentMessage}
-                      onChange={(e) => setCurrentMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      disabled={loading || sessionEnded}
-                      className="flex-1 bg-transparent border-none outline-none px-3 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    />
-
-                    {/* Right Side Controls */}
-                    <div className="flex items-center space-x-1 mr-2 flex-shrink-0">
-                      {/* Microphone Button - Voice Mode */}
-                      {(isVoiceMode || currentMessage.length === 0) && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={toggleRecording}
-                          disabled={loading || sessionEnded}
-                          className={`h-9 w-9 p-0 rounded-full transition-all ${
-                            isRecording 
-                              ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' 
-                              : isVoiceMode
-                                ? 'bg-green-500 hover:bg-green-600 text-white shadow-md'
-                                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          {isRecording ? (
-                            <Square className="h-5 w-5" />
-                          ) : (
-                            <Mic className="h-5 w-5" />
-                          )}
-                        </Button>
-                      )}
-
-                      {/* Send Button - Only when there's text */}
-                      {currentMessage.length > 0 && (
-                        <Button
-                          onClick={() => handleSendMessage()}
-                          disabled={loading || sessionEnded}
-                          className="h-9 w-9 p-0 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md"
-                        >
-                          <Send className="h-5 w-5" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+              {/* Input row */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex items-center bg-gray-50 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-2 focus-within:border-emerald-400 dark:focus-within:border-emerald-600 transition-colors">
+                  {/* Paperclip */}
+                  <button
+                    onClick={() => setShowOptionsPanel(!showOptionsPanel)}
+                    disabled={loading || sessionEnded}
+                    className="mr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 transition-colors"
+                  >
+                    <Paperclip className="h-5 w-5" />
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="Start Conversation"
+                    value={currentMessage}
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    disabled={loading || sessionEnded}
+                    className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400"
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  />
                 </div>
-
-                {/* Drag and Drop Overlay */}
-                {dragOver && (
-                  <div className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center z-20">
-                    <div className="text-center">
-                      <Upload className="h-6 w-6 text-blue-600 mx-auto mb-1" />
-                      <p className="text-xs font-medium text-blue-800 dark:text-blue-200">
-                        Drop files here
-                      </p>
-                    </div>
-                  </div>
-                )}
+                {/* Send arrow */}
+                <button
+                  onClick={() => handleSendMessage()}
+                  disabled={loading || sessionEnded || !currentMessage.trim()}
+                  className="w-9 h-9 rounded-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 flex items-center justify-center transition-colors flex-shrink-0 shadow-sm"
+                >
+                  <Send className="h-5 w-5 text-white" />
+                </button>
               </div>
             </div>
 
-            {/* Options Dropdown Panel */}
-            {showOptionsPanel && (
-                <>
-                  {/* Backdrop */}
-                  <div
-                    className="fixed inset-0 bg-transparent z-30"
-                    onClick={() => setShowOptionsPanel(false)}
-                  />
+          </div>{/* end chat section */}
+        </div>{/* end chat card */}
 
-                  {/* Options Panel */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute bottom-16 left-0 w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-40 overflow-hidden"
-                  >
-                    <div className="p-4 space-y-3">
-                      {/* Add Files */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          openFileDialog();
-                          setShowOptionsPanel(false);
-                        }}
-                        disabled={loading || sessionEnded}
-                        className="w-full justify-start text-left p-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                            <Paperclip className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                          </div>
-                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Add photos & files</span>
-                        </div>
-                      </Button>
+        {/* FAB buttons — outside the card, bottom-right of the page area */}
+        <div className="absolute bottom-6 right-6 flex gap-2 z-20">
+          <button
+            onClick={() => setShowOptionsPanel(!showOptionsPanel)}
+            className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 shadow-lg flex items-center justify-center transition-colors"
+            title="Chat options"
+          >
+            <Bot className="text-white" style={{ width: 20, height: 20 }} />
+          </button>
+          <button
+            onClick={isVoiceMode ? endCall : startCall}
+            disabled={loading || sessionEnded}
+            className={`w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition-colors ${
+              isVoiceMode ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'
+            }`}
+            title={isVoiceMode ? "End call" : "Voice call"}
+          >
+            <Phone className="text-white" style={{ width: 20, height: 20 }} />
+          </button>
+        </div>
 
-                      {/* Add Images */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.multiple = true;
-                          input.accept = 'image/*';
-                          input.onchange = (e) => handleFileSelect(e as any);
-                          input.click();
-                          setShowOptionsPanel(false);
-                        }}
-                        disabled={loading || sessionEnded}
-                        className="w-full justify-start text-left p-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                            <ImageIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                          </div>
-                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Add images</span>
-                        </div>
-                      </Button>
+      </div>{/* end page container */}
 
-                      {/* Deep Conversation */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          toast.info("🚀 Deep Conversation is coming soon! This exciting feature will provide enhanced AI analysis with real-time data, advanced reasoning capabilities, and deeper contextual understanding for more meaningful conversations.", {
-                            duration: 6000,
-                            style: {
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '16px',
-                              fontSize: '14px',
-                              padding: '20px',
-                              boxShadow: '0 20px 40px rgba(102, 126, 234, 0.4)',
-                              maxWidth: '400px',
-                            },
-                          });
-                          setShowOptionsPanel(false);
-                        }}
-                        disabled={loading || sessionEnded}
-                        className="w-full justify-start text-left p-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                            <Search className="h-5 w-5 text-white animate-pulse" />
-                          </div>
-                          <div className="flex-1">
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Deep conversation</span>
-                            <div className="text-xs text-purple-600 dark:text-purple-400">Coming Soon</div>
-                          </div>
-                        </div>
-                      </Button>
+      {/* Options Dropdown Panel */}
+      {showOptionsPanel && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowOptionsPanel(false)}
+                />
 
-                      {/* Divider */}
-                      <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                {/* Dropdown — anchored above the input area */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="fixed bottom-24 left-1/2 -translate-x-1/2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">Options</span>
+                    <button
+                      onClick={() => setShowOptionsPanel(false)}
+                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
 
-                      {/* Avatar Options */}
-                      <div className="space-y-2">
-                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3">
-                          Avatar & Voice
-                        </div>
-
-                        {/* Enable/Disable Avatar */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setIsAvatarMode(!isAvatarMode);
-                            toast.success(isAvatarMode ? "Avatar disabled" : "Avatar enabled");
-                            setShowOptionsPanel(false);
-                          }}
-                          disabled={loading || sessionEnded}
-                          className="w-full justify-start text-left p-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-800"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                              <UserCircle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {isAvatarMode ? "Disable avatar" : "Enable avatar"}
-                              </span>
-                              {isAvatarMode && (
-                                <div className="text-xs text-green-600 dark:text-green-400">Active</div>
-                              )}
-                            </div>
-                          </div>
-                        </Button>
-
-                        {/* Avatar Settings */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            toggleSettings();
-                            setShowOptionsPanel(false);
-                          }}
-                          disabled={loading || sessionEnded}
-                          className="w-full justify-start text-left p-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-800"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                              <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                            </div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Avatar settings</span>
-                          </div>
-                        </Button>
-
-                        {/* Test Microphone */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (isRecording) {
-                              stopRecording();
-                            } else {
-                              startRecording();
-                            }
-                            setShowOptionsPanel(false);
-                          }}
-                          disabled={loading || sessionEnded}
-                          className="w-full justify-start text-left p-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-800"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                              <Mic className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Test microphone</span>
-                              {isRecording && (
-                                <div className="text-xs text-red-600 dark:text-red-400">Recording...</div>
-                              )}
-                            </div>
-                          </div>
-                        </Button>
-
-                        {/* Test TTS Settings */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            const testText = "Hello! This is a test of the text-to-speech system.";
-                            speakText(testText);
-                            setShowOptionsPanel(false);
-                          }}
-                          disabled={loading || sessionEnded || isSpeaking}
-                          className="w-full justify-start text-left p-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-800"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                              <Volume2 className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Test TTS settings</span>
-                              {isSpeaking && (
-                                <div className="text-xs text-blue-600 dark:text-blue-400">Speaking...</div>
-                              )}
-                            </div>
-                          </div>
-                        </Button>
+                  <div className="py-1.5">
+                    {/* Files */}
+                    <button
+                      onClick={() => { openFileDialog(); setShowOptionsPanel(false); }}
+                      disabled={loading || sessionEnded}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Paperclip className="h-3.5 w-3.5 text-gray-500" />
                       </div>
+                      <span className="font-medium">Add photos &amp; files</span>
+                    </button>
 
-                      {/* Divider */}
-                      <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                    {/* Images */}
+                    <button
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file'; input.multiple = true; input.accept = 'image/*';
+                        input.onchange = (e) => handleFileSelect(e as any);
+                        input.click();
+                        setShowOptionsPanel(false);
+                      }}
+                      disabled={loading || sessionEnded}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <ImageIcon className="h-3.5 w-3.5 text-gray-500" />
+                      </div>
+                      <span className="font-medium">Add images</span>
+                    </button>
 
-                      {/* End Conversation */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setShowOptionsPanel(false);
-                          setShowEndConfirmation(true);
-                        }}
-                        disabled={loading || sessionEnded || messages.length === 0}
-                        className="w-full justify-start text-left p-3 h-auto hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
-                            <PhoneOff className="h-5 w-5 text-red-600 dark:text-red-400" />
-                          </div>
-                          <div className="flex-1">
-                            <span className="text-sm font-medium">End conversation</span>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Generate wellness report</div>
-                          </div>
-                        </div>
-                      </Button>
+                    {/* Deep Conversation */}
+                    <button
+                      onClick={() => {
+                        toast.info('Deep Conversation coming soon!', { duration: 3000 });
+                        setShowOptionsPanel(false);
+                      }}
+                      disabled={loading || sessionEnded}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Search className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <span className="font-medium">Deep conversation</span>
+                        <span className="ml-2 text-[10px] text-purple-500 font-medium">Soon</span>
+                      </div>
+                    </button>
+
+                    <div className="mx-4 my-1.5 border-t border-gray-100 dark:border-gray-800" />
+
+                    {/* Section label */}
+                    <div className="px-4 py-1.5">
+                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Avatar &amp; Voice</span>
                     </div>
-                  </motion.div>
-                </>
+
+                    {/* Avatar toggle */}
+                    <button
+                      onClick={() => { setIsAvatarMode(!isAvatarMode); toast.success(isAvatarMode ? 'Avatar disabled' : 'Avatar enabled'); setShowOptionsPanel(false); }}
+                      disabled={loading || sessionEnded}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <UserCircle className="h-3.5 w-3.5 text-gray-500" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <span className="font-medium">{isAvatarMode ? 'Disable avatar' : 'Enable avatar'}</span>
+                        {isAvatarMode && <span className="ml-2 text-[10px] text-emerald-500 font-medium">Active</span>}
+                      </div>
+                    </button>
+
+                    {/* Avatar settings */}
+                    <button
+                      onClick={() => { toggleSettings(); setShowOptionsPanel(false); }}
+                      disabled={loading || sessionEnded}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Settings className="h-3.5 w-3.5 text-gray-500" />
+                      </div>
+                      <span className="font-medium">Avatar settings</span>
+                    </button>
+
+                    {/* Test mic */}
+                    <button
+                      onClick={() => { isRecording ? stopRecording() : startRecording(); setShowOptionsPanel(false); }}
+                      disabled={loading || sessionEnded}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Mic className="h-3.5 w-3.5 text-gray-500" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <span className="font-medium">Test microphone</span>
+                        {isRecording && <span className="ml-2 text-[10px] text-red-500 font-medium">Recording…</span>}
+                      </div>
+                    </button>
+
+                    {/* Test TTS */}
+                    <button
+                      onClick={() => { speakText('Hello! This is a test of the text-to-speech system.'); setShowOptionsPanel(false); }}
+                      disabled={loading || sessionEnded || isSpeaking}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Volume2 className="h-3.5 w-3.5 text-gray-500" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <span className="font-medium">Test voice</span>
+                        {isSpeaking && <span className="ml-2 text-[10px] text-blue-500 font-medium">Speaking…</span>}
+                      </div>
+                    </button>
+
+                    <div className="mx-4 my-1.5 border-t border-gray-100 dark:border-gray-800" />
+
+                    {/* End conversation */}
+                    <button
+                      onClick={() => { setShowOptionsPanel(false); setShowEndConfirmation(true); }}
+                      disabled={loading || sessionEnded || messages.length === 0}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50"
+                    >
+                      <div className="w-7 h-7 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <PhoneOff className="h-3.5 w-3.5 text-red-500" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <span className="font-medium">End conversation</span>
+                        <div className="text-[10px] text-gray-400">Generate wellness report</div>
+                      </div>
+                    </button>
+                  </div>
+                </motion.div>
+              </>
             )}
 
             {/* Hidden File Input */}
@@ -2376,9 +2099,6 @@ export default function EmployeeChatPage() {
               onChange={handleFileSelect}
               className="hidden"
             />
-          </div>
-
-          {/* Avatar Section - Background on mobile, Equal 50% Split on desktop */}
           {isAvatarMode && (
           <motion.div
             initial={{ opacity: 0, x: 30 }}
@@ -2519,11 +2239,9 @@ export default function EmployeeChatPage() {
               </div>
           </motion.div>
         )}
-        </div>
-      </div>
 
       {/* Floating Voice Call Action Button - Only show when not in voice mode */}
-      {!sessionEnded && !isVoiceMode && messages.length > 0 && (
+      {/* {!sessionEnded && !isVoiceMode && messages.length > 0 && (
         <motion.div
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -2539,7 +2257,7 @@ export default function EmployeeChatPage() {
           </Button>
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-ping"></div>
         </motion.div>
-      )}
+      )} */}
 
       {/* Recording Indicator Overlay - Modern Minimal Design */}
       {isRecording && (
@@ -2694,30 +2412,34 @@ export default function EmployeeChatPage() {
         />
       )}
 
-      {/* Greeting Dialog */}
+      {/* Greeting Dialog — matches image */}
       <Dialog open={showGreetingDialog} onOpenChange={setShowGreetingDialog}>
-        <DialogContent className="w-[95vw] sm:w-full sm:max-w-md mx-4 sm:mx-auto">
+        <DialogContent className="w-[95vw] sm:w-full sm:max-w-md mx-4 sm:mx-auto rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 sm:space-x-2 text-lg sm:text-xl">
-              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0" />
-              <span className="break-words">Welcome to Wellness Assistant!</span>
-            </DialogTitle>
-            <DialogDescription className="pt-3 sm:pt-2">
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">
-                Hello {user?.first_name || "there"}! 👋
-              </p>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                I&apos;m here to support you. Feel free to share what&apos;s on your mind, ask questions, or use the quick message options below to get started.
-              </p>
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <span>🌿</span>
+                Welcome to Wellness Assistant!
+              </DialogTitle>
+            </div>
           </DialogHeader>
-          <div className="flex justify-end pt-4 sm:pt-4">
-            <Button
-              onClick={() => setShowGreetingDialog(false)}
-              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto min-h-[44px] px-6 sm:px-8 text-sm sm:text-base"
-            >
-              Get Started
-            </Button>
+          <div className="pt-1">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Hello, {user?.first_name || "there"}
+            </p>
+            <div className="border-t border-gray-100 dark:border-gray-700 mb-4" />
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+              Your Wellness Assistant is here to listen and support you whenever you need it.<br />
+              Share how you&apos;re feeling, ask questions, or explore simple ways to reduce stress and feel better.
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowGreetingDialog(false)}
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                Start Conversation
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

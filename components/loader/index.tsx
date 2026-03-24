@@ -143,3 +143,83 @@ export function OverlayLoader({
     </div>
   );
 }
+
+// ─── 7. Brand loader (D logo + bouncing dots) ─────────────────────────────────
+// Used as the primary page-level loader across employee/manager/employer pages
+
+export interface BrandLoaderProps {
+  color?: string; // dot color, e.g. 'bg-violet-400' or 'bg-emerald-400'
+}
+
+export function BrandLoader({ color = 'bg-violet-400' }: BrandLoaderProps) {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center animate-pulse">
+          <span className="text-white font-bold text-sm">D</span>
+        </div>
+        <div className="flex gap-1.5">
+          {[0, 150, 300].map(d => (
+            <span
+              key={d}
+              className={cn('w-2 h-2 rounded-full animate-bounce', color)}
+              style={{ animationDelay: `${d}ms` }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── 8. Suspense fallback spinner ─────────────────────────────────────────────
+// Minimal spinner for use in Suspense fallback props
+
+export interface SuspenseFallbackProps {
+  color?: string;
+  fullScreen?: boolean;
+}
+
+export function SuspenseFallback({ color = 'border-green-600', fullScreen = false }: SuspenseFallbackProps) {
+  return (
+    <div className={cn('flex items-center justify-center', fullScreen ? 'min-h-screen bg-background' : 'h-16')}>
+      <Spinner size="sm" color={color} />
+    </div>
+  );
+}
+
+// ─── 9. Chat / inline processing loader ───────────────────────────────────────
+// Small inline spinner + text for chat bubbles and processing states
+
+export interface InlineLoaderProps {
+  message?: string;
+  size?: 'xs' | 'sm';
+  color?: string;
+}
+
+export function InlineLoader({ message, size = 'sm', color = 'text-blue-500' }: InlineLoaderProps) {
+  const sizeMap = { xs: 'w-3 h-3', sm: 'w-4 h-4' };
+  return (
+    <div className="flex items-center gap-1.5">
+      <Loader2 className={cn('animate-spin flex-shrink-0', sizeMap[size], color)} />
+      {message && <span className="text-xs text-gray-500">{message}</span>}
+    </div>
+  );
+}
+
+// ─── 10. Full-screen center loader ────────────────────────────────────────────
+// Used for full h-screen centered loading (e.g. chat page initial load)
+
+export interface FullScreenLoaderProps {
+  color?: string;
+  size?: 'md' | 'lg' | 'xl';
+}
+
+export function FullScreenLoader({ color = 'text-blue-600', size = 'lg' }: FullScreenLoaderProps) {
+  const sizeMap = { md: 'h-8 w-8', lg: 'h-12 w-12', xl: 'h-16 w-16' };
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <Loader2 className={cn('animate-spin', sizeMap[size], color)} />
+    </div>
+  );
+}

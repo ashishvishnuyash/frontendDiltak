@@ -27,6 +27,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase'; // Import db
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Spinner } from '@/components/loader';
 
 interface ReportData {
   stress_level: number;
@@ -447,7 +448,7 @@ export default function NewReportPage() {
                 >
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      <Spinner size="sm" color="border-white" className="mr-2" />
                       Saving...
                     </>
                   ) : (

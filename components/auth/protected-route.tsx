@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/use-user';
 import { getDemoUser } from '@/lib/demo-data';
 import type { User } from '@/types/index';
+import { SuspenseFallback } from '@/components/loader';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -56,11 +57,7 @@ export function ProtectedRoute({
   }, [user, loading, router, allowedRoles, requireAuth]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <SuspenseFallback fullScreen color="border-blue-600" />;
   }
 
   // For demo mode, provide a demo user if no real user exists

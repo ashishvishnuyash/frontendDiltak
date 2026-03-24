@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
-  Check,
   ChevronRight,
   Plus,
   Minus,
@@ -36,19 +35,10 @@ export default function HomePage() {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isMobileProductsOpen, setIsMobileProductsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { openContactModal } = useModal();
   const { scrollYProgress } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 300]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -64,27 +54,6 @@ export default function HomePage() {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  // Animation variants
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
-  };
-
-  const titleVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const wordVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
 
   const faqs = [
@@ -155,185 +124,190 @@ export default function HomePage() {
         />
       </div>
 
-      {/* Header */}
-      <header className="border-b border-white/20 dark:border-gray-800/50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 transition-all duration-300 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <motion.div 
-              className="flex items-center space-x-2 sm:space-x-3"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400 }}
-            >
-              <motion.div 
-                className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-green-600 via-lime-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg"
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Sparkles className="text-white w-3 h-3 sm:w-4 sm:h-4" />
-              </motion.div>
-              <span className="text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600">Diltak.ai</span>
-            </motion.div>
+<header className="absolute border-b border-white/20 dark:border-gray-800/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl sticky top-0 z-50 transition-all duration-300 shadow-sm p-3">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-between items-center h-16 md:h-20">
+      {/* Logo Section */}
+      <motion.div 
+        className="flex items-center space-x-2 sm:space-x-3 cursor-pointer"
+        whileHover={{ scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 400 }}
+      >
+        <motion.div 
+          className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-600 via-lime-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg"
+          animate={{ rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Sparkles className="text-white w-4 h-4 sm:w-5 sm:h-5" />
+        </motion.div>
+        <span className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600">
+          Diltak.ai
+        </span>
+      </motion.div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
-              <Link href="/">
-                <Button variant="ghost" className="text-gray-700 hover:bg-green-50 dark:text-gray-300 dark:hover:bg-gray-800 px-3 py-2 transition-all duration-200 hover:scale-105">
+      {/* Desktop Navigation */}
+      <div className="hidden lg:flex items-center space-x-1 xl:space-x-2">
+        <Link href="/">
+          <Button variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200">
+            Home
+          </Button>
+        </Link>
+
+        {/* Products Dropdown */}
+        <div className="relative">
+          <Button
+            variant="ghost"
+            className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 flex items-center space-x-1 px-3 py-2 transition-all duration-200"
+            onClick={toggleProducts}
+          >
+            <span>Products</span>
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProductsOpen ? 'rotate-180' : ''}`} />
+          </Button>
+
+          {isProductsOpen && (
+            <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden">
+              <div className="py-2">
+                <Link href="/wellness-hub">
+                  <div className="px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-950/30 hover:text-green-600 dark:hover:text-green-400 cursor-pointer transition-colors duration-200">
+                    Wellness Hub
+                  </div>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <Link href="#advantage">
+          <Button variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200">
+            About
+          </Button>
+        </Link>
+
+        <Link href="#wellness">
+          <Button variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200">
+            Solutions
+          </Button>
+        </Link>
+
+        <Link href="#faq">
+          <Button variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200">
+            FAQ
+          </Button>
+        </Link>
+
+        <Button
+          variant="ghost"
+          className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200"
+          onClick={openContactModal}
+        >
+          Contact
+        </Button>
+
+        <div className="flex items-center space-x-2 ml-2">
+          <Link href="/auth/login">
+            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-5 py-2 shadow-md hover:shadow-lg transition-all duration-300">
+              Login
+            </Button>
+          </Link>
+          <ThemeToggle />
+        </div>
+      </div>
+
+      {/* Mobile Navigation Controls */}
+      <div className="lg:hidden flex items-center space-x-3">
+        <ThemeToggle size="sm" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleMobileMenu}
+          className="p-2 hover:bg-green-50 dark:hover:bg-green-950/30"
+          aria-label="Toggle menu"
+        >
+          {isMobileMenuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 shadow-xl z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+            <div className="flex flex-col space-y-1">
+              <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
                   Home
                 </Button>
               </Link>
 
-              {/* Products Dropdown */}
-              <div className="relative">
+              {/* Mobile Products Section */}
+              <div>
                 <Button
                   variant="ghost"
-                  className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 flex items-center space-x-1 px-3 py-2"
-                  onClick={toggleProducts}
+                  className="w-full justify-between text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200"
+                  onClick={toggleMobileProducts}
                 >
                   <span>Products</span>
-                  <ChevronDown className={`h-5 w-5 transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMobileProductsOpen ? 'rotate-180' : ''}`} />
                 </Button>
 
-                {isProductsOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
-                    <div className="py-2">
-                      <Link href="/wellness-hub">
-                        <div className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                          Wellness Hub
-                        </div>
-                      </Link>
-                    </div>
+                {isMobileProductsOpen && (
+                  <div className="ml-6 mt-1 space-y-1">
+                    <Link href="/wellness-hub" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start text-sm text-gray-600 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-2.5 px-4 transition-all duration-200">
+                        Wellness Hub
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </div>
 
-              <Link href="#advantage">
-                <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 px-3 py-2">
+              <Link href="#advantage" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
                   About
                 </Button>
               </Link>
 
-              <Link href="#wellness">
-                <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 px-3 py-2">
+              <Link href="#wellness" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
                   Solutions
                 </Button>
               </Link>
 
-              <Link href="#faq">
-                <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 px-3 py-2">
+              <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
                   FAQ
                 </Button>
               </Link>
 
               <Button
                 variant="ghost"
-                className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 px-3 py-2"
-                onClick={openContactModal}
+                className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200"
+                onClick={() => {
+                  openContactModal();
+                  setIsMobileMenuOpen(false);
+                }}
               >
                 Contact
               </Button>
 
-              <Link href="/auth/login">
-                <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  Login
-                </Button>
-              </Link>
-
-              <ThemeToggle />
-            </div>
-
-            {/* Mobile Navigation - Hamburger Menu */}
-            <div className="lg:hidden flex items-center space-x-2">
-              <ThemeToggle size="sm" />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleMobileMenu}
-                className="p-2"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="h-5 w-5" />
-                ) : (
-                  <Menu className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
-
-            {/* Mobile Menu Dropdown */}
-            {isMobileMenuOpen && (
-              <div className="lg:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-                  <div className="flex flex-col space-y-2">
-                    <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 py-3">
-                        Home
-                      </Button>
-                    </Link>
-
-                    {/* Mobile Products Section */}
-                    <div>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 py-3"
-                        onClick={toggleMobileProducts}
-                      >
-                        <span>Products</span>
-                        <ChevronDown className={`h-5 w-5 transition-transform ${isMobileProductsOpen ? 'rotate-180' : ''}`} />
-                      </Button>
-
-                      {isMobileProductsOpen && (
-                        <div className="ml-4 mt-2 space-y-1">
-                          <Link href="/wellness-hub" onClick={() => setIsMobileMenuOpen(false)}>
-                            <Button variant="ghost" className="w-full justify-start text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 py-2">
-                              Wellness Hub
-                            </Button>
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-
-                    <Link href="#advantage" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 py-3">
-                        About
-                      </Button>
-                    </Link>
-
-                    <Link href="#wellness" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 py-3">
-                        Solutions
-                      </Button>
-                    </Link>
-
-                    <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 py-3">
-                        FAQ
-                      </Button>
-                    </Link>
-
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 py-3"
-                      onClick={() => {
-                        openContactModal();
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      Contact
-                    </Button>
-
-                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3">
-                          Login
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+              <div className="pt-4 mt-2 border-t border-gray-200 dark:border-gray-700">
+                <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 shadow-md">
+                    Login
+                  </Button>
+                </Link>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </header>
+      )}
+    </div>
+  </div>
+</header>
+ 
 
       {/* Hero Section */}
       <motion.section
@@ -556,7 +530,7 @@ export default function HomePage() {
               Trusted by leading organizations and investors
             </p>
           </motion.div>
-
+{/* 
           <motion.div 
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8 items-center justify-items-center"
             initial={{ opacity: 0, y: 30 }}
@@ -574,7 +548,7 @@ export default function HomePage() {
             ].map((imagePath, index) => (
               <motion.div
                 key={index}
-                className="relative w-full max-w-[180px] h-24 sm:h-28 md:h-32 flex items-center justify-center p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 hover:shadow-lg group"
+                className="relative w-full max-w-[180px] h-30 sm:h-28 md:h-32 flex items-center justify-center p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 hover:shadow-lg group"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -590,7 +564,42 @@ export default function HomePage() {
                 />
               </motion.div>
             ))}
-          </motion.div>
+          </motion.div> */}
+
+          <motion.div 
+  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10 items-center justify-items-center"
+  initial={{ opacity: 0, y: 30 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.8, delay: 0.2 }}
+>
+  {[
+    '/BackedBy/image.png',
+    '/BackedBy/image1.png',
+    '/BackedBy/Screenshot 2025-11-06 at 3.09.33 PM.png',
+    '/BackedBy/Screenshot 2025-11-06 at 3.12.39 PM.png',
+    '/BackedBy/Screenshot 2025-11-06 at 3.15.14 PM.png',
+    '/BackedBy/Screenshot 2025-11-06 at 3.19.36 PM.png',
+  ].map((imagePath, index) => (
+    <motion.div
+      key={index}
+      className="relative w-full max-w-[220px] h-36 sm:h-32 md:h-40 flex items-center justify-center p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 hover:shadow-lg group"
+      initial={{ opacity: 0, scale: 0.8 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      whileHover={{ scale: 1.05, y: -5 }}
+    >
+      <Image
+        src={imagePath}
+        alt={`Backed by partner ${index + 1}`}
+        fill
+        className="object-contain p-2 grayscale group-hover:grayscale-0 transition-all duration-300"
+        sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 260px"
+      />
+    </motion.div>
+  ))}
+</motion.div>
         </div>
       </motion.section>
 
@@ -842,7 +851,7 @@ export default function HomePage() {
                 onClick={openContactModal}
               >
                 <span>Contact Us</span>
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </motion.div>
           </motion.div>
@@ -879,9 +888,9 @@ export default function HomePage() {
                           transition={{ duration: 0.3 }}
                         >
                           {openFaq === index ? (
-                            <Minus className="h-5 w-5 text-green-600 dark:text-green-400" />
+                            <Minus className="h-4 w-4 text-green-600 dark:text-green-400" />
                           ) : (
-                            <Plus className="h-5 w-5 text-green-600 dark:text-green-400" />
+                            <Plus className="h-4 w-4 text-green-600 dark:text-green-400" />
                           )}
                         </motion.div>
                       </div>
