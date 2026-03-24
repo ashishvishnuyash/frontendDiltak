@@ -181,7 +181,7 @@ function getOpenAIClient() {
   return new OpenAI({ apiKey });
 }
 // Uma (animeshai) agent configuration
-const UMA_API_URL = process.env.UMA_API_URL || 'http://localhost:8000';
+const UMA_API_URL = process.env.UMA_API_URL || 'http://74.162.66.197';
 
 interface UmaChatResponse {
   session_id: string;
