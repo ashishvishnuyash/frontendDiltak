@@ -354,15 +354,11 @@ export default function EmployerReportsPage() {
         {/* Tab Navigation */}
         <div className="mb-6 sm:mb-8 lg:mb-10">
           <div className="flex space-x-4 sm:space-x-6 lg:space-x-8 border-b border-gray-200/60 dark:border-gray-700/60 overflow-x-auto">
-            <Link href="/employer/dashboard">
-              <button className="pb-3 sm:pb-4 px-1 sm:px-2 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium sm:font-semibold text-sm sm:text-base transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-600 whitespace-nowrap">
-                Overview
-              </button>
+            <Link href="/employer/dashboard" className="pb-3 sm:pb-4 px-1 sm:px-2 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium sm:font-semibold text-sm sm:text-base transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-600 whitespace-nowrap">
+              Overview
             </Link>
-            <Link href="/employer/employees">
-              <button className="pb-3 sm:pb-4 px-1 sm:px-2 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium sm:font-semibold text-sm sm:text-base transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-600 whitespace-nowrap">
-                Employees
-              </button>
+            <Link href="/employer/employees" className="pb-3 sm:pb-4 px-1 sm:px-2 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium sm:font-semibold text-sm sm:text-base transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-600 whitespace-nowrap">
+              Employees
             </Link>
             <button className="pb-3 sm:pb-4 px-1 sm:px-2 border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-semibold sm:font-bold text-sm sm:text-base relative whitespace-nowrap">
               Reports
@@ -672,13 +668,13 @@ export default function EmployerReportsPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
-                            <Link href={`/employer/reports/${report.id}`}>
-                              <Button variant="outline" size="sm" className="bg-white/60 dark:bg-gray-800/60 hover:bg-green-50 dark:hover:bg-green-900/20 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                            <Button asChild variant="outline" size="sm" className="bg-white/60 dark:bg-gray-800/60 hover:bg-green-50 dark:hover:bg-green-900/20 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                              <Link href={`/employer/reports/${report.id}`}>
                                 <Eye className="h-5 w-5 mr-2" />
                                 View Details
                                 <ArrowRight className="h-5 w-5 ml-2" />
-                              </Button>
-                            </Link>
+                              </Link>
+                            </Button>
                           </motion.div>
                         </div>
                       </div>

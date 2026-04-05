@@ -1,6 +1,9 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import {
+  createContext, useContext, useEffect, useState,
+  useMemo, useCallback, useRef,
+} from 'react';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -16,12 +19,44 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// ── helpers ────────────────────────────────────────────────────────────────────
+
+/** Read the profile stored by the custom API login flow */
+function getLocalProfile(): User | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('user_profile');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Ensure minimum required fields exist
+    if (parsed?.id && parsed?.role) return parsed as User;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function clearLocalAuth() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user_profile');
+}
+
+// ── Provider ───────────────────────────────────────────────────────────────────
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const unsubscribeSnapshotRef = useRef<(() => void) | null>(null);
 
   const refreshUser = useCallback(async () => {
+    // Try custom API profile first
+    const localProfile = getLocalProfile();
+    if (localProfile) {
+      setUser(localProfile);
+      return;
+    }
+    // Fallback: Firebase
     const currentUser = auth.currentUser;
     if (!currentUser) return;
     try {
@@ -36,8 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      await firebaseSignOut(auth);
+      clearLocalAuth();
       setUser(null);
+      // Also sign out of Firebase if there's a session
+      if (auth.currentUser) await firebaseSignOut(auth);
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;
@@ -45,11 +82,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // ── Priority 1: custom API token in localStorage ──────────────────────────
+    const localProfile = getLocalProfile();
+    if (localProfile) {
+      setUser(localProfile);
+      setLoading(false);
+      // Still listen to Firebase in background (won't override local profile)
+    }
+
+    // ── Priority 2: Firebase Auth ─────────────────────────────────────────────
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      // Clean up previous snapshot listener
       if (unsubscribeSnapshotRef.current) {
         unsubscribeSnapshotRef.current();
         unsubscribeSnapshotRef.current = null;
+      }
+
+      // If we already have a local API profile, don't let Firebase override it
+      if (getLocalProfile()) {
+        setLoading(false);
+        return;
       }
 
       if (!firebaseUser) {
@@ -66,20 +117,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser({ id: initialDoc.id, ...initialDoc.data() } as User);
           setLoading(false);
 
-          // Real-time updates after initial load
           unsubscribeSnapshotRef.current = onSnapshot(userDocRef, (snap) => {
-            if (snap.exists()) {
+            // Only update from Firebase if no local API profile
+            if (!getLocalProfile() && snap.exists()) {
               setUser({ id: snap.id, ...snap.data() } as User);
             }
           }, (err) => {
             console.error('Snapshot error:', err);
           });
         } else {
-          // Wait for document to be created (e.g. after registration)
           let retryTimeout: ReturnType<typeof setTimeout> | null = null;
 
           unsubscribeSnapshotRef.current = onSnapshot(userDocRef, (snap) => {
-            if (snap.exists()) {
+            if (!getLocalProfile() && snap.exists()) {
               if (retryTimeout) clearTimeout(retryTimeout);
               setUser({ id: snap.id, ...snap.data() } as User);
               setLoading(false);
@@ -90,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
 
           retryTimeout = setTimeout(async () => {
+            if (getLocalProfile()) return; // local profile took over
             const retryDoc = await getDoc(userDocRef);
             if (retryDoc.exists()) {
               setUser({ id: retryDoc.id, ...retryDoc.data() } as User);
@@ -105,8 +156,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error in auth state change:', error);
-        setUser(null);
-        setLoading(false);
+        if (!getLocalProfile()) {
+          setUser(null);
+          setLoading(false);
+        }
       }
     });
 
@@ -118,13 +171,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const value = useMemo(() => ({ user, loading, signOut, refreshUser }), [user, loading, signOut, refreshUser]);
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ user, loading, signOut, refreshUser }),
+    [user, loading, signOut, refreshUser]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

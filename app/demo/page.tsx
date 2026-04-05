@@ -214,12 +214,9 @@ export default function DemoPage() {
               >
                 Role-Based Login
               </Button>
-              <Link href="/">
-                <Button variant="ghost" className="flex items-center space-x-2 hover:bg-gray-50">
-                  <ArrowLeft className="h-5 w-5" />
-                  <span>Back to Home</span>
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" className="flex items-center space-x-2 hover:bg-gray-50">
+                <Link href="/"><ArrowLeft className="h-5 w-5" /><span>Back to Home</span></Link>
+              </Button>
             </div>
           </div>
         </div>

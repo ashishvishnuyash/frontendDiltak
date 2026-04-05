@@ -239,15 +239,16 @@ const WellnessResources = () => {
                           </div>
                         </div>
 
-                        <Link href="/demo" className="block">
-                          <Button 
-                            className="w-full bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-700 dark:text-gray-300 border-0 group-hover:from-green-500 group-hover:to-emerald-500 group-hover:text-white transition-all duration-300 text-sm sm:text-base py-2 sm:py-3"
-                            variant="outline"
-                          >
+                        <Button 
+                          asChild
+                          className="w-full bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-700 dark:text-gray-300 border-0 group-hover:from-green-500 group-hover:to-emerald-500 group-hover:text-white transition-all duration-300 text-sm sm:text-base py-2 sm:py-3"
+                          variant="outline"
+                        >
+                          <Link href="/demo" className="block w-full">
                             Start Now
                             <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4" />
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -303,15 +304,16 @@ const WellnessResources = () => {
             </div>
 
             <div className="text-center mt-6 sm:mt-8">
-              <Link href="/demo" className="inline-block w-full sm:w-auto">
-                <Button 
-                  size="lg"
-                  className="w-full sm:w-auto bg-white text-green-600 hover:bg-gray-100 px-6 sm:px-8 py-3 font-semibold text-sm sm:text-base"
-                >
+              <Button 
+                asChild
+                size="lg"
+                className="w-full sm:w-auto bg-white text-green-600 hover:bg-gray-100 px-6 sm:px-8 py-3 font-semibold text-sm sm:text-base"
+              >
+                <Link href="/demo" className="w-full sm:w-auto">
                   Explore All Programs
                   <ArrowRight className="ml-2 h-5 w-5 sm:h-5 sm:w-5" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </motion.div>

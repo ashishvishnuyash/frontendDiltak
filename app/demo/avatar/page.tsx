@@ -78,12 +78,9 @@ export default function AvatarDemoPage() {
               <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600">3D Avatar + Lip Sync Demo</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/demo">
-                <Button variant="ghost" className="flex items-center space-x-2 text-gray-700 hover:bg-green-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-all duration-200">
-                  <ArrowLeft className="h-5 w-5" />
-                  <span>Back to Demos</span>
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" className="flex items-center space-x-2 text-gray-700 hover:bg-green-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-all duration-200">
+                <Link href="/demo"><ArrowLeft className="h-5 w-5" /><span>Back to Demos</span></Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -250,11 +247,9 @@ export default function AvatarDemoPage() {
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
                   This demo showcases the complete avatar system integrated into the employee chat interface.
                 </p>
-                <Link href="/employee/chat">
-                  <Button className="bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-green-700 hover:via-lime-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                    Try in Employee Chat
-                  </Button>
-                </Link>
+                <Button asChild className="bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-green-700 hover:via-lime-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Link href="/employee/chat">Try in Employee Chat</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>

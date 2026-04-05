@@ -343,9 +343,9 @@ export default function NewReportPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 dark:from-gray-950 dark:via-slate-900 dark:to-teal-950 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-4">Please sign in to create a wellness report.</p>
-          <Link href="/">
-            <Button>Go Home</Button>
-          </Link>
+          <Button asChild>
+            <Link href="/">Go Home</Link>
+          </Button>
         </div>
       </div>
     );

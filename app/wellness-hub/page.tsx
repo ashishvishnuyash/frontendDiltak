@@ -89,12 +89,12 @@ export default function WellnessHubLanding() {
             </div>
 
             <div className="space-y-4">
-              <Link href="/">
-                <Button variant="outline" className="w-full border-2 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30">
+              <Button asChild variant="outline" className="w-full border-2 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30">
+                <Link href="/">
                   <ArrowLeft className="h-5 w-5 mr-2" />
                   Back to Home
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </Card>
         </motion.div>
@@ -152,12 +152,12 @@ export default function WellnessHubLanding() {
               </span>
             </Link>
 
-            <Link href="/">
-              <Button variant="ghost" className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+            <Button asChild variant="ghost" className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+              <Link href="/">
                 <ArrowLeft className="h-5 w-5" />
                 <span>Back to Home</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </header>

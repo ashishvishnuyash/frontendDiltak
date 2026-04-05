@@ -138,12 +138,12 @@ export default function LoginPage() {
             </Link>
             <div className="flex items-center space-x-2">
               <ThemeToggle size="sm" />
-              <Link href="/">
-                <Button variant="ghost" className="flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base px-2 sm:px-3 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+              <Button asChild variant="ghost" className="flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base px-2 sm:px-3 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+                <Link href="/">
                   <ArrowLeft className="h-5 w-5" />
                   <span>Back to Home</span>
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

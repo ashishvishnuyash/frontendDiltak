@@ -380,36 +380,36 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {permissions?.can_view_team_reports && (
                 <motion.div whileHover={{ scale: 1.02, y: -2 }} transition={{ duration: 0.2 }}>
-                  <Link href="/manager/team-reports">
-                    <Button variant="outline" size="sm" className="w-full justify-start bg-white/60 backdrop-blur-sm hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-300 group text-xs sm:text-sm h-8 sm:h-10">
+                  <Button asChild variant="outline" size="sm" className="w-full justify-start bg-white/60 backdrop-blur-sm hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-300 group text-xs sm:text-sm h-8 sm:h-10">
+                    <Link href="/manager/team-reports">
                       <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 group-hover:scale-110 transition-transform" />
                       <span className="truncate">View Team Reports</span>
                       <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-auto group-hover:translate-x-1 transition-transform flex-shrink-0" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </motion.div>
               )}
               
               {permissions?.can_access_analytics && (
                 <motion.div whileHover={{ scale: 1.02, y: -2 }} transition={{ duration: 0.2 }}>
-                  <Link href="/manager/analytics">
-                    <Button variant="outline" size="sm" className="w-full justify-start bg-white/60 backdrop-blur-sm hover:bg-green-50 border-green-200 text-green-700 hover:text-green-800 transition-all duration-300 group text-xs sm:text-sm h-8 sm:h-10">
+                  <Button asChild variant="outline" size="sm" className="w-full justify-start bg-white/60 backdrop-blur-sm hover:bg-green-50 border-green-200 text-green-700 hover:text-green-800 transition-all duration-300 group text-xs sm:text-sm h-8 sm:h-10">
+                    <Link href="/manager/analytics">
                       <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 group-hover:scale-110 transition-transform" />
                       <span className="truncate">Team Analytics</span>
                       <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-auto group-hover:translate-x-1 transition-transform flex-shrink-0" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </motion.div>
               )}
               
               <motion.div whileHover={{ scale: 1.02, y: -2 }} transition={{ duration: 0.2 }}>
-                <Link href="/manager/org-chart">
-                  <Button variant="outline" size="sm" className="w-full justify-start bg-white/60 backdrop-blur-sm hover:bg-purple-50 border-purple-200 text-purple-700 hover:text-purple-800 transition-all duration-300 group text-xs sm:text-sm h-8 sm:h-10">
+                <Button asChild variant="outline" size="sm" className="w-full justify-start bg-white/60 backdrop-blur-sm hover:bg-purple-50 border-purple-200 text-purple-700 hover:text-purple-800 transition-all duration-300 group text-xs sm:text-sm h-8 sm:h-10">
+                  <Link href="/manager/org-chart">
                     <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 group-hover:scale-110 transition-transform" />
                     <span className="truncate">Organization Chart</span>
                     <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-auto group-hover:translate-x-1 transition-transform flex-shrink-0" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </motion.div>
             </div>
           </CardContent>
@@ -430,12 +430,12 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                 <span>Direct Reports ({directReports.length})</span>
               </div>
               {permissions?.can_manage_team_members && (
-                <Link href="/manager/manage-team">
-                  <Button variant="outline" size="sm" className="bg-white/60 backdrop-blur-sm hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-300 group">
+                <Button asChild variant="outline" size="sm" className="bg-white/60 backdrop-blur-sm hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-300 group">
+                  <Link href="/manager/manage-team">
                     <ChevronRight className="h-5 w-5 mr-1 group-hover:translate-x-1 transition-transform" />
                     Manage Team
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               )}
             </CardTitle>
           </CardHeader>

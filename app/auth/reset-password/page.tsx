@@ -119,11 +119,9 @@ function ResetPasswordForm() {
                   <p className="text-sm text-muted-foreground">
                     You can now sign in with your new password. Redirecting you shortly...
                   </p>
-                  <Link href="/auth/login">
-                    <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
-                      Continue to Sign In
-                    </Button>
-                  </Link>
+                  <Button asChild className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
+                    <Link href="/auth/login">Continue to Sign In</Link>
+                  </Button>
                 </div>
               ) : (
                 <form onSubmit={handleResetPassword} className="space-y-5">

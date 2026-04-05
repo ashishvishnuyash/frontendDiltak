@@ -147,11 +147,7 @@ export default function HomePage() {
 
       {/* Desktop Navigation */}
       <div className="hidden lg:flex items-center space-x-1 xl:space-x-2">
-        <Link href="/">
-          <Button variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200">
-            Home
-          </Button>
-        </Link>
+        <Button asChild variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200"><Link href="/">Home</Link></Button>
 
         {/* Products Dropdown */}
         <div className="relative">
@@ -177,23 +173,11 @@ export default function HomePage() {
           )}
         </div>
 
-        <Link href="#advantage">
-          <Button variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200">
-            About
-          </Button>
-        </Link>
+        <Button asChild variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200"><Link href="#advantage">About</Link></Button>
 
-        <Link href="#wellness">
-          <Button variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200">
-            Solutions
-          </Button>
-        </Link>
+        <Button asChild variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200"><Link href="#wellness">Solutions</Link></Button>
 
-        <Link href="#faq">
-          <Button variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200">
-            FAQ
-          </Button>
-        </Link>
+        <Button asChild variant="ghost" className="text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 px-3 py-2 transition-all duration-200"><Link href="#faq">FAQ</Link></Button>
 
         <Button
           variant="ghost"
@@ -204,11 +188,7 @@ export default function HomePage() {
         </Button>
 
         <div className="flex items-center space-x-2 ml-2">
-          <Link href="/auth/login">
-            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-5 py-2 shadow-md hover:shadow-lg transition-all duration-300">
-              Login
-            </Button>
-          </Link>
+          <Button asChild className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-5 py-2 shadow-md hover:shadow-lg transition-all duration-300"><Link href="/auth/login">Login</Link></Button>
           <ThemeToggle />
         </div>
       </div>
@@ -236,11 +216,9 @@ export default function HomePage() {
         <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 shadow-xl z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
             <div className="flex flex-col space-y-1">
-              <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
-                  Home
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+              </Button>
 
               {/* Mobile Products Section */}
               <div>
@@ -255,32 +233,24 @@ export default function HomePage() {
 
                 {isMobileProductsOpen && (
                   <div className="ml-6 mt-1 space-y-1">
-                    <Link href="/wellness-hub" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start text-sm text-gray-600 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-2.5 px-4 transition-all duration-200">
-                        Wellness Hub
-                      </Button>
-                    </Link>
+                    <Button asChild variant="ghost" className="w-full justify-start text-sm text-gray-600 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-2.5 px-4 transition-all duration-200">
+                      <Link href="/wellness-hub" onClick={() => setIsMobileMenuOpen(false)}>Wellness Hub</Link>
+                    </Button>
                   </div>
                 )}
               </div>
 
-              <Link href="#advantage" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
-                  About
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
+                <Link href="#advantage" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
+              </Button>
 
-              <Link href="#wellness" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
-                  Solutions
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
+                <Link href="#wellness" onClick={() => setIsMobileMenuOpen(false)}>Solutions</Link>
+              </Button>
 
-              <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
-                  FAQ
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 py-3 px-4 transition-all duration-200">
+                <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
+              </Button>
 
               <Button
                 variant="ghost"
@@ -294,11 +264,9 @@ export default function HomePage() {
               </Button>
 
               <div className="pt-4 mt-2 border-t border-gray-200 dark:border-gray-700">
-                <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 shadow-md">
-                    Login
-                  </Button>
-                </Link>
+                <Button asChild className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 shadow-md">
+                  <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -395,14 +363,14 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.7 }}
               >
-                <Link href="/wellness-hub" className="w-full sm:w-auto">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white px-8 py-6 flex items-center justify-center space-x-2 shadow-2xl hover:shadow-green-500/50 transition-all duration-300 text-base font-semibold rounded-xl group">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button asChild size="lg" className="w-full sm:w-auto bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white px-8 py-6 flex items-center justify-center space-x-2 shadow-2xl hover:shadow-green-500/50 transition-all duration-300 text-base font-semibold rounded-xl group">
+                    <Link href="/wellness-hub">
                       <span>EXPLORE PLATFORM</span>
                       <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </motion.div>
-                </Link>
+                    </Link>
+                  </Button>
+                </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button 
                     size="lg" 

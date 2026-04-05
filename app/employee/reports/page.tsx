@@ -230,10 +230,8 @@ function EmployeeReportsPage() {
       
 
           {/* Add Report */}
-          <Link href="/employee/reports/new">
-            <button className="flex items-center gap-1.5 px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-sm transition-colors">
-              Add Report <Plus className="h-5 w-5" />
-            </button>
+          <Link href="/employee/reports/new" className="flex items-center gap-1.5 px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-sm transition-colors">
+            Add Report <Plus className="h-5 w-5" />
           </Link>
 
           {/* Refresh */}
@@ -262,10 +260,8 @@ function EmployeeReportsPage() {
               <Plus className="h-8 w-8 text-gray-300 dark:text-gray-600" />
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-sm">No reports yet</p>
-            <Link href="/employee/reports/new">
-              <button className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors">
-                Create your first report <ArrowRight className="h-4 w-4" />
-              </button>
+            <Link href="/employee/reports/new" className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors">
+              Create your first report <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         )

@@ -96,12 +96,12 @@ export default function EmployeeDetailPage() {
                         <h1 className="text-2xl font-bold text-red-600 mb-4">
                             {error || 'Employee not found'}
                         </h1>
-                        <Link href="/employer/employees">
-                            <Button variant="outline">
+                        <Button asChild variant="outline">
+                            <Link href="/employer/employees">
                                 <ArrowLeft className="mr-2 h-5 w-5" />
                                 Back to Employees
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -113,12 +113,12 @@ export default function EmployeeDetailPage() {
             <Navbar user={user || undefined} />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-6">
-                    <Link href="/employer/employees">
-                        <Button variant="outline" className="mb-4">
+                    <Button asChild variant="outline" className="mb-4">
+                        <Link href="/employer/employees">
                             <ArrowLeft className="mr-2 h-5 w-5" />
                             Back to Employees
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                     <h1 className="text-3xl font-bold">{employee.first_name} {employee.last_name}</h1>
                     <p className="text-gray-600">{employee.department || 'No department assigned'}</p>
                 </div>

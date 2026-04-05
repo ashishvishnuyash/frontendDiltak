@@ -35,13 +35,24 @@ export function withAuth<P extends object>(
         router.replace('/auth/login');
         return;
       }
-      if (!allowedRoles.includes(user.role)) {
+      // Normalize role comparison (case-insensitive)
+      const userRole = user.role?.toLowerCase();
+      const allowed = allowedRoles.map(r => r.toLowerCase());
+      if (!allowed.includes(userRole)) {
         router.replace('/unauthorized');
       }
     }, [user, loading, router]);
 
+    // Still loading — show spinner
     if (loading) return <AuthLoadingScreen />;
-    if (!user || !allowedRoles.includes(user.role)) return <AuthLoadingScreen />;
+
+    // No user at all — show spinner while redirect fires
+    if (!user) return <AuthLoadingScreen />;
+
+    // Role check (case-insensitive)
+    const userRole = user.role?.toLowerCase();
+    const allowed = allowedRoles.map(r => r.toLowerCase());
+    if (!allowed.includes(userRole)) return <AuthLoadingScreen />;
 
     return <WrappedComponent {...props} />;
   };

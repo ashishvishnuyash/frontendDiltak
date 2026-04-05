@@ -210,9 +210,9 @@ export default function NewEmployeePage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 mb-4">You do not have permission to add employees.</p>
-          <Link href={`/${user.role}/dashboard`}>
-            <Button>Go to Dashboard</Button>
-          </Link>
+          <Button asChild>
+            <Link href={`/${user.role}/dashboard`}>Go to Dashboard</Link>
+          </Button>
         </div>
       </div>
     );

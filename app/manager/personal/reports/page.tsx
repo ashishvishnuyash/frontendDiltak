@@ -297,12 +297,12 @@ export default function EmployeeReportsPage() {
               <span className="sm:hidden">Export</span>
             </Button>
           </div>
-          <Link href="/manager/personal/reports/new">
-            <Button className="bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-green-700 hover:via-lime-700 hover:to-emerald-700 text-white text-xs sm:text-sm px-3 sm:px-4 w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button asChild className="bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-green-700 hover:via-lime-700 hover:to-emerald-700 text-white text-xs sm:text-sm px-3 sm:px-4 w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300">
+            <Link href="/manager/personal/reports/new">
               <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               New Report
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Filters and Search - Only show in list view */}
@@ -635,12 +635,12 @@ export default function EmployeeReportsPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
               Start your wellness journey by creating your first mental health report. Track your progress and gain insights into your well-being.
             </p>
-            <Link href="/manager/personal/reports/new">
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
+            <Button asChild className="bg-green-600 hover:bg-green-700 text-white">
+              <Link href="/manager/personal/reports/new">
                 <Plus className="h-5 w-5 mr-2" />
                 Create Your First Report
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </motion.div>
         )}
       </div>

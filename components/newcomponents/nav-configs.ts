@@ -16,18 +16,22 @@ import {
   UserCheck,
   Building2,
   GitBranch,
+  ShieldCheck,
+  Settings,
+  Bell,
+  Activity,
+  Database,
+  Lock,
+  Star,
 } from 'lucide-react';
 import type { NavItem } from './Sidebar';
 
 export const employeeNavItems: NavItem[] = [
-  { path: '/employee/dashboard',       label: 'Dashboard',       icon: LayoutDashboard, exact: true },
-  { path: '/employee/chat',            label: 'AI Chat',         icon: MessageSquare },
-  { path: '/employee/reports',         label: 'Reports',         icon: FileText },
-  { path: '/employee/wellness-hub',    label: 'Wellness',        icon: Heart },
-  { path: '/employee/community',       label: 'Community',       icon: Users },
-  { path: '/employee/recommendations', label: 'Recommendations', icon: Sparkles },
-  { path: '/employee/gamification',    label: 'Gamification',    icon: Trophy },
-  { path: '/employee/support',         label: 'Support',         icon: HelpCircle },
+  { path: '/employee/dashboard',   label: 'Wellness Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/employee/chat',        label: 'AI Chat',            icon: MessageSquare },
+  { path: '/employee/community',   label: 'Community',          icon: Users },
+  { path: '/employee/challenges',  label: 'Challenges',         icon: Star },
+  { path: '/employee/support',     label: 'Support',            icon: HelpCircle },
 ];
 
 export const managerNavItems: NavItem[] = [
@@ -50,4 +54,15 @@ export const employerNavItems: NavItem[] = [
   { path: '/employer/reports',     label: 'Reports',    icon: FileText },
   { path: '/employer/analytics',   label: 'Analytics',  icon: BarChart3 },
   { path: '/employer/wellness-hub',label: 'Wellness',   icon: Heart },
+];
+
+export const adminNavItems: NavItem[] = [
+  { path: '/admin/dashboard',    label: 'Dashboard',    icon: LayoutDashboard, exact: true },
+  { path: '/admin/companies',    label: 'Companies',    icon: Building2 },
+  { path: '/admin/users',        label: 'Users',        icon: Users },
+  { path: '/admin/analytics',    label: 'Analytics',    icon: BarChart3 },
+  { path: '/admin/reports',      label: 'Reports',      icon: FileText },
+  { path: '/admin/activity',     label: 'Activity',     icon: Activity },
+  { path: '/admin/security',     label: 'Security',     icon: Lock },
+  { path: '/admin/settings',     label: 'Settings',     icon: Settings },
 ];

@@ -128,16 +128,17 @@ const WellnessHero = () => {
                 className="flex flex-col sm:flex-row gap-3 sm:gap-4"
                 variants={fadeInUp}
               >
-                <Link href="/demo" className="w-full sm:w-auto">
-                  <Button 
-                    size="lg" 
-                    className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
+                <Button 
+                  asChild
+                  size="lg" 
+                  className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Link href="/demo" className="w-full sm:w-auto">
                     <Play className="mr-2 h-5 w-5 sm:h-5 sm:w-5" />
                     Start Your Journey
                     <ArrowRight className="ml-2 h-5 w-5 sm:h-5 sm:w-5" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Button 
                   variant="outline" 
                   size="lg"

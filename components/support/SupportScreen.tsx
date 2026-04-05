@@ -1,0 +1,169 @@
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Phone } from 'lucide-react';
+import { toast } from 'sonner';
+import type { User } from '@/types/index';
+import WellnessWelcomeModal from './WellnessWelcomeModal';
+import SafeHereModal from './SafeHereModal';
+import CreateSupportModal from './CreateSupportModal';
+
+// ── Support type card ──────────────────────────────────────────────────────────
+
+interface SupportType {
+  key: 'hr' | 'manager' | 'urgent';
+  label: string;
+  description: string;
+}
+
+const supportTypes: SupportType[] = [
+  { key: 'hr',      label: 'HR Support', description: 'General HR Concerns and workplace issues.' },
+  { key: 'manager', label: 'Manager',    description: 'General HR Concerns and workplace issues.' },
+  { key: 'urgent',  label: 'Urgent',     description: 'General HR Concerns and workplace issues.' },
+];
+
+// Simple person avatar SVG matching the design
+function PersonAvatar() {
+  return (
+    <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="14" cy="9" r="5" fill="#34d399" />
+        <path d="M4 24c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="#34d399" strokeWidth="2" strokeLinecap="round" fill="none" />
+      </svg>
+    </div>
+  );
+}
+
+function SupportCard({ type, onClick }: { type: SupportType; onClick: () => void }) {
+  return (
+    <motion.button
+      whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="flex flex-col items-center text-center p-8 border-r border-gray-100 dark:border-gray-800 last:border-r-0 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors w-full"
+    >
+      <PersonAvatar />
+      <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1.5">{type.label}</h3>
+      <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">{type.description}</p>
+    </motion.button>
+  );
+}
+
+// ── Main ───────────────────────────────────────────────────────────────────────
+
+export default function SupportScreen({ user }: { user: User }) {
+  const [selectedType, setSelectedType] = useState<SupportType | null>(null);
+
+  // modal flow: welcome → safe-here → create-request
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showSafeHere, setShowSafeHere] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+
+  const firstName = user?.first_name ?? 'there';
+
+  const handleCardClick = (type: SupportType) => {
+    setSelectedType(type);
+    setShowWelcome(true);
+  };
+
+  // Welcome → Safe Here
+  const handleWelcomeStart = () => {
+    setShowWelcome(false);
+    setShowSafeHere(true);
+  };
+
+  // Safe Here → Create Request
+  const handleSafeHereShare = () => {
+    setShowSafeHere(false);
+    setShowCreate(true);
+  };
+
+  const handleSafeHereRead = () => {
+    setShowSafeHere(false);
+  };
+
+  // Submit support request
+  const handleSubmit = async (data: {
+    priority: string;
+    category: string;
+    subject: string;
+    description: string;
+    anonymous: boolean;
+    confidential: boolean;
+  }) => {
+    setShowCreate(false);
+    try {
+      const res = await fetch('/api/escalation/create-ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          employee_id: user.id,
+          company_id: user.company_id,
+          type: selectedType?.key ?? 'hr',
+          ...data,
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        toast.success('Support request submitted anonymously.');
+      } else {
+        toast.error('Failed to submit request. Please try again.');
+      }
+    } catch {
+      toast.error('Something went wrong.');
+    }
+    setSelectedType(null);
+  };
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8 py-6 bg-[#f0faf7] dark:bg-gray-950 min-h-full">
+
+      {/* Top bar */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-base font-semibold text-gray-800 dark:text-gray-100">Raise a Concern?</h1>
+        <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
+          Call Now
+          <Phone className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Support type cards */}
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 dark:divide-gray-800">
+            {supportTypes.map(type => (
+              <SupportCard key={type.key} type={type} onClick={() => handleCardClick(type)} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {showWelcome && (
+          <WellnessWelcomeModal
+            firstName={firstName}
+            onStart={handleWelcomeStart}
+            onClose={() => setShowWelcome(false)}
+          />
+        )}
+        {showSafeHere && (
+          <SafeHereModal
+            firstName={firstName}
+            onSharePost={handleSafeHereShare}
+            onReadOnly={handleSafeHereRead}
+            onClose={handleSafeHereRead}
+          />
+        )}
+        {showCreate && (
+          <CreateSupportModal
+            supportType={selectedType?.label ?? 'HR Support'}
+            onSubmit={handleSubmit}
+            onClose={() => setShowCreate(false)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

@@ -436,15 +436,11 @@ function EmployerDashboardPage() {
             <button className="pb-3 sm:pb-4 px-1 border-b-2 border-blue-500 text-blue-600 font-medium text-sm sm:text-base whitespace-nowrap">
               Overview
             </button>
-            <Link href="/employer/employees">
-              <button className="pb-3 sm:pb-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium transition-colors text-sm sm:text-base whitespace-nowrap">
-                Employees
-              </button>
+            <Link href="/employer/employees" className="pb-3 sm:pb-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium transition-colors text-sm sm:text-base whitespace-nowrap">
+              Employees
             </Link>
-            <Link href="/employer/reports">
-              <button className="pb-3 sm:pb-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium transition-colors text-sm sm:text-base whitespace-nowrap">
-                Reports
-              </button>
+            <Link href="/employer/reports" className="pb-3 sm:pb-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium transition-colors text-sm sm:text-base whitespace-nowrap">
+              Reports
             </Link>
           </div>
         </div>

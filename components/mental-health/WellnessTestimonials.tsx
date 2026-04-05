@@ -222,10 +222,8 @@ const WellnessTestimonials = () => {
               Start your mental health journey today with our comprehensive platform designed for your wellness.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/demo">
-                <button className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  Start Free Trial
-                </button>
+              <Link href="/demo" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+                Start Free Trial
               </Link>
               <button className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:border-green-600 hover:text-green-600 transition-colors">
                 View Pricing

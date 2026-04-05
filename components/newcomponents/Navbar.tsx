@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Menu, X, LogOut, Bell, Settings, Sun, Moon, MenuIcon, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LogOut, Bell, Settings, Sun, Moon, MenuIcon, LayoutDashboard, HelpCircle } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useTheme } from '@/contexts/theme-context';
 import { cn } from '@/lib/utils';
@@ -127,8 +127,11 @@ export function DesktopTopBar({
           <button
           className="relative p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           aria-label="menu"
+          onClick={() => {
+             router.push('/employee/support');
+          }}
         >
-          <LayoutDashboard className="h-5 w-5" />
+          <HelpCircle className="h-5 w-5" />
         </button>
 
         {/* Notifications */}

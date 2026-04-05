@@ -79,12 +79,9 @@ export default function SignInPage() {
             </Link>
             <div className="flex items-center space-x-2">
               <ThemeToggle size="sm" />
-              <Link href="/">
-                <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-muted-foreground hover:text-foreground">
-                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">Home</span>
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" size="sm" className="flex items-center space-x-1 text-muted-foreground hover:text-foreground">
+                <Link href="/"><ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Home</span></Link>
+              </Button>
             </div>
           </div>
         </div>
