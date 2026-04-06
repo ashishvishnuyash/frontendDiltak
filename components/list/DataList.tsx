@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Filter, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Filter, Search, Download, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,7 +19,10 @@ export interface ColumnDef<T> {
 
 export interface DataListProps<T> {
   title?: string;
-  data: T[];
+  data?: T[];
+  apiPath?: string;
+  dataPath?: string;
+  onDataLoaded?: (data: T[]) => void;
   columns: ColumnDef<T>[];
   /** Global search placeholder */
   searchPlaceholder?: string;
@@ -96,7 +99,10 @@ function ColumnFilter({
 
 export function DataList<T extends Record<string, any>>({
   title,
-  data,
+  data = [],
+  apiPath,
+  dataPath,
+  onDataLoaded,
   columns,
   searchPlaceholder = 'Search...',
   rowKey,
@@ -108,12 +114,66 @@ export function DataList<T extends Record<string, any>>({
   onRowClick,
   className = '',
 }: DataListProps<T>) {
+  const [internalData, setInternalData] = useState<T[]>(data);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDirection>(null);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(defaultPageSize);
+
+  useEffect(() => {
+    if (!apiPath) {
+      setInternalData(data);
+      return;
+    }
+
+    let isMounted = true;
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        let token = localStorage.getItem('access_token');
+        if (!token) {
+          const { auth } = await import('@/lib/firebase');
+          token = await auth.currentUser?.getIdToken() || null;
+        }
+
+        const res = await fetch(apiPath, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        
+        if (!res.ok) throw new Error('Failed to fetch data');
+        const json = await res.json();
+        
+        let fetchedData: T[] = [];
+        if (dataPath && json[dataPath]) {
+          fetchedData = json[dataPath];
+        } else if (Array.isArray(json)) {
+          fetchedData = json;
+        } else {
+          // generic fallback to find an array in the response
+          const possibleArray = Object.values(json).find(Array.isArray);
+          if (possibleArray) fetchedData = possibleArray as T[];
+        }
+        
+        if (isMounted) {
+          setInternalData(fetchedData);
+          onDataLoaded?.(fetchedData);
+        }
+      } catch (err: any) {
+        if (isMounted) setError(err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+    return () => { isMounted = false; };
+  }, [apiPath, dataPath]);
 
   // Global sort dropdown
   const [globalSort, setGlobalSort] = useState('newest');
@@ -143,7 +203,7 @@ export function DataList<T extends Record<string, any>>({
   }
 
   const processed = useMemo(() => {
-    let rows = [...data];
+    let rows = [...internalData];
 
     // Global search
     if (search.trim()) {
@@ -314,7 +374,20 @@ export function DataList<T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody>
-            {paginated.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={columns.length} className="px-4 py-12 text-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-emerald-500 mx-auto" />
+                  <p className="mt-2 text-sm text-gray-500">Loading data...</p>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={columns.length} className="px-4 py-12 text-center text-sm text-red-500">
+                  {error}
+                </td>
+              </tr>
+            ) : paginated.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-12 text-center text-sm text-gray-400">
                   {emptyMessage}

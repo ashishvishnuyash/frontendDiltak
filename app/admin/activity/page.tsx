@@ -43,32 +43,36 @@ export default function AdminActivity() {
   }, {});
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-[1400px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] mx-auto">
 
       {/* Header */}
       <div>
-        <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Activity Log</h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">All platform events and system activity</p>
+        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+          Activity Log
+        </h1>
+        <p className="text-xs text-muted-foreground mt-1 font-medium">
+          Comprehensive audit trail of platform events and system-level operations.
+        </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search activity…"
-              className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-400"
+              placeholder="Search by event, description or company..."
+              className="w-full h-11 pl-10 pr-4 text-sm bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
           </div>
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 overflow-x-auto">
+          <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border overflow-x-auto scrollbar-hide">
             {['all', 'company', 'user', 'alert', 'report', 'system'].map(t => (
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize whitespace-nowrap transition-colors ${typeFilter === t ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
+                className={`px-4 py-1.5 rounded-lg text-[11px] font-bold capitalize whitespace-nowrap transition-all ${typeFilter === t ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 {t}
               </button>
@@ -78,36 +82,57 @@ export default function AdminActivity() {
       </div>
 
       {/* Timeline */}
-      <div className="space-y-6">
+      <div className="space-y-10">
         {Object.entries(grouped).map(([date, items]) => (
           <div key={date}>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{date}</span>
-              <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
-              <span className="text-[11px] text-gray-400">{items.length} events</span>
+            <div className="flex items-center gap-4 mb-6">
+              <span className="text-[11px] font-black text-indigo-500 uppercase tracking-[0.2em]">{date}</span>
+              <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
+              <div className="px-3 py-1 bg-secondary rounded-full border border-border">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">{items.length} events logged</span>
+              </div>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-50 dark:divide-gray-800">
+            
+            <div className="relative space-y-1 ml-4 sm:ml-6">
+              {/* Vertical line connecting events */}
+              <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-border via-border/50 to-transparent -translate-x-1/2" />
+              
               {items.map((e, i) => {
                 const Icon = e.icon;
                 return (
                   <motion.div
                     key={e.id}
-                    initial={{ opacity: 0, x: -6 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04 }}
-                    className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    className="relative pl-8 pb-8 group"
                   >
-                    <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${e.dot}`} />
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{e.msg}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{e.detail}</p>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full capitalize ${typeColors[e.type]}`}>{e.type}</span>
-                      <span className="text-[11px] text-gray-400 flex items-center gap-1 whitespace-nowrap"><Clock className="h-2.5 w-2.5" />{e.time}</span>
+                    {/* Dot on the timeline */}
+                    <div className={`absolute left-0 top-2.5 w-3 h-3 rounded-full border-[3px] border-card bg-white shadow-sm -translate-x-1/2 z-10 transition-transform group-hover:scale-125 ${e.dot.replace('bg-', 'bg-')}`} />
+                    
+                    <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-5 shadow-sm group-hover:shadow-md group-hover:border-indigo-500/30 transition-all">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="flex gap-4">
+                          <div className={`w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0 border border-border group-hover:bg-indigo-500/5 transition-colors`}>
+                            <Icon className="h-5 w-5 text-muted-foreground group-hover:text-indigo-500 transition-colors" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-foreground tracking-tight group-hover:text-indigo-500 transition-colors">{e.msg}</p>
+                            <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">
+                              {e.detail}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 self-end sm:self-start">
+                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${typeColors[e.type]}`}>
+                            {e.type}
+                          </span>
+                          <span className="text-[11px] font-bold text-muted-foreground/60 flex items-center gap-1.5 whitespace-nowrap bg-secondary px-2.5 py-1 rounded-lg border border-border">
+                            <Clock className="h-3 w-3" />
+                            {e.time}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </motion.div>
                 );
@@ -115,9 +140,14 @@ export default function AdminActivity() {
             </div>
           </div>
         ))}
+        
         {filtered.length === 0 && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 py-12 text-center text-sm text-gray-400">
-            No activity matches your search.
+          <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border py-24 text-center flex flex-col items-center justify-center shadow-sm">
+            <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
+              <Activity className="h-8 w-8 text-muted-foreground/30" />
+            </div>
+            <p className="text-sm font-bold text-foreground">No matching records</p>
+            <p className="text-xs text-muted-foreground mt-1">Adjust your search or category filters to see more activity.</p>
           </div>
         )}
       </div>

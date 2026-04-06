@@ -301,7 +301,7 @@ export default function HomePage() {
               </motion.div>
 
               <motion.h1
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight mb-6 leading-tight"
+                className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight mb-6 leading-tight break-words"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
@@ -364,7 +364,7 @@ export default function HomePage() {
                 transition={{ duration: 0.8, delay: 0.7 }}
               >
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button asChild size="lg" className="w-full sm:w-auto bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white px-8 py-6 flex items-center justify-center space-x-2 shadow-2xl hover:shadow-green-500/50 transition-all duration-300 text-base font-semibold rounded-xl group">
+                  <Button asChild size="lg" className="w-full sm:w-auto bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-green-700 hover:via-lime-700 hover:to-emerald-700 text-white px-8 py-6 flex items-center justify-center space-x-2 shadow-2xl hover:shadow-green-500/50 transition-all duration-300 text-base font-semibold rounded-xl group">
                     <Link href="/wellness-hub">
                       <span>EXPLORE PLATFORM</span>
                       <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -439,7 +439,7 @@ export default function HomePage() {
 
                 {/* Floating stat cards */}
                 <motion.div
-                  className="absolute -top-4 -left-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-green-200 dark:border-green-800"
+                  className="absolute -top-4 -left-2 sm:-left-4 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-green-200 dark:border-green-800"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 1 }}
@@ -551,18 +551,17 @@ export default function HomePage() {
   ].map((imagePath, index) => (
     <motion.div
       key={index}
-      className="relative w-full max-w-[220px] h-36 sm:h-32 md:h-40 flex items-center justify-center p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 hover:shadow-lg group"
+      className="relative w-full max-w-[220px] h-36 sm:h-32 md:h-40 flex items-center justify-center p-2 sm:p-4 bg-transparent hover:scale-105 transition-transform duration-300 group"
       initial={{ opacity: 0, scale: 0.8 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ scale: 1.05, y: -5 }}
     >
       <Image
         src={imagePath}
         alt={`Backed by partner ${index + 1}`}
         fill
-        className="object-contain p-2 grayscale group-hover:grayscale-0 transition-all duration-300"
+        className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
         sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 260px"
       />
     </motion.div>

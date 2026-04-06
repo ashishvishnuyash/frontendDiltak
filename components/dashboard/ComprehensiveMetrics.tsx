@@ -74,11 +74,62 @@ export default function ComprehensiveMetrics({
       let reportsQuery;
       const reportsRef = collection(db, 'mental_health_reports');
       
+      // Try to load Employer stats from the new backend API wrapper
+      if ((userRole === 'employer' || userRole === 'manager') && companyId) {
+        try {
+          const { auth } = await import('@/lib/firebase');
+          const token = await auth.currentUser?.getIdToken();
+          if (token) {
+            const apiRes = await fetch(`/api/employer/dashboard-stats?company_id=${companyId}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (apiRes.ok) {
+              const backendStats = await apiRes.json();
+              const burnoutRiskLevels = backendStats.burnout_trend?.buckets || {};
+
+              // Fetch 5 most recent reports from Firebase for the list display
+              let recentRep: MentalHealthReport[] = [];
+              try {
+                const recentQuery = query(reportsRef, where('company_id', '==', companyId));
+                const recentSnap = await getDocs(recentQuery);
+                recentRep = recentSnap.docs
+                  .map(doc => ({ id: doc.id, ...doc.data() } as MentalHealthReport))
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .slice(0, 5);
+              } catch (e) {}
+
+              setMetrics({
+                totalReports: backendStats.wellness_index?.computed_at ? backendStats.company_stats?.totalEmployees || 0 : 0,
+                averageWellness: backendStats.wellness_index?.wellness_index ? Math.round(backendStats.wellness_index.wellness_index / 10) : 0,
+                averageMood: backendStats.wellness_index?.engagement_score ? Math.round(backendStats.wellness_index.engagement_score / 10) : 0,
+                averageStress: backendStats.wellness_index?.stress_score ? Math.round(backendStats.wellness_index.stress_score / 10) : 0,
+                averageEnergy: backendStats.engagement_signals?.wau_pct ? Math.round(backendStats.engagement_signals.wau_pct / 10) : 0,
+                riskDistribution: {
+                  low: burnoutRiskLevels['Low Risk'] || 0,
+                  medium: burnoutRiskLevels['Medium Risk'] || 0,
+                  high: backendStats.early_warnings?.alerts?.length || burnoutRiskLevels['High Risk'] || 0,
+                },
+                trends: {
+                  wellness: backendStats.wellness_index?.trend_vs_prior_period ? (backendStats.wellness_index.trend_vs_prior_period * 100) : 0, // Assuming it's a difference in absolute terms or needs percentage format
+                  mood: 0,
+                  stress: 0,
+                  energy: 0
+                },
+                recentReports: recentRep
+              });
+              return;
+            }
+          }
+        } catch (apiError) {
+          console.error("Failed to load metrics from proxy API, falling back to Firebase", apiError);
+        }
+      }
+
+      // Fallback for employee or if API failed
       if (userRole === 'employee' && userId) {
         reportsQuery = query(reportsRef, where('employee_id', '==', userId));
-      } else if (userRole === 'manager' && companyId) {
-        reportsQuery = query(reportsRef, where('company_id', '==', companyId));
-      } else if (userRole === 'employer' && companyId) {
+      } else if ((userRole === 'manager' || userRole === 'employer') && companyId) {
         reportsQuery = query(reportsRef, where('company_id', '==', companyId));
       } else {
         return;
@@ -128,7 +179,7 @@ export default function ComprehensiveMetrics({
       const recentCount = Math.max(1, Math.floor(totalReports * 0.3));
       const previousCount = Math.max(1, Math.floor(totalReports * 0.3));
       
-      const recentReports = sortedReports.slice(0, recentCount);
+      const recentReportsList = sortedReports.slice(0, recentCount);
       const previousReports = sortedReports.slice(recentCount, recentCount + previousCount);
 
       const calculateTrend = (recent: MentalHealthReport[], previous: MentalHealthReport[], field: keyof MentalHealthReport) => {
@@ -139,10 +190,10 @@ export default function ComprehensiveMetrics({
       };
 
       const trends = {
-        wellness: calculateTrend(recentReports, previousReports, 'overall_wellness'),
-        mood: calculateTrend(recentReports, previousReports, 'mood_rating'),
-        stress: calculateTrend(recentReports, previousReports, 'stress_level'),
-        energy: calculateTrend(recentReports, previousReports, 'energy_level')
+        wellness: calculateTrend(recentReportsList, previousReports, 'overall_wellness'),
+        mood: calculateTrend(recentReportsList, previousReports, 'mood_rating'),
+        stress: calculateTrend(recentReportsList, previousReports, 'stress_level'),
+        energy: calculateTrend(recentReportsList, previousReports, 'energy_level')
       };
 
       setMetrics({

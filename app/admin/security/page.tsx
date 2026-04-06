@@ -39,137 +39,201 @@ export default function AdminSecurity() {
   const [showIPBlock, setShowIPBlock] = useState(true);
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-[1400px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] mx-auto">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Security</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Platform security overview and access control</p>
+          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+            Security
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1 font-medium">
+            Monitor platform access, mitigate threats, and manage security protocols.
+          </p>
         </div>
-        <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full">
-          <ShieldCheck className="h-3.5 w-3.5" /> Secure
-        </span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 shadow-sm">
+            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Platform Secure</span>
+          </div>
+        </div>
       </div>
 
-      {/* Security score + alerts */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 flex flex-col items-center justify-center text-center">
-          <div className="relative w-20 h-20 mb-3">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
-              <circle cx="40" cy="40" r="32" strokeWidth="6" fill="none" className="stroke-gray-100 dark:stroke-gray-800" />
-              <circle cx="40" cy="40" r="32" strokeWidth="6" fill="none" stroke="#10b981" strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 32}`} strokeDashoffset={`${2 * Math.PI * 32 * (1 - 0.92)}`} />
+      {/* Security score + alerts summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 flex flex-col items-center justify-center text-center shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <ShieldCheck className="h-20 w-20 -mr-6 -mt-6" />
+          </div>
+          
+          <div className="relative w-28 h-28 mb-4">
+            <svg className="w-full h-full -rotate-90 drop-shadow-[0_0_8px_rgba(16,185,129,0.2)]" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" strokeWidth="6" fill="none" className="stroke-secondary" />
+              <motion.circle 
+                cx="40" cy="40" r="34" strokeWidth="6" fill="none" stroke="url(#secGradient)" strokeLinecap="round"
+                initial={{ strokeDashoffset: 2 * Math.PI * 34 }}
+                animate={{ strokeDashoffset: 2 * Math.PI * 34 * (1 - 0.92) }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                strokeDasharray={`${2 * Math.PI * 34}`} 
+              />
+              <defs>
+                <linearGradient id="secGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#34d399" />
+                </linearGradient>
+              </defs>
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xl font-bold text-gray-900 dark:text-gray-100">92</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-3xl font-black text-foreground tracking-tighter">92</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Score</span>
             </div>
           </div>
-          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Security Score</p>
-          <p className="text-xs text-emerald-600 mt-0.5">Excellent</p>
+          <p className="text-sm font-black text-foreground tracking-tight">Security Rating</p>
+          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-1">Excellent Protection</p>
         </div>
-        {[
-          { label: 'Active Alerts',   value: securityAlerts.length,                                    color: 'text-red-500',    bg: 'bg-red-50 dark:bg-red-900/20',     icon: AlertTriangle },
-          { label: 'Blocked IPs',     value: 3,                                                         color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20',icon: Lock },
-        ].map(s => {
-          const Icon = s.icon;
-          return (
-            <div key={s.label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl ${s.bg} flex items-center justify-center flex-shrink-0`}>
-                <Icon className={`h-6 w-6 ${s.color}`} />
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{s.value}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
-              </div>
+
+        <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm flex items-center gap-6 group">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 shadow-inner group-hover:scale-110 transition-transform">
+            <AlertTriangle className="h-8 w-8 text-red-500" />
+          </div>
+          <div>
+            <p className="text-3xl font-black text-foreground tracking-tighter">{securityAlerts.length}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Active Alerts</p>
+            <p className="text-[10px] text-red-500 font-bold mt-1">Requires Attention</p>
+          </div>
+        </div>
+
+        <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm flex items-center gap-6 group">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-inner group-hover:scale-110 transition-transform">
+            <Lock className="h-8 w-8 text-amber-500" />
+          </div>
+          <div>
+            <p className="text-3xl font-black text-foreground tracking-tighter">3</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Blocked IPs</p>
+            <p className="text-[10px] text-muted-foreground/60 font-bold mt-1">Auto-mitigation active</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          {/* Security controls */}
+          <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-6">
+              <Key className="h-4 w-4 text-indigo-500" />
+              <h2 className="text-sm font-black text-foreground tracking-tight uppercase">Admin Security Protocols</h2>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Security settings */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
-        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">Security Settings</h2>
-        <div className="space-y-3">
-          {[
-            { label: 'Two-Factor Authentication', sub: 'Require 2FA for all admin accounts', state: show2FA, toggle: () => setShow2FA(v => !v) },
-            { label: 'IP Blocking',               sub: 'Auto-block IPs with 5+ failed attempts', state: showIPBlock, toggle: () => setShowIPBlock(v => !v) },
-          ].map(s => (
-            <div key={s.label} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-              <div>
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{s.label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{s.sub}</p>
-              </div>
-              <button
-                onClick={s.toggle}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${s.state ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'}`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${s.state ? 'translate-x-6' : 'translate-x-1'}`} />
-              </button>
+            <div className="space-y-4">
+              {[
+                { label: 'Two-Factor Authentication', sub: 'Mandatory for all administrator sessions', state: show2FA, toggle: () => setShow2FA(v => !v) },
+                { label: 'IP Auth-Blocking',          sub: 'Auto-block IPs with 5+ failed attempts', state: showIPBlock, toggle: () => setShowIPBlock(v => !v) },
+              ].map(s => (
+                <div key={s.label} className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl border border-border group hover:border-indigo-500/30 transition-all">
+                  <div className="min-w-0 pr-4">
+                    <p className="text-sm font-bold text-foreground truncate">{s.label}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-tight">{s.sub}</p>
+                  </div>
+                  <button
+                    onClick={s.toggle}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 shadow-inner ${s.state ? 'bg-indigo-500' : 'bg-muted'}`}
+                  >
+                    <motion.span 
+                      animate={{ x: s.state ? 24 : 4 }}
+                      className="inline-block h-4 w-4 rounded-full bg-white shadow-md" 
+                    />
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* Alerts */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
-        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">Security Alerts</h2>
-        <div className="space-y-3">
-          {securityAlerts.map((a, i) => (
-            <motion.div
-              key={a.id}
-              initial={{ opacity: 0, x: -6 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.06 }}
-              className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"
-            >
-              <AlertTriangle className={`h-4 w-4 mt-0.5 flex-shrink-0 ${a.severity === 'high' ? 'text-red-500' : a.severity === 'medium' ? 'text-yellow-500' : 'text-blue-500'}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{a.msg}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{a.detail}</p>
+          {/* Security alerts list */}
+          <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <h2 className="text-sm font-black text-foreground tracking-tight uppercase">Critical Alerts</h2>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${severityCls[a.severity as keyof typeof severityCls]}`}>{a.severity}</span>
-                <span className="text-[11px] text-gray-400 whitespace-nowrap">{a.time}</span>
-              </div>
-            </motion.div>
-          ))}
+              <button className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors">Clear All</button>
+            </div>
+            <div className="space-y-4">
+              {securityAlerts.map((a, i) => (
+                <motion.div
+                  key={a.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="flex items-start gap-4 p-4 bg-secondary/30 rounded-xl border border-border group hover:bg-secondary/50 transition-all border-l-4 border-l-red-500"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-foreground group-hover:text-red-500 transition-colors uppercase tracking-tight leading-none">{a.msg}</p>
+                    <p className="text-[11px] text-muted-foreground font-medium mt-2 leading-relaxed">{a.detail}</p>
+                    <p className="text-[10px] text-muted-foreground/50 font-black mt-2 uppercase tracking-widest flex items-center gap-2">
+                       <Clock className="h-3 w-3" /> {a.time}
+                    </p>
+                  </div>
+                  <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${severityCls[a.severity as keyof typeof severityCls]}`}>
+                    {a.severity}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Login attempts */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Recent Login Attempts</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
-              <tr>
-                {['User', 'IP Address', 'Location', 'Status', 'Time'].map(h => (
-                  <th key={h} className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-              {loginAttempts.map((a, i) => {
-                const Icon = statusIcon[a.status];
-                return (
-                  <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{a.user}</td>
-                    <td className="px-4 py-3 font-mono text-gray-500 dark:text-gray-400">{a.ip}</td>
-                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400 flex items-center gap-1"><Globe className="h-3 w-3" />{a.location}</td>
-                    <td className="px-4 py-3">
-                      <span className={`flex items-center gap-1 font-medium capitalize ${statusCls[a.status]}`}>
-                        <Icon className="h-3 w-3" />{a.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{a.time}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        {/* Login attempts table */}
+        <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm flex flex-col">
+          <div className="px-6 py-5 border-b border-border">
+            <h2 className="text-sm font-black text-foreground tracking-tight uppercase">Recent Access Logs</h2>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Last 24 hours of platform login attempts</p>
+          </div>
+          <div className="overflow-x-auto flex-1">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-secondary/30">
+                  {['Admin', 'Network Info', 'Status', ''].map(h => (
+                    <th key={h} className="text-left text-[11px] font-black text-muted-foreground uppercase tracking-widest px-6 py-4">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {loginAttempts.map((a, i) => {
+                  const Icon = statusIcon[a.status];
+                  return (
+                    <tr key={a.id} className="hover:bg-secondary/20 transition-colors group">
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-foreground group-hover:text-indigo-500 transition-all">{a.user}</p>
+                        <p className="text-[10px] text-muted-foreground font-medium mt-0.5">{a.time}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="font-mono text-muted-foreground font-bold">{a.ip}</p>
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 font-medium mt-1">
+                          <Globe className="h-3 w-3" /> {a.location}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className={`flex items-center gap-2 font-black text-[10px] uppercase tracking-widest ${statusCls[a.status]}`}>
+                          <Icon className="h-3.5 w-3.5" />
+                          {a.status}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-all">
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 border-t border-border mt-auto">
+            <button className="w-full py-2.5 bg-secondary hover:bg-secondary/80 rounded-xl text-[11px] font-black text-muted-foreground text-center transition-all uppercase tracking-widest">
+              View All Access Logs
+            </button>
+          </div>
         </div>
       </div>
     </div>

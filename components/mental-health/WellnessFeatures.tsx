@@ -233,7 +233,7 @@ const WellnessFeatures = () => {
             <div className="relative">
               <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="flex-1 text-center lg:text-left">
-                  <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+                  <div className="inline-flex items-center justify-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4 mx-auto lg:mx-0">
                     <Heart className="w-4 h-4" />
                     <span className="text-sm font-semibold">3,000+ Lives Transformed</span>
                   </div>

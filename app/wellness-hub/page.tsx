@@ -124,15 +124,6 @@ export default function WellnessHubLanding() {
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div
-          className="absolute bottom-20 left-1/3 w-80 h-80 bg-teal-300/20 dark:bg-teal-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, 60, 0],
-            y: [0, -80, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        />
       </div>
 
       {/* Header */}
@@ -141,20 +132,20 @@ export default function WellnessHubLanding() {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
               <motion.div 
-                className="w-8 h-8 bg-gradient-to-br from-green-600 via-lime-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg"
+                className="w-8 h-8 bg-gradient-to-br from-green-600 via-lime-600 to-emerald-600 rounded flex items-center justify-center shadow-lg"
                 animate={{ rotate: [0, 5, -5, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               >
                 <span className="text-white font-bold text-sm">D</span>
               </motion.div>
-              <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600">
+              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600">
                 Diltak.ai
               </span>
             </Link>
 
-            <Button asChild variant="ghost" className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+            <Button asChild variant="ghost" className="text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
               <Link href="/">
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 <span>Back to Home</span>
               </Link>
             </Button>
@@ -163,31 +154,31 @@ export default function WellnessHubLanding() {
       </header>
 
       {/* Main Content */}
-      <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 z-10">
+      <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-6 z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-[500px]"
         >
-          <Card className="shadow-2xl border border-white/20 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
-            <CardHeader className="text-center pb-6">
-              <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <Card className="shadow-2xl border border-white/40 dark:border-gray-700/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl rounded-lg overflow-hidden">
+            <CardHeader className="text-center pb-8 pt-10 px-8">
+              <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
                 Wellness Hub Access
               </CardTitle>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Get personalized access to our enterprise wellness platform. We'll reach out with a tailored solution for your organization.
+              <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                Tailored solutions for your organisation
               </p>
             </CardHeader>
 
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            <CardContent className="px-8 pb-10">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-1.5">
+                  <Label htmlFor="name" className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-0.5">
                     Full Name
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 opacity-60" />
                     <Input
                       id="name"
                       name="name"
@@ -195,18 +186,18 @@ export default function WellnessHubLanding() {
                       placeholder="Enter your full name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-300 dark:border-gray-600"
+                      className="pl-10 h-11 bg-white/50 dark:bg-gray-900/50 border-white/20 dark:border-gray-800 rounded-md font-medium text-sm focus:ring-emerald-500/20"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-0.5">
                     Email Address
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 opacity-60" />
                     <Input
                       id="email"
                       name="email"
@@ -214,18 +205,18 @@ export default function WellnessHubLanding() {
                       placeholder="Enter your email address"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-300 dark:border-gray-600"
+                      className="pl-10 h-11 bg-white/50 dark:bg-gray-900/50 border-white/20 dark:border-gray-800 rounded-md font-medium text-sm focus:ring-emerald-500/20"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="company" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className="space-y-1.5">
+                  <Label htmlFor="company" className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-0.5">
                     Company Name
                   </Label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                    <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 opacity-60" />
                     <Input
                       id="company"
                       name="company"
@@ -233,34 +224,34 @@ export default function WellnessHubLanding() {
                       placeholder="Enter your company name"
                       value={formData.company}
                       onChange={handleInputChange}
-                      className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-300 dark:border-gray-600"
+                      className="pl-10 h-11 bg-white/50 dark:bg-gray-900/50 border-white/20 dark:border-gray-800 rounded-md font-medium text-sm focus:ring-emerald-500/20"
                       required
                     />
                   </div>
                 </div>
 
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 hover:from-green-700 hover:via-lime-700 hover:to-emerald-700 text-white py-3 mt-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 text-white font-bold text-xs uppercase tracking-widest py-3 rounded-md shadow-lg shadow-emerald-500/20 mt-4 transition-all"
                     disabled={!isFormValid || isSubmitting}
                   >
                   {isSubmitting ? (
                     <div className="flex items-center space-x-2">
                       <Spinner size="sm" color="border-white" />
-                      <span>Submitting...</span>
+                      <span>Requesting...</span>
                     </div>
                   ) : (
-                    'Get Personalized Access'
+                    'Get Personalised Access'
                   )}
                   </Button>
                 </motion.div>
               </form>
 
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <div className="text-center text-xs text-gray-500 dark:text-gray-400">
-                  <p>By submitting this form, you agree to be contacted by our team regarding Diltak.ai's Wellness Hub platform.</p>
-                </div>
+              <div className="mt-8 pt-8 border-t border-white/10 dark:border-gray-800">
+                <p className="text-center text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] leading-loose opacity-60">
+                  By submitting, you agree to our data policy. Our team will reach out within 24 hours.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -270,40 +261,27 @@ export default function WellnessHubLanding() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4"
+            className="mt-12 grid grid-cols-3 gap-4"
           >
-            <motion.div 
-              className="text-center p-4 bg-white/60 dark:bg-gray-800/60 rounded-lg backdrop-blur-sm border border-white/20 dark:border-gray-700/50 shadow-lg"
-              whileHover={{ scale: 1.05, y: -5 }}
-            >
-              <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">AI-Powered Analytics</p>
-            </motion.div>
-
-            <motion.div 
-              className="text-center p-4 bg-white/60 dark:bg-gray-800/60 rounded-lg backdrop-blur-sm border border-white/20 dark:border-gray-700/50 shadow-lg"
-              whileHover={{ scale: 1.05, y: -5 }}
-            >
-              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">Enterprise Security</p>
-            </motion.div>
-
-            <motion.div 
-              className="text-center p-4 bg-white/60 dark:bg-gray-800/60 rounded-lg backdrop-blur-sm border border-white/20 dark:border-gray-700/50 shadow-lg"
-              whileHover={{ scale: 1.05, y: -5 }}
-            >
-              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">24/7 Support</p>
-            </motion.div>
+            {[
+              { color: 'bg-emerald-500/10', text: 'AI-Powered', icon: CheckCircle, iconColor: 'text-emerald-500' },
+              { color: 'bg-blue-500/10', text: 'Enterprise', icon: CheckCircle, iconColor: 'text-blue-500' },
+              { color: 'bg-purple-500/10', text: 'Support 24/7', icon: CheckCircle, iconColor: 'text-purple-500' }
+            ].map((feature, idx) => (
+              <motion.div 
+                key={idx}
+                className="text-center p-4 bg-white/20 dark:bg-gray-800/20 rounded-lg backdrop-blur-sm border border-white/10 dark:border-gray-700/30"
+                whileHover={{ y: -5 }}
+              >
+                <div className={`w-8 h-8 ${feature.color} rounded-md flex items-center justify-center mx-auto mb-2`}>
+                  <feature.icon className={`h-4 w-4 ${feature.iconColor}`} />
+                </div>
+                <p className="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">{feature.text}</p>
+              </motion.div>
+            ))}
           </motion.div>
         </motion.div>
       </div>
     </div>
   );
-}
+}

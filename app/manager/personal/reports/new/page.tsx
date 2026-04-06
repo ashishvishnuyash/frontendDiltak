@@ -352,93 +352,120 @@ export default function NewReportPage() {
   }
 
   return (
-    <div className="text-gray-900 dark:text-gray-100 overflow-x-hidden">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/employee/dashboard" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
-            <ArrowLeft className="h-5 w-5 mr-2" />
+          <Link href="/employee/dashboard" className="inline-flex items-center text-xs font-bold text-emerald-600 hover:text-emerald-700 uppercase tracking-widest mb-4 group">
+            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">New Wellness Report</h1>
-          <p className="text-gray-600 mt-2">
-            Take a moment to reflect on your current mental and emotional state.
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">New Wellness Report</h1>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 opacity-80 uppercase tracking-wider">
+            Reflect on your emotional and physical state
           </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              Step {currentStep} of {totalSteps}: {getStepTitle(currentStep)}
-            </span>
-            <span className="text-sm text-gray-500">
-              {Math.round((currentStep / totalSteps) * 100)}% Complete
-            </span>
+        {/* Progress Stepper */}
+        <div className="mb-10 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-5 shadow-sm">
+          <div className="flex justify-between items-center mb-3 px-1">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-emerald-500/10 flex items-center justify-center">
+                <span className="text-xs font-black text-emerald-600">{currentStep}</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Current Step</p>
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{getStepTitle(currentStep)}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Completion</p>
+              <p className="text-sm font-black text-emerald-600">{Math.round((currentStep / totalSteps) * 100)}%</p>
+            </div>
           </div>
-          <Progress value={(currentStep / totalSteps) * 100} className="w-full" />
+          <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-emerald-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+          </div>
         </div>
 
         {/* Form Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">{getStepTitle(currentStep)}</CardTitle>
+        <Card className="bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 shadow-sm rounded-lg overflow-hidden">
+          <CardHeader className="p-6 sm:p-8 border-b border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-emerald-500 rounded-full" />
+              <CardTitle className="text-base font-bold tracking-tight text-gray-800 dark:text-gray-100 uppercase">{getStepTitle(currentStep)}</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="p-8">
+          
+          <CardContent className="p-6 sm:p-8">
             {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertDescription>{error}</AlertDescription>
+              <Alert variant="destructive" className="mb-8 rounded-md border-red-500/50 bg-red-500/5">
+                <AlertDescription className="text-xs font-bold uppercase">{error}</AlertDescription>
               </Alert>
             )}
 
-            {renderStep()}
+            <div className="min-h-[300px]">
+              {renderStep()}
+            </div>
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8 pt-6 border-t">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-12 pt-8 border-t border-gray-100 dark:border-gray-800">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
                 disabled={currentStep === 1}
+                className="w-full sm:w-auto text-xs font-bold uppercase tracking-widest text-gray-400 disabled:opacity-20 hover:text-gray-600"
               >
-                Previous
+                Previous Step
               </Button>
 
-              {currentStep < totalSteps ? (
-                <Button
-                  onClick={() => setCurrentStep(prev => Math.min(totalSteps, prev + 1))}
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  {loading ? (
-                    <>
-                      <Spinner size="sm" color="border-white" className="mr-2" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-5 w-5 mr-2" />
-                      Save Report
-                    </>
-                  )}
-                </Button>
-              )}
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                {currentStep < totalSteps ? (
+                  <Button
+                    onClick={() => setCurrentStep(prev => Math.min(totalSteps, prev + 1))}
+                    className="w-full sm:w-auto px-10 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-sm active:scale-95 transition-all"
+                  >
+                    Next Step
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="w-full sm:w-auto px-10 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-sm active:scale-95 transition-all"
+                  >
+                    {loading ? (
+                      <div className="flex items-center">
+                        <Spinner size="sm" color="border-white" className="mr-2" />
+                        Saving Report...
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <Save className="h-4 w-4 mr-2" />
+                        Finalize & Submit
+                      </div>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Privacy Notice */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Privacy Notice:</strong> Your wellness data is encrypted and stored securely. 
-            Only you can view your individual reports. Employers can only see anonymized, 
-            aggregated data to understand overall team wellness trends.
-          </p>
+        {/* Privacy Notice Strip */}
+        <div className="mt-8 flex items-start gap-4 p-6 bg-indigo-50/30 dark:bg-indigo-900/10 border border-indigo-100/50 dark:border-indigo-900/20 rounded-lg">
+          <Scale className="h-5 w-5 text-indigo-500 mt-0.5 shrink-0" />
+          <div className="space-y-2">
+            <h4 className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Privacy & Data Governance</h4>
+            <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-loose opacity-80 leading-relaxed">
+              Your wellness data is strictly encrypted. Only you can view individual reports. 
+              Employers only access anonymized aggregate trends to support team wellbeing.
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   Building2, Search, Plus, MoreHorizontal, Users, TrendingUp,
-  Filter, Download, Eye, Edit, Trash2, CheckCircle, XCircle,
+  Filter, Download, Eye, Edit, Trash2, CheckCircle, XCircle, AlertTriangle,
 } from 'lucide-react';
 
 const companies = [
@@ -42,119 +42,126 @@ export default function AdminCompanies() {
   });
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-[1400px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] mx-auto">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Companies</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{companies.length} registered companies</p>
+          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+            Companies
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1 font-medium">
+            Manage registered organizations and their performance metrics.
+          </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl transition-colors self-start sm:self-auto">
-          <Plus className="h-4 w-4" /> Add Company
-        </button>
+        <div className="flex items-center gap-3">
+          <Link href="/admin/companies/add" className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-500/20 active:scale-95">
+            <Plus className="h-4 w-4" /> Add Company
+          </Link>
+        </div>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total',    value: companies.length,                                  color: 'text-gray-800 dark:text-gray-100' },
-          { label: 'Active',   value: companies.filter(c => c.status === 'active').length, color: 'text-emerald-600' },
-          { label: 'High Risk',value: companies.filter(c => c.risk === 'high').length,   color: 'text-red-500' },
-          { label: 'Enterprise',value: companies.filter(c => c.plan === 'Enterprise').length, color: 'text-purple-600' },
+          { label: 'Total',     value: companies.length,                                  icon: Building2,   color: 'text-gray-800 dark:text-gray-100', bg: 'bg-secondary/50' },
+          { label: 'Active Now',value: companies.filter(c => c.status === 'active').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+          { label: 'High Risk', value: companies.filter(c => c.risk === 'high').length,   icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
+          { label: 'Enterprise',value: companies.filter(c => c.plan === 'Enterprise').length, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
         ].map(s => (
-          <div key={s.label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 text-center">
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+          <div key={s.label} className={`flex flex-col items-center justify-center p-5 rounded-2xl border border-border shadow-sm ${s.bg}`}>
+            <s.icon className={`h-5 w-5 ${s.color} opacity-80 mb-2`} />
+            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 text-center">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Filters + search */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search companies or industry…"
-              className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-400"
+              placeholder="Search companies, industry or location..."
+              className="w-full h-11 pl-10 pr-4 text-sm bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
           </div>
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+          <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border">
             {(['all', 'active', 'inactive'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${filter === f ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
+                className={`px-4 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all ${filter === f ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 {f}
               </button>
             ))}
           </div>
-          <button className="flex items-center gap-2 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-            <Download className="h-3.5 w-3.5" /> Export
+          <button className="flex items-center gap-2 px-4 h-11 border border-border rounded-xl text-[11px] font-bold text-muted-foreground hover:bg-secondary transition-all">
+            <Download className="h-4 w-4" /> Export
           </button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-              <tr>
-                {['Company', 'Industry', 'Employees', 'Plan', 'Avg Wellness', 'Risk', 'Status', 'Joined', ''].map(h => (
-                  <th key={h} className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">{h}</th>
+            <thead>
+              <tr className="border-b border-border bg-secondary/30">
+                {['Company', 'Industry', 'Employees', 'Plan', 'Wellness', 'Risk', 'Status', 'Joined', ''].map(h => (
+                  <th key={h} className="text-left text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+            <tbody className="divide-y divide-border">
               {filtered.map((c, i) => (
                 <motion.tr
                   key={c.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  className="hover:bg-secondary/20 transition-colors group"
                 >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                        <Building2 className="h-3.5 w-3.5 text-indigo-500" />
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+                        <Building2 className="h-4 w-4 text-indigo-500" />
                       </div>
-                      <span className="font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">{c.name}</span>
+                      <span className="font-bold text-foreground whitespace-nowrap group-hover:text-indigo-500 transition-colors">{c.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{c.industry}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{c.employees.toLocaleString()}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${planCls[c.plan as keyof typeof planCls]}`}>{c.plan}</span>
+                  <td className="px-6 py-4 text-muted-foreground font-medium whitespace-nowrap">{c.industry}</td>
+                  <td className="px-6 py-4 text-foreground font-bold tabular-nums">{c.employees.toLocaleString()}</td>
+                  <td className="px-6 py-4">
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${planCls[c.plan as keyof typeof planCls]}`}>{c.plan}</span>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-12 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${(c.wellness / 10) * 100}%` }} />
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(c.wellness / 10) * 100}%` }} />
                       </div>
-                      <span className="text-gray-600 dark:text-gray-300">{c.wellness}</span>
+                      <span className="text-foreground font-bold tabular-nums">{c.wellness}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${riskCls[c.risk as keyof typeof riskCls]}`}>{c.risk}</span>
+                  <td className="px-6 py-4">
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${riskCls[c.risk as keyof typeof riskCls]}`}>{c.risk}</span>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`flex items-center gap-1 text-[10px] font-medium ${c.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
-                      {c.status === 'active' ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                  <td className="px-6 py-4">
+                    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${c.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${c.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-400'}`} />
                       {c.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(c.joined).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <button className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 transition-colors"><Eye className="h-3.5 w-3.5" /></button>
-                      <button className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 transition-colors"><Edit className="h-3.5 w-3.5" /></button>
-                      <button className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                  <td className="px-6 py-4 text-muted-foreground font-medium whitespace-nowrap">{new Date(c.joined).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-end gap-1">
+                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Eye className="h-4 w-4" /></button>
+                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Edit className="h-4 w-4" /></button>
+                      <button className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   </td>
                 </motion.tr>
@@ -163,9 +170,16 @@ export default function AdminCompanies() {
           </table>
         </div>
         {filtered.length === 0 && (
-          <div className="py-12 text-center text-sm text-gray-400">No companies match your search.</div>
+          <div className="py-20 text-center flex flex-col items-center justify-center">
+            <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
+              <Search className="h-8 w-8 text-muted-foreground/30" />
+            </div>
+            <p className="text-sm font-bold text-foreground">No companies found</p>
+            <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters or search terms.</p>
+          </div>
         )}
       </div>
     </div>
   );
 }
+

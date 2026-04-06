@@ -38,60 +38,59 @@ export default function AdminReports() {
   });
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-[1400px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] mx-auto">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Reports</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">All wellness reports across the platform</p>
+          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+            Reports
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1 font-medium">
+            Review and manage all wellness signals and system-flagged reports.
+          </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors self-start sm:self-auto">
-          <Download className="h-4 w-4" /> Export All
-        </button>
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-[11px] font-bold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all shadow-sm active:scale-95">
+            <Download className="h-4 w-4" /> Export All Data
+          </button>
+        </div>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Reports',  value: reports.length,                                      icon: FileText,      color: 'text-indigo-500',  bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
-          { label: 'Reviewed',       value: reports.filter(r => r.status === 'reviewed').length, icon: TrendingUp,    color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-          { label: 'Pending',        value: reports.filter(r => r.status === 'pending').length,  icon: Calendar,      color: 'text-yellow-500',  bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
-          { label: 'Flagged',        value: reports.filter(r => r.status === 'flagged').length,  icon: AlertTriangle, color: 'text-red-500',     bg: 'bg-red-50 dark:bg-red-900/20' },
-        ].map(s => {
-          const Icon = s.icon;
-          return (
-            <div key={s.label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl ${s.bg} flex items-center justify-center flex-shrink-0`}>
-                <Icon className={`h-4 w-4 ${s.color}`} />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{s.value}</p>
-                <p className="text-[11px] text-gray-400">{s.label}</p>
-              </div>
-            </div>
-          );
-        })}
+          { label: 'Total Logs',  value: reports.length,                                      icon: FileText,      color: 'text-indigo-500',  bg: 'bg-indigo-500/10 dark:bg-indigo-500/20' },
+          { label: 'Reviewed',   value: reports.filter(r => r.status === 'reviewed').length, icon: TrendingUp,    color: 'text-emerald-500', bg: 'bg-emerald-500/10 dark:bg-emerald-500/20' },
+          { label: 'Pending',    value: reports.filter(r => r.status === 'pending').length,  icon: Calendar,      color: 'text-amber-500',   bg: 'bg-amber-500/10 dark:bg-amber-500/20' },
+          { label: 'Flagged',    value: reports.filter(r => r.status === 'flagged').length,  icon: AlertTriangle, color: 'text-red-500',     bg: 'bg-red-500/10 dark:bg-red-500/20' },
+        ].map(s => (
+          <div key={s.label} className={`flex flex-col items-center justify-center p-5 rounded-2xl border border-border shadow-sm ${s.bg}`}>
+            <s.icon className={`h-5 w-5 ${s.color} opacity-80 mb-2`} />
+            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 text-center">{s.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search by employee or company…"
-              className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-400"
+              placeholder="Search by employee name or organization..."
+              className="w-full h-11 pl-10 pr-4 text-sm bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
           </div>
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+          <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border">
             {['all', 'reviewed', 'pending', 'flagged'].map(s => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${statusFilter === s ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
+                className={`px-4 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all ${statusFilter === s ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 {s}
               </button>
@@ -101,46 +100,54 @@ export default function AdminReports() {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-              <tr>
-                {['ID', 'Employee', 'Company', 'Type', 'Wellness', 'Risk', 'Status', 'Date', ''].map(h => (
-                  <th key={h} className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">{h}</th>
+            <thead>
+              <tr className="border-b border-border bg-secondary/30">
+                {['Report ID', 'Employee', 'Company', 'Category', 'Score', 'Risk', 'Status', 'Logged', ''].map(h => (
+                  <th key={h} className="text-left text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+            <tbody className="divide-y divide-border">
               {filtered.map((r, i) => (
                 <motion.tr
                   key={r.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  className="hover:bg-secondary/20 transition-colors group"
                 >
-                  <td className="px-4 py-3 font-mono text-gray-400">{r.id}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">{r.employee}</td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{r.company}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">{r.type}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-10 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${(r.wellness / 10) * 100}%` }} />
+                  <td className="px-6 py-4 font-mono text-[10px] text-muted-foreground font-bold">{r.id}</td>
+                  <td className="px-6 py-4">
+                    <span className="font-bold text-foreground whitespace-nowrap group-hover:text-indigo-500 transition-colors">{r.employee}</span>
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground font-medium whitespace-nowrap">{r.company}</td>
+                  <td className="px-6 py-4">
+                    <span className="px-2.5 py-1 rounded-lg bg-secondary text-muted-foreground text-[10px] font-bold uppercase tracking-tight">{r.type}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-1.5 bg-secondary rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.4)]" style={{ width: `${(r.wellness / 10) * 100}%` }} />
                       </div>
-                      <span className="text-gray-600 dark:text-gray-300">{r.wellness}</span>
+                      <span className="text-foreground font-bold tabular-nums">{r.wellness}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${riskCls[r.risk as keyof typeof riskCls]}`}>{r.risk}</span>
+                  <td className="px-6 py-4">
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${riskCls[r.risk as keyof typeof riskCls]}`}>{r.risk}</span>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${statusCls[r.status]}`}>{r.status}</span>
+                  <td className="px-6 py-4">
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${statusCls[r.status]}`}>{r.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(r.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
-                  <td className="px-4 py-3">
-                    <button className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 transition-colors"><Eye className="h-3.5 w-3.5" /></button>
+                  <td className="px-6 py-4 text-muted-foreground font-medium whitespace-nowrap">{new Date(r.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-end">
+                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </motion.tr>
               ))}
@@ -148,9 +155,16 @@ export default function AdminReports() {
           </table>
         </div>
         {filtered.length === 0 && (
-          <div className="py-12 text-center text-sm text-gray-400">No reports match your search.</div>
+          <div className="py-20 text-center flex flex-col items-center justify-center">
+            <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
+              <FileText className="h-8 w-8 text-muted-foreground/30" />
+            </div>
+            <p className="text-sm font-bold text-foreground">No reports found</p>
+            <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters or search terms.</p>
+          </div>
         )}
       </div>
     </div>
   );
 }
+

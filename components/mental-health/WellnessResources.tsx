@@ -212,8 +212,8 @@ const WellnessResources = () => {
                     <Card className="h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden">
                       <CardHeader className="pb-3 sm:pb-4">
                         <div className="flex items-center justify-between mb-3 sm:mb-4">
-                          <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${category.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                            <item.icon className="h-5 w-5 sm:h-5 sm:w-5 text-white" />
+                          <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br ${category.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                            <item.icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                           </div>
                           <div className="flex items-center space-x-1">
                             {renderStars(item.rating)}

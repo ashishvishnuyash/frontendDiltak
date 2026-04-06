@@ -72,7 +72,7 @@ const WellnessHero = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
             {/* Left Content */}
             <motion.div variants={fadeInUp} className="space-y-6 sm:space-y-8 order-2 lg:order-1">
-              <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-6 sm:space-y-8">
                 <motion.div 
                   className="inline-flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-full border border-green-200 dark:border-green-700"
                   initial={{ opacity: 0, scale: 0.8 }}

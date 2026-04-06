@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, ArrowLeft, Heart } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 import ForgotPasswordModal from '@/components/modals/ForgotPasswordModal';
 
@@ -16,7 +17,7 @@ function routeForRole(role: string): string {
   if (r === 'employee')            return '/employee/dashboard';
   if (r === 'manager')             return '/manager/dashboard';
   if (r === 'employer')            return '/employer/dashboard';
-  if (r === 'admin' || r === 'hr') return '/admin/dashboard';
+  if (r === 'admin' || r === 'super_admin') return '/admin/dashboard';
   return '/employee/dashboard';
 }
 
@@ -30,6 +31,7 @@ export default function LoginPage() {
   const [loading, setLoading]     = useState(false);
   const [showForgot, setShowForgot] = useState(false);
 
+  const { refreshUser } = useAuth();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
@@ -63,9 +65,12 @@ export default function LoginPage() {
       // Persist profile — AuthContext reads this on next render
       localStorage.setItem('user_profile', JSON.stringify(profile));
 
+      // ── NEW: Force context to update BEFORE redirecting ──
+      await refreshUser();
+
       toast.success(`Welcome back, ${profile.first_name || 'there'}!`);
 
-      // Navigate based on role — AuthContext will pick up localStorage on the next page
+      // Navigate based on role
       router.push(routeForRole(profile.role));
 
     } catch (err: any) {

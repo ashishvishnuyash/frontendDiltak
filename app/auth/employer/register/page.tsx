@@ -15,6 +15,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { auth, db } from '@/lib/firebase';
 import { collection, doc, addDoc, setDoc, getDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 
 const industries = [
@@ -50,6 +51,7 @@ export default function EmployerRegisterPage() {
     return !personalDomains.includes(domain);
   };
 
+  const { refreshUser } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -94,7 +96,7 @@ export default function EmployerRegisterPage() {
             updated_at: new Date().toISOString(),
           });
 
-          await setDoc(doc(db, 'users', user.uid), {
+          const profileData = {
             id: user.uid,
             email: formData.businessEmail,
             role: 'employer',
@@ -114,11 +116,17 @@ export default function EmployerRegisterPage() {
             direct_reports: [],
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-          });
+          };
+
+          await setDoc(doc(db, 'users', user.uid), profileData);
 
           const userDocRef = doc(db, 'users', user.uid);
           const userDocSnap = await getDoc(userDocRef);
           if (!userDocSnap.exists()) throw new Error('Failed to create user document in database');
+
+          // ── NEW: Pre-warm localStorage and Sync Context ──
+          localStorage.setItem('user_profile', JSON.stringify(profileData));
+          await refreshUser();
 
           toast.success('Employer account created successfully!');
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -142,227 +150,229 @@ export default function EmployerRegisterPage() {
     } finally {
       setLoading(false);
     }
-  };
-
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Header */}
-      <motion.header
-        className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
+          <div className="flex justify-between items-center h-14">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-xs sm:text-sm">D</span>
+              <div className="w-7 h-7 bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600 rounded flex items-center justify-center">
+                <span className="text-white font-bold text-xs">D</span>
               </div>
-              <span className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600">Diltak.ai</span>
+              <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600">Diltak.ai</span>
             </Link>
             <div className="flex items-center space-x-2">
               <ThemeToggle size="sm" />
-              <Button asChild variant="ghost" size="sm" className="flex items-center space-x-1 text-muted-foreground hover:text-foreground">
-                <Link href="/auth/employer/login"><ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Sign In</span></Link>
+              <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs font-bold uppercase tracking-wider">
+                <Link href="/auth/employer/login">Sign In</Link>
               </Button>
             </div>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-[800px] mx-auto px-4 py-12">
         {/* Title */}
-        <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div
-            className="w-14 h-14 bg-gradient-to-br from-amber-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-            whileHover={{ scale: 1.1, rotate: 5 }}
-          >
-            <Building className="h-7 w-7 text-white" />
-          </motion.div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Employer Registration</h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            Create your employer account to start managing your team&apos;s mental health analytics
-          </p>
-        </motion.div>
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
+            <Building className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Employer Registration</h1>
+            <p className="text-xs font-medium text-muted-foreground mt-1 opacity-80">Setup your corporate wellness portal in minutes</p>
+          </div>
+        </div>
 
         {/* Notice */}
-        <div className="flex items-start space-x-3 bg-card border border-border rounded-xl p-4 mb-8">
-          <Shield className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-muted-foreground">
-            This registration is exclusively for employers and business owners. Employee accounts are created by employers after registration.
+        <div className="flex items-start space-x-3 bg-secondary/30 border border-border rounded-lg p-4 mb-8">
+          <Shield className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+          <p className="text-[11px] font-medium text-muted-foreground leading-relaxed uppercase tracking-tight">
+            Exclusive registration for employers and business owners.
           </p>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Card className="bg-card border border-border shadow-xl rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-foreground">Company &amp; Personal Information</CardTitle>
-              <p className="text-sm text-muted-foreground">Please provide accurate information for account verification</p>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <AnimatePresence>
-                  {error && (
-                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                      <Alert variant="destructive">
-                        <AlertDescription>{error}</AlertDescription>
-                      </Alert>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+        <Card className="bg-card dark:bg-gray-950/20 border border-border shadow-sm rounded-lg overflow-hidden">
+          <CardHeader className="p-6 sm:p-8 border-b border-border bg-secondary/5">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-indigo-500 rounded-full" />
+              <CardTitle className="text-base font-bold tracking-tight text-foreground uppercase">Identity & Verification</CardTitle>
+            </div>
+            <p className="text-xs font-medium text-muted-foreground mt-1">Please provide accurate corporate information</p>
+          </CardHeader>
+          
+          <CardContent className="p-6 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <AnimatePresence mode="wait">
+                {error && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                    <Alert variant="destructive" className="rounded-md border-red-500/50 bg-red-500/5">
+                      <AlertDescription className="text-xs font-bold uppercase">{error}</AlertDescription>
+                    </Alert>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                {/* Company Info */}
-                <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
-                    <Building className="h-5 w-5" />
-                    <span>Company Information</span>
-                  </h3>
+              {/* Company Info */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-1 bg-emerald-500 rounded-full" />
+                  <h3 className="text-xs font-bold text-foreground tracking-widest uppercase">Company Information</h3>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="companyName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Company Name *</Label>
+                  <Input 
+                    id="companyName" 
+                    placeholder="e.g. Acme Corp" 
+                    value={formData.companyName} 
+                    onChange={(e) => handleInputChange('companyName', e.target.value)} 
+                    className="h-10 bg-transparent border-border rounded-md font-medium text-sm focus:ring-1 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    required 
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="companyName" className="text-sm font-medium text-foreground">Company Name *</Label>
-                    <Input id="companyName" placeholder="Your Company Inc." value={formData.companyName} onChange={(e) => handleInputChange('companyName', e.target.value)} required />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="industry" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Industry *</Label>
+                    <Select value={formData.industry} onValueChange={(value) => handleInputChange('industry', value)}>
+                      <SelectTrigger className="h-10 bg-transparent border-border rounded-md font-medium text-sm">
+                        <SelectValue placeholder="Select industry" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {industries.map(i => <SelectItem key={i} value={i} className="text-sm font-medium">{i}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="companySize" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Company Size</Label>
+                    <Select value={formData.companySize} onValueChange={(value) => handleInputChange('companySize', value)}>
+                      <SelectTrigger className="h-10 bg-transparent border-border rounded-md font-medium text-sm">
+                        <SelectValue placeholder="Select size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {companySizes.map(s => <SelectItem key={s} value={s} className="text-sm font-medium">{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="industry" className="text-sm font-medium text-foreground">Industry *</Label>
-                      <Select value={formData.industry} onValueChange={(value) => handleInputChange('industry', value)}>
-                        <SelectTrigger><SelectValue placeholder="Select industry" /></SelectTrigger>
-                        <SelectContent>
-                          {industries.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="companySize" className="text-sm font-medium text-foreground">Company Size</Label>
-                      <Select value={formData.companySize} onValueChange={(value) => handleInputChange('companySize', value)}>
-                        <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
-                        <SelectContent>
-                          {companySizes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
+              <Separator className="bg-border/40" />
+
+              {/* Personal Info */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-1 bg-amber-500 rounded-full" />
+                  <h3 className="text-xs font-bold text-foreground tracking-widest uppercase">Personal Details</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="firstName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">First Name *</Label>
+                    <Input id="firstName" placeholder="John" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm" required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="lastName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Last Name *</Label>
+                    <Input id="lastName" placeholder="Doe" value={formData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm" required />
                   </div>
                 </div>
 
-                {/* Personal Info */}
-                <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
-                    <UserIcon className="h-5 w-5" />
-                    <span>Personal Information</span>
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName" className="text-sm font-medium text-foreground">First Name *</Label>
-                      <Input id="firstName" placeholder="John" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-sm font-medium text-foreground">Last Name *</Label>
-                      <Input id="lastName" placeholder="Doe" value={formData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} required />
-                    </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="businessEmail" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Business Email *</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-50" />
+                    <Input id="businessEmail" type="email" placeholder="you@company.com" value={formData.businessEmail} onChange={(e) => handleInputChange('businessEmail', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm pl-10" required />
                   </div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight ml-1 opacity-60">Company email domains only</p>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="businessEmail" className="text-sm font-medium text-foreground">Business Email *</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Phone Number</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                      <Input id="businessEmail" type="email" placeholder="you@company.com" value={formData.businessEmail} onChange={(e) => handleInputChange('businessEmail', e.target.value)} className="pl-10" required />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-50" />
+                      <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm pl-10" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Please use your business email, not a personal email</p>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm font-medium text-foreground">Phone Number</Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                        <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="pl-10" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address" className="text-sm font-medium text-foreground">Business Address</Label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                        <Input id="address" placeholder="123 Business St, City" value={formData.address} onChange={(e) => handleInputChange('address', e.target.value)} className="pl-10" />
-                      </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="address" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Business Address</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-50" />
+                      <Input id="address" placeholder="123 Business St, City" value={formData.address} onChange={(e) => handleInputChange('address', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm pl-10" />
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Security */}
-                <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-foreground">Account Security</h3>
+              <Separator className="bg-border/40" />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-foreground">Password *</Label>
+              {/* Security */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-1 bg-red-500 rounded-full" />
+                  <h3 className="text-xs font-bold text-foreground tracking-widest uppercase">Security Credentials</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Password *</Label>
                     <div className="relative">
-                      <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Create a strong password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required />
+                      <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm focus:ring-red-500/20 focus:border-red-500" required />
                       <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">Confirm Password *</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="confirmPassword" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Confirm Password *</Label>
                     <div className="relative">
-                      <Input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} placeholder="Confirm your password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required />
+                      <Input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} placeholder="••••••••" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm focus:ring-red-500/20 focus:border-red-500" required />
                       <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                  </div>
-
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p className={formData.password.length >= 8 ? 'text-green-600 dark:text-green-400' : ''}>• At least 8 characters</p>
-                    <p className={formData.password === formData.confirmPassword && formData.password.length > 0 ? 'text-green-600 dark:text-green-400' : ''}>• Passwords match</p>
                   </div>
                 </div>
 
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600 hover:opacity-90 text-white font-semibold py-2.5 shadow-lg"
-                    disabled={loading}
-                    size="lg"
-                  >
-                    {loading ? (
-                      <span className="flex items-center justify-center">
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Creating Account...
-                      </span>
-                    ) : (
-                      <span className="flex items-center justify-center">
-                        Create Employer Account
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </span>
-                    )}
-                  </Button>
-                </motion.div>
-              </form>
-            </CardContent>
-          </Card>
-        </motion.div>
+                <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tight">
+                  <span className={formData.password.length >= 8 ? 'text-emerald-600' : 'text-muted-foreground/50'}>• Length &ge; 8</span>
+                  <span className={formData.password === formData.confirmPassword && formData.password.length > 0 ? 'text-emerald-600' : 'text-muted-foreground/50'}>• Match</span>
+                </div>
+              </div>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground space-y-2">
-          <p>
-            Already have an account?{' '}
-            <Link href="/auth/employer/login" className="text-green-600 dark:text-green-400 hover:underline font-semibold">Sign in here</Link>
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 border-t border-border">
+                <Button
+                  type="submit"
+                  className="w-full sm:w-auto px-10 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-sm active:scale-95 transition-all"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      Finalize Registration
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        <div className="mt-8 text-center space-y-3">
+          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+            Already registered?{' '}
+            <Link href="/auth/employer/login" className="text-emerald-600 hover:text-emerald-700 hover:underline">Sign In</Link>
           </p>
-          <p>
-            Looking for employee login?{' '}
-            <Link href="/auth/employee/login" className="text-green-600 dark:text-green-400 hover:underline font-semibold">Employee Portal</Link>
+          <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+            Employee? <Link href="/auth/employee/login" className="hover:text-foreground transition-colors">Portal Access</Link>
           </p>
         </div>
       </div>

@@ -109,6 +109,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      setLoading(true);
+
       try {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const initialDoc = await getDoc(userDocRef);

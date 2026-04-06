@@ -1,239 +1,46 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlus, Eye, X, Loader2, CheckCircle } from 'lucide-react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { UserPlus, Eye, Users, CheckCircle, ShieldCheck, Briefcase } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
-import { toast } from 'sonner';
 import { withAuth } from '@/components/auth/with-auth';
 import { DataList, type ColumnDef } from '@/components/list/DataList';
 import { BrandLoader } from '@/components/loader';
 import Link from 'next/link';
-import axios from 'axios';
-
-const BASE_URL = 'http://74.162.66.197/api';
 
 // ── types ──────────────────────────────────────────────────────────────────────
 
 interface Employee {
-  id: string;
-  first_name: string;
-  last_name: string;
+  uid: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
   department?: string;
   position?: string;
+  isActive?: boolean;
+  createdAt?: string;
+
+  id?: string;
+  first_name?: string;
+  last_name?: string;
   is_active?: boolean;
   created_at?: string;
 }
 
-interface AddEmployeeForm {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  company_id: string;
-}
-
-// ── Add Employee Modal ─────────────────────────────────────────────────────────
-
-function AddEmployeeModal({
-  companyId,
-  onClose,
-  onSuccess,
-}: {
-  companyId: string;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [form, setForm] = useState<AddEmployeeForm>({
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    role: 'employee',
-    company_id: companyId,
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<AddEmployeeForm>>({});
-
-  const validate = () => {
-    const e: Partial<AddEmployeeForm> = {};
-    if (!form.email.trim()) e.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email';
-    if (!form.password || form.password.length < 6) e.password = 'Min 6 characters';
-    if (!form.firstName.trim()) e.firstName = 'Required';
-    if (!form.lastName.trim()) e.lastName = 'Required';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-    setSubmitting(true);
-    try {
-      const token = localStorage.getItem('access_token');
-      await axios.post(
-        `${BASE_URL}/createEmployee`,
-        form,
-        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-      );
-      toast.success(`Employee ${form.firstName} ${form.lastName} created!`);
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.response?.data?.error || 'Failed to create employee';
-      toast.error(msg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const field = (
-    key: keyof AddEmployeeForm,
-    label: string,
-    type = 'text',
-    placeholder = ''
-  ) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-        {label} <span className="text-red-500">*</span>
-      </label>
-      <input
-        type={type}
-        value={form[key]}
-        onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-        placeholder={placeholder}
-        className={`w-full text-sm px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-emerald-400 transition-colors ${
-          errors[key] ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'
-        }`}
-      />
-      {errors[key] && <p className="text-[11px] text-red-500 mt-0.5">{errors[key]}</p>}
-    </div>
-  );
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 10 }}
-        transition={{ duration: 0.2 }}
-        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-          <div>
-            <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Add Employee</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Create a new employee account</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            {field('firstName', 'First Name', 'text', 'John')}
-            {field('lastName',  'Last Name',  'text', 'Doe')}
-          </div>
-          {field('email',    'Email',    'email',    'john@company.com')}
-          {field('password', 'Password', 'password', 'Min 6 characters')}
-
-          {/* Role */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Role</label>
-            <select
-              value={form.role}
-              onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-              className="w-full text-sm px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:border-emerald-400 transition-colors"
-            >
-              <option value="employee">Employee</option>
-              <option value="manager">Manager</option>
-              <option value="hr">HR</option>
-            </select>
-          </div>
-
-          {/* Company ID (read-only) */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Company ID</label>
-            <input
-              type="text"
-              value={form.company_id}
-              readOnly
-              className="w-full text-sm px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/60 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 rounded-xl transition-colors"
-            >
-              {submitting ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</>
-              ) : (
-                <><UserPlus className="h-4 w-4" /> Add Employee</>
-              )}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-}
+const BASE_URL = 'http://74.162.66.197/api';
 
 // ── Employees Page ─────────────────────────────────────────────────────────────
 
 function EmployeesPage() {
   const { user, loading: userLoading } = useUser();
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const fetchEmployees = useCallback(async () => {
-    if (!user?.company_id) return;
-    setLoading(true);
-    try {
-      const snap = await getDocs(
-        query(
-          collection(db, 'users'),
-          where('company_id', '==', user.company_id),
-          where('role', 'in', ['employee', 'manager', 'hr'])
-        )
-      );
-      const data: Employee[] = snap.docs.map(d => ({
-        id: d.id,
-        ...(d.data() as Omit<Employee, 'id'>),
-      }));
-      setEmployees(data);
-    } catch {
-      toast.error('Failed to load employees');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (!userLoading && user) fetchEmployees();
-  }, [user, userLoading, fetchEmployees]);
+  const fetchEmployees = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
 
   // ── Column definitions ───────────────────────────────────────────────────────
 
@@ -242,21 +49,25 @@ function EmployeesPage() {
       key: 'name',
       title: 'Name',
       sortable: true,
-      render: (_, row) => (
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              {row.first_name?.[0]}{row.last_name?.[0]}
-            </span>
+      render: (_, row) => {
+        const fname = row.firstName || row.first_name || '';
+        const lname = row.lastName || row.last_name || '';
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 border border-emerald-200/50 dark:border-emerald-800/30">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                {fname[0]}{lname[0]}
+              </span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-tight">
+                {fname} {lname}
+              </p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{row.email}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-              {row.first_name} {row.last_name}
-            </p>
-            <p className="text-[11px] text-gray-400">{row.email}</p>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'role',
@@ -269,7 +80,7 @@ function EmployeesPage() {
         { label: 'HR',       value: 'hr' },
       ],
       render: (val) => (
-        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full capitalize ${
+        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
           val === 'manager' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
           val === 'hr'      ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' :
                               'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
@@ -280,115 +91,116 @@ function EmployeesPage() {
       key: 'department',
       title: 'Department',
       sortable: true,
-      render: (val) => val || <span className="text-gray-400">—</span>,
+      render: (val) => (
+        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+          <Briefcase className="h-3 w-3 opacity-40" />
+          <span className="text-xs">{val || 'Unassigned'}</span>
+        </div>
+      ),
     },
     {
-      key: 'position',
-      title: 'Position',
-      render: (val) => val || <span className="text-gray-400">—</span>,
-    },
-    {
-      key: 'is_active',
+      key: 'isActive',
       title: 'Status',
       filterable: true,
       filterOptions: [
         { label: 'Active',   value: 'true' },
         { label: 'Inactive', value: 'false' },
       ],
-      render: (val) => (
-        <span className={`flex items-center gap-1 text-[11px] font-medium ${val !== false ? 'text-emerald-600' : 'text-gray-400'}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${val !== false ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-          {val !== false ? 'Active' : 'Inactive'}
-        </span>
-      ),
+      render: (_, row) => {
+        const val = row.isActive !== undefined ? row.isActive : row.is_active;
+        return (
+          <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${val !== false ? 'text-emerald-600' : 'text-gray-400'}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${val !== false ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-400'}`} />
+            {val !== false ? 'Active' : 'Inactive'}
+          </span>
+        );
+      },
     },
     {
-      key: 'id',
+      key: 'uid',
       title: '',
       width: '60px',
       render: (_, row) => (
-        <Link href={`/employer/employees/${row.id}`} className="p-1.5 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors inline-flex items-center justify-center">
+        <Link 
+          href={`/employer/employees/${row.uid || row.id}`} 
+          className="p-2 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all inline-flex items-center justify-center border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900/30"
+        >
           <Eye className="h-4 w-4" />
         </Link>
       ),
     },
   ];
 
-  if (userLoading || loading) return <BrandLoader />;
+  if (userLoading) return <BrandLoader />;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-[1400px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-6 py-6 max-w-[1400px] mx-auto space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Employees</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {employees.length} team member{employees.length !== 1 ? 's' : ''} in your organisation
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <Users className="h-6 w-6 text-emerald-500" />
+            Employees
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Manage your team, roles, and access permissions.
           </p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors shadow-sm"
-        >
-          <UserPlus className="h-4 w-4" />
-          Add Employee
-        </button>
+        <Link href="/employer/employees/add">
+          <button className="flex items-center justify-center gap-2 px-6 h-11 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-all shadow-md shadow-emerald-500/10 active:scale-95">
+            <UserPlus className="h-4 w-4" />
+            Add Employee
+          </button>
+        </Link>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total',    value: employees.length,                                          color: 'text-gray-800 dark:text-gray-100' },
-          { label: 'Active',   value: employees.filter(e => e.is_active !== false).length,       color: 'text-emerald-600' },
-          { label: 'Managers', value: employees.filter(e => e.role === 'manager').length,        color: 'text-blue-600' },
-          { label: 'HR',       value: employees.filter(e => e.role === 'hr').length,             color: 'text-purple-600' },
+          { label: 'Total Members', value: employees.length, color: 'text-gray-800 dark:text-gray-100', icon: Users, bg: 'bg-gray-50 dark:bg-gray-900' },
+          { label: 'Active Now', value: employees.filter(e => (e.isActive !== false && e.is_active !== false)).length, color: 'text-emerald-600', icon: CheckCircle, bg: 'bg-emerald-50/50 dark:bg-emerald-900/10' },
+          { label: 'Managers', value: employees.filter(e => e.role === 'manager').length, color: 'text-blue-600', icon: ShieldCheck, bg: 'bg-blue-50/50 dark:bg-blue-900/10' },
+          { label: 'Departments', value: Array.from(new Set(employees.map(e => e.department).filter(Boolean))).length, color: 'text-purple-600', icon: Briefcase, bg: 'bg-purple-50/50 dark:bg-purple-900/10' },
         ].map(s => (
-          <div key={s.label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 text-center">
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+          <div key={s.label} className={`flex flex-col items-center justify-center p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm ${s.bg}`}>
+            <s.icon className={`h-5 w-5 ${s.color} opacity-80 mb-2`} />
+            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 text-center">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* DataList */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 shadow-sm">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
         <DataList<Employee>
-          data={employees}
+          key={refreshKey}
+          apiPath={`${BASE_URL}/employees`}
+          dataPath="employees"
+          onDataLoaded={(data) => setEmployees(data)}
           columns={columns}
-          rowKey="id"
-          searchPlaceholder="Search by name, email, department…"
+          rowKey={(row) => row.uid || row.id || row.email}
+          searchPlaceholder="Search by name, email, department or position..."
           defaultPageSize={25}
-          emptyMessage="No employees found. Add your first employee to get started."
+          emptyMessage="No employees found. Start by adding your first team member."
           onExport={() => {
             const csv = [
               ['Name', 'Email', 'Role', 'Department', 'Position', 'Status'],
               ...employees.map(e => [
-                `${e.first_name} ${e.last_name}`,
+                `${e.firstName || e.first_name} ${e.lastName || e.last_name}`,
                 e.email, e.role,
                 e.department ?? '',
                 e.position ?? '',
-                e.is_active !== false ? 'Active' : 'Inactive',
+                (e.isActive !== false && e.is_active !== false) ? 'Active' : 'Inactive',
               ]),
             ].map(r => r.join(',')).join('\n');
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-            a.download = 'employees.csv';
+            a.download = `employees_export_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
           }}
         />
       </div>
-
-      {/* Add Employee Modal */}
-      <AnimatePresence>
-        {showAddModal && user?.company_id && (
-          <AddEmployeeModal
-            companyId={user.company_id}
-            onClose={() => setShowAddModal(false)}
-            onSuccess={fetchEmployees}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
