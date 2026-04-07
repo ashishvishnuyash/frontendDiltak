@@ -1,7 +1,6 @@
 // app/api/chat/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
 import type { ChatMessage } from '@/types/index';
 import { getPersonalHistory, formatPersonalHistoryForAI } from '@/lib/reports-service';
 import { db } from '@/lib/firebase';
@@ -172,16 +171,8 @@ const ASSESSMENT_DATA = {
   }
 };
 
-// Initialize OpenAI client only when needed
-function getOpenAIClient() {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY environment variable is required');
-  }
-  return new OpenAI({ apiKey });
-}
 // Uma (animeshai) agent configuration
-const UMA_API_URL = process.env.UMA_API_URL || 'http://74.162.66.197';
+const UMA_API_URL = process.env.UMA_API_URL || 'http://127.0.0.1:8000';
 
 interface UmaChatResponse {
   session_id: string;
@@ -451,6 +442,7 @@ export async function POST(request: NextRequest) {
       assessmentType,
       assessmentAnswers,
       umaSessionId,
+      firebaseToken,
     } = requestData;
 
     if (!messages || !Array.isArray(messages)) {
@@ -498,7 +490,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (endSession) {
-      return await generateWellnessReport(messages, sessionType, sessionDuration, userId, companyId);
+      return await generateWellnessReport(messages, sessionType, sessionDuration, userId, companyId, firebaseToken);
     } else {
       return await generateChatResponse(messages, sessionType, userId, companyId, deepSearch, aiProvider, files, umaSessionId);
     }
@@ -666,7 +658,7 @@ async function generateChatResponse(messages: ChatMessage[], _sessionType: strin
   }
 }
 
-async function generateWellnessReport(messages: ChatMessage[], sessionType: string, sessionDuration: number, userId?: string, companyId?: string): Promise<NextResponse> {
+async function generateWellnessReport(messages: ChatMessage[], sessionType: string, sessionDuration: number, userId?: string, companyId?: string, firebaseToken?: string): Promise<NextResponse> {
   try {
     // Extract user messages for analysis
     const userMessages = messages
@@ -837,22 +829,93 @@ If the user hasn't explicitly mentioned physical health topics, use reasonable d
 
 Always include the physical_health_metrics object in your response, even if using estimates.`;
 
-    const openai = getOpenAIClient();
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: 'You are analyzing a conversation to generate a wellness report. Provide accurate, empathetic assessments based on the conversation data. Always respond with valid JSON. Focus on understanding the person\'s state and providing helpful insights.' },
-        { role: 'user', content: analysisPrompt }
-      ],
-      temperature: 0.3,
-      max_tokens: 1500,
-    });
+    // ── Forward to the animeshai backend (has its own AI key) ──────────────────
+    // Build a compact conversation summary to send
+    const conversationSummary = messages
+      .map(m => `${m.sender === 'user' ? 'User' : 'Uma'}: ${m.content}`)
+      .join('\n');
 
-    const aiResponse = completion.choices[0]?.message?.content;
+    let backendReport: Partial<WellnessReport> = {};
+    try {
+      const backendHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (firebaseToken) {
+        backendHeaders['Authorization'] = `Bearer ${firebaseToken}`;
+      }
+      const backendRes = await fetch(`${UMA_API_URL}/api/chat_wrapper`, {
+        method: 'POST',
+        headers: backendHeaders,
+        body: JSON.stringify({
+          messages,
+          endSession: true,
+          sessionType,
+          sessionDuration,
+          userId: userId ?? 'anonymous',
+          companyId: companyId ?? '',
+        }),
+      });
 
-    if (!aiResponse) {
-      throw new Error('No analysis generated from AI');
+      if (backendRes.ok) {
+        const backendData = await backendRes.json();
+        // Backend returns { type: 'report', data: {...} } with different field names
+        const raw: any = backendData?.data ?? backendData?.report ?? backendData ?? {};
+        // Normalize backend field names to WellnessReport format
+        backendReport = {
+          mood: raw.mood_rating ?? raw.mood,
+          stress_score: raw.stress_level ?? raw.stress_score,
+          anxious_level: raw.anxiety_level ?? raw.anxious_level,
+          work_satisfaction: raw.work_satisfaction,
+          work_life_balance: raw.work_life_balance,
+          energy_level: raw.energy_level,
+          confident_level: raw.confidence_level ?? raw.confident_level,
+          sleep_quality: raw.sleep_quality,
+          complete_report: raw.notes ?? raw.complete_report ?? '',
+          session_type: (raw.session_type ?? sessionType) as 'text' | 'voice',
+          session_duration: raw.session_duration_minutes ?? raw.session_duration ?? sessionDuration,
+          key_insights: raw.key_insights ?? [],
+          recommendations: raw.recommendations ?? [],
+        };
+      } else {
+        console.warn('animeshai /chat_wrapper returned non-ok status:', backendRes.status);
+      }
+    } catch (backendErr) {
+      console.warn('animeshai backend unavailable for report generation, using fallback:', backendErr);
     }
+
+    let aiResponse = Object.keys(backendReport).length > 0
+      ? JSON.stringify(backendReport)
+      : null;
+
+    // Fallback: call OpenAI directly if backend is unavailable or failed
+    if (!aiResponse) {
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (!openaiKey) {
+        throw new Error('No analysis generated from backend and OPENAI_API_KEY is not set');
+      }
+      const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are a wellness analysis AI. Respond with valid JSON only, no markdown.' },
+            { role: 'user', content: analysisPrompt },
+          ],
+          temperature: 0.3,
+          response_format: { type: 'json_object' },
+        }),
+      });
+      if (openaiRes.ok) {
+        const openaiData = await openaiRes.json();
+        aiResponse = openaiData.choices?.[0]?.message?.content ?? null;
+      }
+      if (!aiResponse) {
+        throw new Error('No analysis generated from backend or OpenAI fallback');
+      }
+    }
+
 
     // Parse the JSON response
     let report: WellnessReport & { metrics?: any; metrics_explanation?: any };

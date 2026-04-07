@@ -10,13 +10,13 @@ import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 import ForgotPasswordModal from '@/components/modals/ForgotPasswordModal';
 
-const BASE_URL = 'http://74.162.66.197/api';
+const BASE_URL = 'http://127.0.0.1:8000/api';
 
 function routeForRole(role: string): string {
   const r = role?.toLowerCase();
-  if (r === 'employee')            return '/employee/dashboard';
-  if (r === 'manager')             return '/manager/dashboard';
-  if (r === 'employer')            return '/employer/dashboard';
+  if (r === 'employee') return '/employee/dashboard';
+  if (r === 'manager') return '/manager/dashboard';
+  if (r === 'employer') return '/employer/dashboard';
   if (r === 'admin' || r === 'super_admin') return '/admin/dashboard';
   return '/employee/dashboard';
 }
@@ -24,11 +24,11 @@ function routeForRole(role: string): string {
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [showPw, setShowPw]       = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [fieldError, setFieldError] = useState('');
-  const [loading, setLoading]     = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
 
   const { refreshUser } = useAuth();

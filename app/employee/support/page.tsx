@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/hooks/use-user';
+import { useAuth } from '@/contexts/auth-context';
 import { BrandLoader } from '@/components/loader';
 import SupportScreen from '@/components/support/SupportScreen';
 
 export default function EmployeeSupportPage() {
-  const { user, loading } = useUser();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {

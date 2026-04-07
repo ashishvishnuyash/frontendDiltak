@@ -8,6 +8,7 @@ import type { User } from '@/types/index';
 import WellnessWelcomeModal from './WellnessWelcomeModal';
 import SafeHereModal from './SafeHereModal';
 import CreateSupportModal from './CreateSupportModal';
+import { apiPost } from '@/lib/api-client';
 
 // ── Support type card ──────────────────────────────────────────────────────────
 
@@ -94,24 +95,29 @@ export default function SupportScreen({ user }: { user: User }) {
   }) => {
     setShowCreate(false);
     try {
-      const res = await fetch('/api/escalation/create-ticket', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          employee_id: user.id,
-          company_id: user.company_id,
-          type: selectedType?.key ?? 'hr',
-          ...data,
-        }),
-      });
-      const result = await res.json();
+      const result = await apiPost<{ success: boolean; ticket_id: string; message: string }>(
+        '/escalation/create-ticket',
+        {
+          employee_id:   user.id,
+          company_id:    user.company_id ?? '',
+          ticket_type:   selectedType?.key ?? 'hr',
+          priority:      data.priority.toLowerCase(),
+          subject:       data.subject,
+          description:   data.description,
+          category:      data.category.toLowerCase().replace(/\s+/g, '_'),
+          is_anonymous:  data.anonymous,
+          confidential:  data.confidential,
+          attachments:   [],
+        }
+      );
       if (result.success) {
-        toast.success('Support request submitted anonymously.');
+        toast.success('Support request submitted. Our team will follow up confidentially.');
       } else {
         toast.error('Failed to submit request. Please try again.');
       }
-    } catch {
-      toast.error('Something went wrong.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Something went wrong.';
+      toast.error(msg);
     }
     setSelectedType(null);
   };
