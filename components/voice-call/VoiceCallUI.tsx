@@ -1,8 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Mic, MicOff, PhoneOff, Subtitles } from "lucide-react";
 
 interface VoiceCallUIProps {
   isActive: boolean;
@@ -19,6 +18,39 @@ interface VoiceCallUIProps {
   currentText?: string;
 }
 
+function WaveformBars({ active, color }: { active: boolean; color: string }) {
+  const bars = [3, 5, 8, 6, 10, 7, 4, 9, 5, 7, 4, 6, 8, 5, 3];
+  return (
+    <div className="flex items-center justify-center gap-[3px] h-12">
+      {bars.map((h, i) => (
+        <motion.div
+          key={i}
+          className={`rounded-full ${color}`}
+          style={{ width: 3 }}
+          animate={
+            active
+              ? {
+                  height: [h * 2, h * 4 + Math.random() * 10, h * 2],
+                  opacity: [0.6, 1, 0.6],
+                }
+              : { height: 4, opacity: 0.3 }
+          }
+          transition={
+            active
+              ? {
+                  duration: 0.5 + (i % 4) * 0.15,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: i * 0.04,
+                }
+              : { duration: 0.3 }
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function VoiceCallUI({
   isActive,
   isRecording,
@@ -27,213 +59,198 @@ export default function VoiceCallUI({
   callDuration,
   onEndCall,
   onToggleMute,
-  onToggleRecording,
   isMuted = false,
   showClosedCaptions = false,
   onToggleClosedCaptions,
   currentText = "",
 }: VoiceCallUIProps) {
-  if (!isActive) return null;
-
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const statusLabel = isSpeaking
+    ? "Speaking…"
+    : isRecording
+    ? "Listening…"
+    : isProcessing
+    ? "Processing…"
+    : "Tap to speak";
+
+  const statusColor = isSpeaking
+    ? "text-emerald-300"
+    : isRecording
+    ? "text-red-300"
+    : isProcessing
+    ? "text-amber-300"
+    : "text-white/50";
+
   return (
     <AnimatePresence>
       {isActive && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 z-50 flex flex-col items-center justify-between p-4"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.25 }}
+          className="fixed inset-0 z-50 flex flex-col items-center bg-[#0a0f1a]"
         >
-          {/* Top Controls - Minimal */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-            {onToggleClosedCaptions && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onToggleClosedCaptions}
-                className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8 p-0 rounded-full"
-              >
-                <span className="text-xs font-semibold">CC</span>
-              </Button>
-            )}
-            <div className="flex-1"></div>
-            
-            {/* Listening Status Badge - Top Right */}
-            {isRecording && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="bg-red-500/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2 shadow-lg"
-              >
+          {/* Top bar */}
+          <div className="w-full flex items-center justify-between px-5 pt-5 pb-2">
+            <div className="flex items-center gap-2">
+              {/* Live indicator */}
+              {(isRecording || isSpeaking) && (
                 <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="w-2 h-2 bg-white rounded-full"
-                ></motion.div>
-                <span className="text-white font-semibold text-sm">Listening</span>
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 1.2, repeat: Infinity }}
+                  className={`w-2 h-2 rounded-full ${isRecording ? "bg-red-500" : "bg-emerald-400"}`}
+                />
+              )}
+              <span className="text-white/40 text-xs font-mono">
+                {formatDuration(callDuration)}
+              </span>
+            </div>
+
+            {onToggleClosedCaptions && (
+              <button
+                onClick={onToggleClosedCaptions}
+                className={`p-2 rounded-full transition-colors ${
+                  showClosedCaptions
+                    ? "bg-white/20 text-white"
+                    : "text-white/40 hover:text-white/70"
+                }`}
+              >
+                <Subtitles className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+
+          {/* Central area */}
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full px-6">
+            {/* Avatar orb */}
+            <div className="relative flex items-center justify-center">
+              {/* Outer glow ring */}
+              <motion.div
+                animate={
+                  isSpeaking
+                    ? { scale: [1, 1.18, 1], opacity: [0.2, 0.4, 0.2] }
+                    : isRecording
+                    ? { scale: [1, 1.12, 1], opacity: [0.15, 0.3, 0.15] }
+                    : { scale: 1, opacity: 0.08 }
+                }
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute w-52 h-52 rounded-full bg-emerald-400"
+              />
+              {/* Mid ring */}
+              <motion.div
+                animate={
+                  isSpeaking || isRecording
+                    ? { scale: [1, 1.1, 1], opacity: [0.25, 0.5, 0.25] }
+                    : { scale: 1, opacity: 0.12 }
+                }
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                className="absolute w-40 h-40 rounded-full bg-emerald-500"
+              />
+              {/* Core orb */}
+              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-700 shadow-2xl flex items-center justify-center z-10">
+                <span className="text-white text-3xl font-bold select-none">U</span>
+              </div>
+            </div>
+
+            {/* Name + role */}
+            <div className="text-center">
+              <p className="text-white text-xl font-semibold tracking-wide">Uma</p>
+              <p className="text-white/40 text-xs mt-0.5">Wellness AI Companion</p>
+            </div>
+
+            {/* Waveform */}
+            <div className="w-full max-w-xs">
+              <WaveformBars
+                active={isSpeaking || isRecording}
+                color={
+                  isSpeaking
+                    ? "bg-emerald-400"
+                    : isRecording
+                    ? "bg-red-400"
+                    : "bg-white/20"
+                }
+              />
+            </div>
+
+            {/* Status label */}
+            <motion.p
+              key={statusLabel}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className={`text-sm font-medium ${statusColor} tracking-wide`}
+            >
+              {statusLabel}
+            </motion.p>
+
+            {/* Processing dots */}
+            {isProcessing && (
+              <div className="flex gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="w-2 h-2 rounded-full bg-amber-400"
+                    animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
+                    transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.18 }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Closed captions */}
+          <AnimatePresence>
+            {showClosedCaptions && currentText && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="w-full px-6 mb-4"
+              >
+                <div className="bg-black/60 backdrop-blur rounded-xl px-4 py-3 text-center">
+                  <p className="text-white text-sm leading-relaxed line-clamp-3">{currentText}</p>
+                </div>
               </motion.div>
             )}
-          </div>
+          </AnimatePresence>
 
-          {/* Central Avatar/Visual */}
-          <div className="flex-1 flex items-center justify-center">
-            <motion.div
-              animate={{
-                scale: isSpeaking ? [1, 1.1, 1] : isRecording ? [1, 1.05, 1] : 1,
-              }}
-              transition={{
-                duration: 2,
-                repeat: isSpeaking || isRecording ? Infinity : 0,
-                ease: "easeInOut",
-              }}
-              className="relative"
-            >
-              {/* Large circular gradient background */}
-              <div className="w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-gradient-to-b from-blue-400/30 via-blue-500/40 to-blue-600/50 shadow-2xl relative overflow-hidden">
-                {/* Cloud-like patterns */}
-                <div className="absolute inset-0">
-                  <div className="absolute top-0 left-1/4 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
-                  <div className="absolute top-1/4 right-1/4 w-24 h-24 bg-white/15 rounded-full blur-xl"></div>
-                  <div className="absolute bottom-0 left-1/2 w-40 h-40 bg-blue-600/30 rounded-full blur-2xl"></div>
-                </div>
-                
-                {/* Status indicator */}
-                {(isSpeaking || isRecording || isProcessing) && (
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="absolute inset-0 rounded-full border-4 border-white/30"
-                  ></motion.div>
-                )}
-              </div>
-
-              {/* Status text overlay */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-12 text-center">
-                <AnimatePresence mode="wait">
-                  {isSpeaking && (
-                    <motion.div
-                      key="speaking"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-white/90 text-sm font-medium"
-                    >
-                      AI is speaking...
-                    </motion.div>
-                  )}
-                  {isRecording && (
-                    <motion.div
-                      key="recording"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-white text-lg font-semibold flex items-center justify-center space-x-3"
-                    >
-                      <motion.div
-                        animate={{ scale: [1, 1.3, 1] }}
-                        transition={{ duration: 1, repeat: Infinity }}
-                        className="w-3 h-3 bg-red-500 rounded-full"
-                      ></motion.div>
-                      <span>Listening...</span>
-                      <motion.div
-                        animate={{ scale: [1, 1.3, 1] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
-                        className="w-3 h-3 bg-red-500 rounded-full"
-                      ></motion.div>
-                    </motion.div>
-                  )}
-                  {isProcessing && (
-                    <motion.div
-                      key="processing"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-white/90 text-sm font-medium flex items-center justify-center space-x-2"
-                    >
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                      <span>Processing...</span>
-                    </motion.div>
-                  )}
-                  {!isSpeaking && !isRecording && !isProcessing && (
-                    <motion.div
-                      key="idle"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-white/70 text-sm"
-                    >
-                      {formatDuration(callDuration)}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Closed Captions */}
-          {showClosedCaptions && currentText && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="absolute bottom-32 left-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg p-4 text-white text-center"
-            >
-              <p className="text-sm">{currentText}</p>
-            </motion.div>
-          )}
-
-          {/* Bottom Controls */}
-          <div className="w-full flex items-center justify-center space-x-6 pb-8">
-            {/* Mute/Unmute Button */}
-            <Button
+          {/* Bottom controls */}
+          <div className="w-full flex items-center justify-center gap-8 pb-12">
+            {/* Mute */}
+            <button
               onClick={onToggleMute}
-              className={`h-14 w-14 rounded-full ${
+              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
                 isMuted
-                  ? "bg-gray-700 hover:bg-gray-600"
-                  : "bg-gray-800/80 hover:bg-gray-700/80"
-              } border-0 shadow-lg`}
+                  ? "bg-white/20 ring-2 ring-white/30"
+                  : "bg-white/10 hover:bg-white/20"
+              }`}
             >
               {isMuted ? (
                 <MicOff className="h-6 w-6 text-white" />
               ) : (
                 <Mic className="h-6 w-6 text-white" />
               )}
-            </Button>
+            </button>
 
-            {/* Optional Manual Recording Toggle (only show if provided) */}
-            {onToggleRecording && (
-              <Button
-                onClick={onToggleRecording}
-                className={`h-14 w-14 rounded-full ${
-                  isRecording
-                    ? "bg-red-600 hover:bg-red-700"
-                    : "bg-gray-800/80 hover:bg-gray-700/80"
-                } border-0 shadow-lg`}
-              >
-                <Mic className="h-6 w-6 text-white" />
-              </Button>
-            )}
-
-            {/* End Call Button */}
-            <Button
+            {/* End call */}
+            <button
               onClick={onEndCall}
-              className="h-14 w-14 rounded-full bg-red-600 hover:bg-red-700 border-0 shadow-lg"
+              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-xl transition-colors"
             >
-              <X className="h-6 w-6 text-white" />
-            </Button>
+              <PhoneOff className="h-7 w-7 text-white" />
+            </button>
           </div>
 
-          {/* Navigation Bar Indicator */}
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white/30 rounded-full mb-1"></div>
+          {/* Home indicator */}
+          <div className="w-32 h-1 bg-white/20 rounded-full mb-2" />
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
-

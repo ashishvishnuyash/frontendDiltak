@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useUser } from '@/hooks/use-user';
+import { useAuth } from '@/contexts/auth-context';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { withAuth } from '@/components/auth/with-auth';
@@ -90,7 +90,7 @@ function QuickAction({ href, icon: Icon, iconBg, label, sub }: {
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 function EmployeeDashboard() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading } = useAuth();
   const [reports, setReports] = useState<MentalHealthReport[]>([]);
   const [loading, setLoading] = useState(true);
 

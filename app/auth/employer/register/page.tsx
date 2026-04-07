@@ -17,6 +17,7 @@ import { collection, doc, addDoc, setDoc, getDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
+import { Separator } from '@radix-ui/react-select';
 
 const industries = [
   'Technology', 'Healthcare', 'Finance', 'Education', 'Manufacturing',
@@ -378,4 +379,5 @@ export default function EmployerRegisterPage() {
       </div>
     </div>
   );
+}
 }

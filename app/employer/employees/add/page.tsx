@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
-const BASE_URL = 'http://74.162.66.197/api';
+const BASE_URL = 'http://127.0.0.1:8000/api';
 
 function AddEmployeePage() {
   const router = useRouter();
@@ -58,14 +58,14 @@ function AddEmployeePage() {
     try {
       const token = localStorage.getItem('access_token');
       await axios.post(
-        `${BASE_URL}/createEmployee`,
+        `${BASE_URL}/employees/create`,
         { ...form, company_id: user.company_id },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
       toast.success('Employee successfully added to organisation');
       router.push('/employer/employees');
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to add employee');
+      toast.error(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to add employee');
     } finally {
       setSubmitting(false);
     }
@@ -73,12 +73,12 @@ function AddEmployeePage() {
 
   return (
     <div className="px-4 py-8 max-w-[1240px] mx-auto space-y-6">
-      
+
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => router.back()} 
+          <button
+            onClick={() => router.back()}
             className="group flex items-center justify-center h-10 w-10 rounded-md bg-secondary/80 hover:bg-secondary border border-border transition-all"
           >
             <ArrowLeft className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -98,7 +98,7 @@ function AddEmployeePage() {
 
         <CardContent className="p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-            
+
             {/* ── Section 1: Personal Identity ── */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
@@ -235,7 +235,7 @@ function AddEmployeePage() {
                     <Label className="text-[10px] font-bold text-foreground uppercase tracking-wider">Automation</Label>
                     <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-tight">Send credentials email</p>
                   </div>
-                  <Switch 
+                  <Switch
                     checked={form.sendWelcomeEmail}
                     onCheckedChange={(checked) => setForm(f => ({ ...f, sendWelcomeEmail: checked }))}
                     className="data-[state=checked]:bg-emerald-500 scale-90"
@@ -246,15 +246,15 @@ function AddEmployeePage() {
 
             {/* ── Actions ── */}
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 border-t border-border">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => router.back()}
                 className="w-full sm:w-auto px-6 py-2 bg-secondary/50 hover:bg-secondary text-foreground font-bold text-xs uppercase tracking-wider rounded-md transition-all active:scale-95"
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={submitting}
                 className="w-full sm:w-auto px-10 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2"
               >

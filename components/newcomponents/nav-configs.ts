@@ -27,11 +27,15 @@ import {
 import type { NavItem } from './Sidebar';
 
 export const employeeNavItems: NavItem[] = [
-  { path: '/employee/dashboard',   label: 'Wellness Dashboard', icon: LayoutDashboard, exact: true },
-  { path: '/employee/chat',        label: 'AI Chat',            icon: MessageSquare },
-  { path: '/employee/community',   label: 'Community',          icon: Users },
-  { path: '/employee/challenges',  label: 'Challenges',         icon: Star },
-  { path: '/employee/support',     label: 'Support',            icon: HelpCircle },
+  { path: '/employee/dashboard',       label: 'Wellness Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/employee/chat',            label: 'AI Chat',            icon: MessageSquare },
+  { path: '/employee/reports',         label: 'My Reports',         icon: FileText },
+  { path: '/employee/recommendations', label: 'Recommendations',    icon: Sparkles },
+  { path: '/employee/community',       label: 'Community',          icon: Users },
+  // { path: '/employee/challenges',      label: 'Challenges',         icon: Star },
+  { path: '/employee/gamification',    label: 'Gamification',       icon: Trophy },
+  { path: '/employee/support',         label: 'Support',            icon: HelpCircle },
+  // { path: '/employee/profile',         label: 'My Profile',         icon: UserCheck },
 ];
 
 export const managerNavItems: NavItem[] = [

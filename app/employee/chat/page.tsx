@@ -45,7 +45,7 @@ import {
   Heart,
   Plus,
 } from "lucide-react";
-import { useUser } from "@/hooks/use-user";
+import { useAuth } from '@/contexts/auth-context';
 import { toast } from "sonner";
 import type { ChatMessage } from "@/types/index";
 import ReactMarkdown from "react-markdown";
@@ -252,7 +252,7 @@ const calculateRiskLevel = (
 };
 
 export default function EmployeeChatPage() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -471,173 +471,109 @@ export default function EmployeeChatPage() {
     }, 100);
   };
 
-  // Enhanced TTS with ElevenLabs API (male teen voice)
-  const speakText = async (text: string) => {
-    console.log('🗣️ speakText called', { text: text.substring(0, 50) + '...', audioEnabled, audioEnabledRef: audioEnabledRef.current });
-    
-    // Use ref to check audioEnabled (avoid stale closure)
-    if (!audioEnabledRef.current) {
-      console.log('⚠️ Audio disabled, not speaking');
-      return;
-    }
-    
-    // Stop any current speech
+  // Stop whatever audio is currently playing (ElevenLabs, browser TTS, or lip-sync hook)
+  const stopCurrentAudio = () => {
     stopTTS();
-    
-    // Stop any playing audio
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
       audioPlayerRef.current.currentTime = 0;
       audioPlayerRef.current = null;
     }
-    
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+  };
+
+  // TTS: fetch audio from ElevenLabs, play immediately, then auto-listen
+  const speakText = async (text: string) => {
+    if (!audioEnabledRef.current) return;
+
+    // Stop anything already playing
+    stopCurrentAudio();
+
     setCurrentTTSText(text);
     setIsSpeaking(true);
-    console.log('🎵 Requesting TTS from ElevenLabs...');
-    
+
+    // Auto-listen after speech ends (shared by both ElevenLabs and fallback)
+    const scheduleAutoListen = () => {
+      if (!isVoiceModeRef.current || !audioEnabledRef.current) return;
+      if (autoListenTimerRef.current) clearTimeout(autoListenTimerRef.current);
+      autoListenTimerRef.current = setTimeout(() => {
+        if (isVoiceModeRef.current && !isRecording) {
+          startRecording().catch(() => {});
+        }
+      }, 400);
+    };
+
+    // Browser built-in TTS fallback (no API key needed)
+    const speakWithBrowser = () => {
+      if (typeof window === 'undefined' || !window.speechSynthesis) {
+        setIsSpeaking(false);
+        scheduleAutoListen();
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      // Pick a natural-sounding voice if available
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang.startsWith('en') && !v.localService) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+      if (preferred) utterance.voice = preferred;
+      utterance.onend = () => { setIsSpeaking(false); scheduleAutoListen(); };
+      utterance.onerror = () => { setIsSpeaking(false); scheduleAutoListen(); };
+      window.speechSynthesis.speak(utterance);
+    };
+
+    let audioUrl: string | null = null;
+
     try {
-      // Call ElevenLabs API for text-to-speech
+      // Skip emotion pre-processing (addEmotion: false) for lower latency
       const response = await fetch('/api/text-to-speech', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, addEmotion: false }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to generate speech' }));
-        console.error('❌ ElevenLabs API error:', errorData);
-        throw new Error(errorData.error || 'Failed to generate speech');
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson?.error || `TTS HTTP ${response.status}`);
       }
 
-      // Get audio blob from response
       const audioBlob = await response.blob();
-      console.log('✅ Audio blob received from ElevenLabs', { size: audioBlob.size, type: audioBlob.type });
-      const audioUrl = URL.createObjectURL(audioBlob);
+      if (!audioBlob.size) throw new Error('Empty audio response');
 
-      // Create audio element with proper settings
-      const audio = new Audio();
-      audio.preload = 'auto'; // Ensure full buffering
+      audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
       audioPlayerRef.current = audio;
-      
-      console.log('⏳ Loading audio for playback...');
-
-      // Wait for the audio to be fully loaded before playing
-      await new Promise<void>((resolve, reject) => {
-        const handleCanPlayThrough = () => {
-          console.log('✅ Audio fully buffered and ready to play');
-          audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-          audio.removeEventListener('error', handleError);
-          resolve();
-        };
-        
-        const handleError = (error: Event) => {
-          console.error('❌ Error loading audio:', error);
-          audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-          audio.removeEventListener('error', handleError);
-          reject(new Error('Failed to load audio'));
-        };
-        
-        audio.addEventListener('canplaythrough', handleCanPlayThrough);
-        audio.addEventListener('error', handleError);
-        
-        // Set the source after adding event listeners
-        audio.src = audioUrl;
-        audio.load(); // Explicitly start loading
-        
-        // Timeout fallback - if audio doesn't load within 10 seconds, try playing anyway
-        setTimeout(() => {
-          if (audio.readyState >= 3) { // HAVE_FUTURE_DATA or better
-            handleCanPlayThrough();
-          } else if (audio.readyState >= 2) { // HAVE_CURRENT_DATA - might work
-            console.warn('⚠️ Audio may not be fully buffered, attempting playback anyway');
-            handleCanPlayThrough();
-          }
-        }, 10000);
-      });
 
       audio.onended = () => {
         setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
         audioPlayerRef.current = null;
-        
-        // Auto-start listening after AI finishes speaking (only in voice mode)
-        // Use refs to get the latest state values (not stale closure values)
-        const currentVoiceMode = isVoiceModeRef.current;
-        const currentAudioEnabled = audioEnabledRef.current;
-        console.log('🎵 Audio playback ended, checking if should start listening...', { 
-          isVoiceMode: currentVoiceMode, 
-          audioEnabled: currentAudioEnabled, 
-          isRecording 
-        });
-        
-        if (currentVoiceMode && currentAudioEnabled && !isRecording) {
-          // Wait 500ms before auto-starting to listen
-          autoListenTimerRef.current = setTimeout(() => {
-            // Double-check state before starting (use refs again for latest values)
-            if (!isRecording && !isSpeaking && isVoiceModeRef.current) {
-              console.log('🎤 Auto-starting listening after AI finished speaking');
-              startRecording().catch(err => {
-                console.error('❌ Error starting recording:', err);
-                toast.error('Failed to start listening. Please check microphone permissions.');
-              });
-            } else {
-              console.log('⚠️ Skipping auto-listen - state check failed', { 
-                isRecording, 
-                isSpeaking, 
-                isVoiceMode: isVoiceModeRef.current 
-              });
-            }
-          }, 500);
-        } else {
-          console.log('⚠️ Not starting auto-listen', { 
-            isVoiceMode: currentVoiceMode, 
-            audioEnabled: currentAudioEnabled, 
-            isRecording 
-          });
-        }
+        scheduleAutoListen();
       };
 
-      audio.onerror = (error) => {
-        console.error('Audio playback error:', error);
+      audio.onerror = () => {
         setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
         audioPlayerRef.current = null;
-        toast.error('Failed to play audio');
+        scheduleAutoListen();
       };
 
-      // Handle stalled/waiting events to detect buffering issues
-      audio.onstalled = () => {
-        console.warn('⚠️ Audio playback stalled - network issue or buffering');
-      };
-      
-      audio.onwaiting = () => {
-        console.warn('⚠️ Audio waiting for more data...');
-      };
-
-      // Play audio - should be ready now since we waited for canplaythrough
-      console.log('▶️ Starting audio playback...');
-      try {
-        await audio.play();
-        console.log('✅ Audio playback started successfully');
-      } catch (playError) {
-        console.error('❌ Error playing audio:', playError);
-        setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
-        audioPlayerRef.current = null;
-        throw playError;
-      }
-
-      // If in avatar mode, also trigger lip sync (optional - you may want to sync with audio timing)
-      if (isAvatarMode) {
-        // Note: Lip sync timing may need adjustment for ElevenLabs audio
-        // For now, we'll just use the text for visual feedback
-      }
-    } catch (error) {
-      console.error('ElevenLabs TTS Error:', error);
+      // Play immediately — no canplaythrough wait needed
+      await audio.play();
+    } catch (error: any) {
+      console.error('ElevenLabs TTS failed, falling back to browser TTS:', error?.message);
       setIsSpeaking(false);
-      toast.error('Failed to generate speech. Please check your ElevenLabs API key.');
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioPlayerRef.current = null;
+
+      // Fallback: use browser's built-in speech synthesis
+      setIsSpeaking(true);
+      speakWithBrowser();
     }
   };
 
@@ -703,39 +639,15 @@ export default function EmployeeChatPage() {
     setAudioEnabled(true);
     setShowVoiceInstructions(false); // Hide instructions for autonomous mode
     
-    // Show a welcome message from AI in voice mode, then auto-start listening
+    // Greet the user and start voice loop
     if (sessionId) {
       const voiceWelcome = "I'm here to listen. Please share whatever is on your mind.";
       await addMessageToDb(voiceWelcome, "ai", sessionId);
-      
-      // Speak the welcome message, then auto-start listening after it finishes
-      if (audioEnabled) {
-        // Wait a bit then speak, and the onended handler will auto-start listening
-        setTimeout(() => {
-          speakText(voiceWelcome);
-        }, 500);
-        
-        // FALLBACK: Start listening after 5 seconds even if welcome message doesn't finish
-        // This ensures listening starts even if TTS fails or takes too long
-        setTimeout(() => {
-          if (!isRecording && isVoiceMode) {
-            console.log('🎤 Fallback: Starting listening after timeout');
-            startRecording();
-          }
-        }, 5000);
-      } else {
-        // If audio is disabled, start listening immediately
-        setTimeout(() => {
-          console.log('🎤 Starting listening immediately (audio disabled)');
-          startRecording();
-        }, 1000);
-      }
+      // speakText → onended → startRecording automatically (the loop)
+      speakText(voiceWelcome);
     } else {
-      // If no session, start listening immediately
-      setTimeout(() => {
-        console.log('🎤 Starting listening immediately (no session)');
-        startRecording();
-      }, 1000);
+      // No session yet — start listening immediately
+      setTimeout(() => startRecording().catch(() => {}), 600);
     }
     
     toast.success("🎙️ Voice call started! I'm listening...", {
@@ -750,18 +662,8 @@ export default function EmployeeChatPage() {
     setCallDuration(0);
 
     setIsRecording(false);
-    setIsSpeaking(false);
     setProcessingAudio(false);
-
-    // Stop any ongoing speech
-    stopTTS();
-    
-    // Stop any playing audio
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.pause();
-      audioPlayerRef.current.currentTime = 0;
-      audioPlayerRef.current = null;
-    }
+    stopCurrentAudio();
     
     // Clear all timers
     if (autoListenTimerRef.current) {
@@ -1137,40 +1039,34 @@ export default function EmployeeChatPage() {
     setLoading(true);
 
     try {
-      // Calculate conversation metrics
-      const sessionDuration = callDuration || 
+      const sessionDuration = callDuration ||
         Math.floor((Date.now() - (callStartTime?.getTime() || Date.now())) / 1000);
-      
+
       const messageCount = messages.length;
       const userMessages = messages.filter(m => m.sender === 'user');
       const aiMessages = messages.filter(m => m.sender === 'ai');
-      
-      // Extract conversation content for analysis
-      const conversationContent = messages.map(m => 
+
+      const conversationContent = messages.map(m =>
         `${m.sender === 'user' ? 'User' : 'AI'}: ${m.content}`
       ).join('\n');
 
-      const response = await fetch("/api/chat", {
+      const token = auth.currentUser
+        ? await auth.currentUser.getIdToken()
+        : localStorage.getItem('access_token');
+
+      // Build analyze-compatible messages
+      const analyzeMessages = messages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.content,
+      }));
+
+      const response = await fetch("/api/chat_wrapper/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages,
-          endSession: true,
-          sessionType: isVoiceMode ? "voice" : "text",
-          sessionDuration,
-          conversationAnalysis: true,
-          conversationMetrics: {
-            totalMessages: messageCount,
-            userMessages: userMessages.length,
-            aiMessages: aiMessages.length,
-            sessionDuration,
-            hasAttachments: messages.some(m => m.content.includes('📎')),
-            voiceMode: isVoiceMode,
-            avatarMode: isAvatarMode
-          },
-          userId: user?.id,
-          companyId: user?.company_id,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ user_id: user.id, messages: analyzeMessages }),
       });
 
       if (!response.ok) {
@@ -1179,53 +1075,48 @@ export default function EmployeeChatPage() {
 
       const result = await response.json();
 
-      if (result.type === "report") {
-        const report = result.data as WellnessReport;
-        const sessionDuration = callDuration ||
-          Math.floor(
-            (Date.now() - (callStartTime?.getTime() || Date.now())) / 1000
-          );
+      // result is a ReportResponse: { meta, mental_health, physical_health, overall }
+      if (result.overall && result.mental_health) {
+        const mh = result.mental_health;
+        const ph = result.physical_health;
+        const ov = result.overall;
+        const mhM = mh.metrics || {};
+        const phM = ph.metrics || {};
 
-        // Create comprehensive conversation data
-        const conversationData = {
-          sessionId,
-          employeeId: user.id,
-          companyId: user.company_id || "default",
-          sessionType: isVoiceMode ? "voice" : "text",
-          sessionDuration,
-          messageCount,
-          userMessageCount: userMessages.length,
-          aiMessageCount: aiMessages.length,
-          conversationContent,
-          hasAttachments: messages.some(m => m.content.includes('📎')),
-          avatarMode: isAvatarMode,
-          voiceMode: isVoiceMode,
-          startTime: callStartTime?.toISOString() || new Date().toISOString(),
-          endTime: new Date().toISOString(),
-          messages: messages.map(m => ({
-            sender: m.sender,
-            content: m.content,
-            timestamp: m.timestamp
-          }))
+        // Map ReportResponse → WellnessReport for the existing display/risk logic
+        const report: WellnessReport = {
+          mood: mhM.emotional_tone?.score ?? mh.score,
+          stress_score: mhM.stress_anxiety?.score ?? 5,
+          anxious_level: mhM.stress_anxiety?.score ?? 5,
+          work_satisfaction: mhM.motivation_engagement?.score ?? mh.score,
+          work_life_balance: mhM.work_life_balance?.score ?? mh.score,
+          energy_level: phM.activity?.score ?? ph.score,
+          confident_level: mhM.self_esteem?.score ?? mh.score,
+          sleep_quality: phM.lifestyle?.score ?? ph.score,
+          complete_report: ov.full_report || ov.summary,
+          session_type: isVoiceMode ? "voice" : "text",
+          session_duration: sessionDuration,
+          key_insights: ov.key_insights || [],
+          recommendations: ov.recommendations || [],
         };
 
-        // Update the chat session with comprehensive data
+        // Update chat session
         const sessionDocRef = doc(db, "chat_sessions", sessionId);
         await updateDoc(sessionDocRef, {
-          report: report,
+          report,
           status: "completed",
           completed_at: serverTimestamp(),
           session_type: isVoiceMode ? "voice" : "text",
           duration: sessionDuration,
-          conversationData: conversationData,
-          messageCount: messageCount,
-          analysisComplete: true
+          messageCount,
+          analysisComplete: true,
         });
 
-        // Save comprehensive mental health report
+        // Save full ReportResponse to Firestore for the report detail page
         const mentalHealthReport = {
           employee_id: user.id,
           company_id: user.company_id || "default",
+          // flat legacy fields for backward-compat queries
           stress_level: Math.max(1, Math.min(10, Math.round(report.stress_score))),
           mood_rating: Math.max(1, Math.min(10, Math.round(report.mood))),
           energy_level: Math.max(1, Math.min(10, Math.round(report.energy_level))),
@@ -1234,28 +1125,17 @@ export default function EmployeeChatPage() {
           anxiety_level: Math.max(1, Math.min(10, Math.round(report.anxious_level))),
           confidence_level: Math.max(1, Math.min(10, Math.round(report.confident_level))),
           sleep_quality: Math.max(1, Math.min(10, Math.round(report.sleep_quality))),
-          overall_wellness: Math.max(
-            1,
-            Math.min(
-              10,
-              Math.round(
-                (report.mood +
-                  report.energy_level +
-                  report.work_satisfaction +
-                  report.work_life_balance +
-                  report.confident_level +
-                  report.sleep_quality +
-                  (11 - report.stress_score) +
-                  (11 - report.anxious_level)) /
-                8
-              )
-            )
-          ),
-          comments: `Comprehensive AI-generated report from ${isVoiceMode ? "voice" : "text"} conversation session`,
-          ai_analysis: report.complete_report || "Comprehensive conversation analysis completed",
-          sentiment_score: Math.max(0, Math.min(1, report.mood / 10)),
-          emotion_tags: Array.isArray(report.key_insights) ? report.key_insights : [],
-          risk_level: calculateRiskLevel(report),
+          overall_wellness: Math.max(1, Math.min(10, Math.round(ov.score))),
+          ai_analysis: ov.full_report || ov.summary,
+          sentiment_score: Math.max(0, Math.min(1, ov.score / 10)),
+          emotion_tags: ov.key_insights || [],
+          risk_level: ov.priority || calculateRiskLevel(report),
+          // rich analysis blocks
+          mental_health: mh,
+          physical_health: ph,
+          overall: ov,
+          meta: result.meta,
+          // session context
           session_type: isVoiceMode ? "voice" : "text",
           session_duration: sessionDuration,
           conversation_metrics: {
@@ -1264,30 +1144,39 @@ export default function EmployeeChatPage() {
             aiMessages: aiMessages.length,
             hasAttachments: messages.some(m => m.content.includes('📎')),
             avatarMode: isAvatarMode,
-            voiceMode: isVoiceMode
+            voiceMode: isVoiceMode,
           },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
 
         try {
-          await addDoc(
-            collection(db, "mental_health_reports"),
-            mentalHealthReport
-          );
+          await addDoc(collection(db, "mental_health_reports"), mentalHealthReport);
           console.log("Comprehensive mental health report saved successfully");
         } catch (saveError) {
           console.error("Error saving mental health report:", saveError);
           toast.error("Report generated but failed to save. Please contact support.");
         }
 
-        // Save conversation data separately for detailed analysis
+        // Save conversation data for audit trail
         try {
-          await addDoc(
-            collection(db, "conversation_analyses"),
-            conversationData
-          );
-          console.log("Conversation analysis data saved successfully");
+          await addDoc(collection(db, "conversation_analyses"), {
+            sessionId,
+            employeeId: user.id,
+            companyId: user.company_id || "default",
+            sessionType: isVoiceMode ? "voice" : "text",
+            sessionDuration,
+            messageCount,
+            userMessageCount: userMessages.length,
+            aiMessageCount: aiMessages.length,
+            conversationContent,
+            hasAttachments: messages.some(m => m.content.includes('📎')),
+            avatarMode: isAvatarMode,
+            voiceMode: isVoiceMode,
+            startTime: callStartTime?.toISOString() || new Date().toISOString(),
+            endTime: new Date().toISOString(),
+            messages: messages.map(m => ({ sender: m.sender, content: m.content, timestamp: m.timestamp })),
+          });
         } catch (conversationError) {
           console.error("Error saving conversation analysis:", conversationError);
         }
@@ -1296,7 +1185,6 @@ export default function EmployeeChatPage() {
         setSessionEnded(true);
         toast.success("Comprehensive wellness report generated and saved successfully!");
 
-        // Update gamification streak and points
         await updateGamificationStreak(sessionDuration, messageCount);
       } else {
         throw new Error("AI did not return a valid report format.");
@@ -1382,17 +1270,9 @@ export default function EmployeeChatPage() {
       return;
     }
     
-    // TALK TO INTERRUPT: Stop any ongoing AI speech when user starts speaking
-    if (isSpeaking || isTTSPlaying) {
-      stopTTS();
-      // Stop any playing audio
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-        audioPlayerRef.current.currentTime = 0;
-        audioPlayerRef.current = null;
-      }
-      setIsSpeaking(false);
-      console.log('🔇 AI speech interrupted by user');
+    // TALK TO INTERRUPT: stop AI audio immediately when user starts speaking
+    if (isSpeaking || isTTSPlaying || audioPlayerRef.current) {
+      stopCurrentAudio();
     }
     
     // Clear any existing auto-listen timer
@@ -1467,16 +1347,7 @@ export default function EmployeeChatPage() {
   };
 
   const toggleSpeaking = () => {
-    if (isSpeaking) {
-      stopTTS();
-      // Stop any playing audio
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-        audioPlayerRef.current.currentTime = 0;
-        audioPlayerRef.current = null;
-      }
-      setIsSpeaking(false);
-    }
+    stopCurrentAudio();
   };
 
   if (userLoading) {
@@ -1536,12 +1407,9 @@ export default function EmployeeChatPage() {
                     disabled={loading || messages.length === 0}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
                   >
-                    {/* <span className="text-red-400">♡</span> */}
-                                            <Heart className="h-5 w-5 text-red-400" />
-
+                    <Heart className="h-3.5 w-3.5 text-red-400" />
                     New Wellness Check
-                    {/* <span className="text-gray-400 font-bold">+</span> */}
-                    <Plus className=" h-5 w-5 text-gray-400 font-bold" />
+                    <Plus className="h-3.5 w-3.5 text-gray-400" />
                   </button>
                 )}
                 {!sessionEnded && (
@@ -1632,7 +1500,11 @@ export default function EmployeeChatPage() {
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.15 }}
-                        className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2 shadow-sm border border-gray-100 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-200 leading-relaxed"
+                        className={`rounded-2xl px-3.5 py-2.5 shadow-sm text-xs leading-relaxed ${
+                          message.sender === "user"
+                            ? "bg-emerald-500 text-white rounded-br-sm"
+                            : "bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-bl-sm"
+                        }`}
                       >
                         {message.sender === "ai" ? (
                           <div>{renderMessageContent(message.content)}</div>
@@ -1937,33 +1809,33 @@ export default function EmployeeChatPage() {
                   onClick={() => setShowOptionsPanel(false)}
                 />
 
-                {/* Dropdown — anchored above the input area */}
+                {/* Dropdown — anchored near the menu icon (top-right of chat card) */}
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.97 }}
                   transition={{ duration: 0.15 }}
-                  className="fixed bottom-24 left-1/2 -translate-x-1/2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                  className="fixed top-[72px] right-8 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden"
                 >
                   {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">Options</span>
+                  <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 dark:border-gray-800">
+                    <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Options</span>
                     <button
                       onClick={() => setShowOptionsPanel(false)}
-                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
 
-                  <div className="py-1.5">
+                  <div className="py-1">
                     {/* Files */}
                     <button
                       onClick={() => { openFileDialog(); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <Paperclip className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Add photos &amp; files</span>
@@ -1979,9 +1851,9 @@ export default function EmployeeChatPage() {
                         setShowOptionsPanel(false);
                       }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <ImageIcon className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Add images</span>
@@ -1994,9 +1866,9 @@ export default function EmployeeChatPage() {
                         setShowOptionsPanel(false);
                       }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded-md flex items-center justify-center flex-shrink-0">
                         <Search className="h-3.5 w-3.5 text-white" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2005,20 +1877,20 @@ export default function EmployeeChatPage() {
                       </div>
                     </button>
 
-                    <div className="mx-4 my-1.5 border-t border-gray-100 dark:border-gray-800" />
+                    <div className="mx-3 my-1 border-t border-gray-100 dark:border-gray-800" />
 
                     {/* Section label */}
-                    <div className="px-4 py-1.5">
-                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Avatar &amp; Voice</span>
+                    <div className="px-3 py-1">
+                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Avatar &amp; Voice</span>
                     </div>
 
                     {/* Avatar toggle */}
                     <button
                       onClick={() => { setIsAvatarMode(!isAvatarMode); toast.success(isAvatarMode ? 'Avatar disabled' : 'Avatar enabled'); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <UserCircle className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2031,9 +1903,9 @@ export default function EmployeeChatPage() {
                     <button
                       onClick={() => { toggleSettings(); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <Settings className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Avatar settings</span>
@@ -2043,9 +1915,9 @@ export default function EmployeeChatPage() {
                     <button
                       onClick={() => { isRecording ? stopRecording() : startRecording(); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <Mic className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2058,9 +1930,9 @@ export default function EmployeeChatPage() {
                     <button
                       onClick={() => { speakText('Hello! This is a test of the text-to-speech system.'); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded || isSpeaking}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <Volume2 className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2069,15 +1941,15 @@ export default function EmployeeChatPage() {
                       </div>
                     </button>
 
-                    <div className="mx-4 my-1.5 border-t border-gray-100 dark:border-gray-800" />
+                    <div className="mx-3 my-1 border-t border-gray-100 dark:border-gray-800" />
 
                     {/* End conversation */}
                     <button
                       onClick={() => { setShowOptionsPanel(false); setShowEndConfirmation(true); }}
                       disabled={loading || sessionEnded || messages.length === 0}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-red-100 dark:bg-red-900/20 rounded-md flex items-center justify-center flex-shrink-0">
                         <PhoneOff className="h-3.5 w-3.5 text-red-500" />
                       </div>
                       <div className="flex-1 text-left">

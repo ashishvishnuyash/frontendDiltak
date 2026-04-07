@@ -55,8 +55,13 @@ export function DesktopTopBar({
   const handleSignOut = useCallback(async () => {
     setProfileOpen(false);
     try {
+      // Clear local auth tokens first (AuthContext reads these as primary source)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_profile');
+      }
       await signOut(auth);
-      toast.success('Signed out');
+      toast.success('Signed out successfully');
       router.push('/');
     } catch {
       toast.error('Failed to sign out');
@@ -306,6 +311,11 @@ function Navbar({ user, items = [], onNavigate, className }: NavbarProps) {
     onNavigate?.();
     setMobileOpen(false);
     try {
+      // Clear local auth tokens first (AuthContext reads these as primary source)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_profile');
+      }
       await signOut(auth);
       toast.success('Signed out successfully');
       router.push('/');

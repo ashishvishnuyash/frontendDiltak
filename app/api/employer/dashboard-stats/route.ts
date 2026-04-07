@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const UMA_API_URL = process.env.UMA_API_URL || 'http://74.162.66.197';
+const UMA_API_URL = process.env.UMA_API_URL || 'http://127.0.0.1:8000';
 
 export async function GET(request: NextRequest) {
   try {
