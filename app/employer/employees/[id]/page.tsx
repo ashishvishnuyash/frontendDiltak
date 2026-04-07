@@ -67,7 +67,7 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label:
   return (
     <div className="flex items-center gap-3 py-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
       <div className="w-8 h-8 rounded-xl bg-gray-50 dark:bg-gray-800/60 flex items-center justify-center flex-shrink-0">
-        <Icon className="h-4 w-4 text-gray-400" />
+        <Icon className="h-5 w-5 text-gray-400" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</p>
@@ -82,8 +82,8 @@ function PermRow({ label, granted }: { label: string; granted: boolean }) {
     <div className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
       <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
       {granted
-        ? <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-        : <XCircle      className="h-4 w-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />}
+        ? <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+        : <XCircle      className="h-5 w-5 text-gray-300 dark:text-gray-600 flex-shrink-0" />}
     </div>
   );
 }
@@ -168,7 +168,7 @@ function EmployeeDetailPage() {
       <Link href="/employer/employees"
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to Employees
+        <ArrowLeft className="h-5 w-5" /> Back to Employees
       </Link>
 
       {/* ── Header ── */}
@@ -211,7 +211,7 @@ function EmployeeDetailPage() {
               className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               aria-label="Refresh"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-5 w-5" />
             </button>
             <button
               onClick={handleToggleActive}
@@ -239,7 +239,7 @@ function EmployeeDetailPage() {
       {activity && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <Activity className="h-4 w-4 text-emerald-500" />
+            <Activity className="h-5 w-5 text-emerald-500" />
             <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Activity Summary</h2>
             <span className="text-[10px] text-gray-400 ml-auto">Aggregated · No personal content shared</span>
           </div>

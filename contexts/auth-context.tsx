@@ -28,9 +28,24 @@ function getLocalProfile(): User | null {
     const raw = localStorage.getItem('user_profile');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    // Ensure minimum required fields exist
-    if (parsed?.id && parsed?.role) return parsed as User;
-    return null;
+    // Normalize: accept both id (snake_case) and uid (API camelCase)
+    const id = parsed?.id || parsed?.uid || '';
+    const role = parsed?.role || '';
+    if (!id || !role) return null;
+    // Ensure app-convention fields are set, normalizing API camelCase if needed
+    return {
+      ...parsed,
+      id,
+      role,
+      company_id:   parsed.company_id   ?? parsed.companyId   ?? '',
+      company_name: parsed.company_name ?? parsed.companyName ?? '',
+      first_name:   parsed.first_name   ?? (parsed.displayName?.split(' ')?.[0]   ?? ''),
+      last_name:    parsed.last_name    ?? (parsed.displayName?.split(' ')?.slice(1).join(' ') ?? ''),
+      is_active:    parsed.is_active    ?? true,
+      email:        parsed.email        ?? '',
+      created_at:   parsed.created_at   ?? '',
+      updated_at:   parsed.updated_at   ?? '',
+    } as User;
   } catch {
     return null;
   }
@@ -40,6 +55,7 @@ function clearLocalAuth() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('access_token');
   localStorage.removeItem('user_profile');
+  localStorage.removeItem('login_data');
 }
 
 // ── Provider ───────────────────────────────────────────────────────────────────

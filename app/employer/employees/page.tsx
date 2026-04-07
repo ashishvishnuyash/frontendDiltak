@@ -8,6 +8,7 @@ import { withAuth } from '@/components/auth/with-auth';
 import { DataList, type ColumnDef } from '@/components/list/DataList';
 import { BrandLoader } from '@/components/loader';
 import Link from 'next/link';
+import ServerAddress from '@/constent/ServerAddress';
 
 // ── types ──────────────────────────────────────────────────────────────────────
 
@@ -29,8 +30,7 @@ interface Employee {
   created_at?: string;
 }
 
-const BASE_URL = 'http://127.0.0.1:8000/api';
-
+ 
 // ── Employees Page ─────────────────────────────────────────────────────────────
 
 function EmployeesPage() {
@@ -124,7 +124,7 @@ function EmployeesPage() {
           href={`/employer/employees/${row.uid || row.id}`}
           className="p-2 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all inline-flex items-center justify-center border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900/30"
         >
-          <Eye className="h-4 w-4" />
+          <Eye className="h-5 w-5" />
         </Link>
       ),
     },
@@ -148,7 +148,7 @@ function EmployeesPage() {
         </div>
         <Link href="/employer/employees/add">
           <button className="flex items-center justify-center gap-2 px-6 h-11 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-all shadow-md shadow-emerald-500/10 active:scale-95">
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className="h-5 w-5" />
             Add Employee
           </button>
         </Link>
@@ -174,7 +174,7 @@ function EmployeesPage() {
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
         <DataList<Employee>
           key={refreshKey}
-          apiPath={`${BASE_URL}/employees`}
+          apiPath={`${ServerAddress}/employees`}
           dataPath="employees"
           onDataLoaded={(data) => setEmployees(data)}
           columns={columns}

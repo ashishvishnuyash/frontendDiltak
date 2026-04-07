@@ -13,9 +13,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import ServerAddress from '@/constent/ServerAddress';
 
-const BASE_URL = 'http://127.0.0.1:8000/api';
-
+ 
 function AddEmployeePage() {
   const router = useRouter();
   const { user } = useUser();
@@ -58,7 +58,7 @@ function AddEmployeePage() {
     try {
       const token = localStorage.getItem('access_token');
       await axios.post(
-        `${BASE_URL}/employees/create`,
+        `${ServerAddress}/createEmployee`,
         { ...form, company_id: user.company_id },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
@@ -81,7 +81,7 @@ function AddEmployeePage() {
             onClick={() => router.back()}
             className="group flex items-center justify-center h-10 w-10 rounded-md bg-secondary/80 hover:bg-secondary border border-border transition-all"
           >
-            <ArrowLeft className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+            <ArrowLeft className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           </button>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight sm:text-2xl">Add New Colleague</h1>
@@ -258,7 +258,7 @@ function AddEmployeePage() {
                 disabled={submitting}
                 className="w-full sm:w-auto px-10 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
                 {submitting ? 'Creating...' : 'Create Employee'}
               </button>
             </div>

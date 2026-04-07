@@ -157,13 +157,13 @@ const MANAGER_CATEGORIES: RecommendationCategory[] = [
 
 function recIcon(type: string) {
   const map: Record<string, React.ReactNode> = {
-    meditation: <Brain className="h-4 w-4" />,
-    journaling: <Target className="h-4 w-4" />,
-    breathing:  <Heart className="h-4 w-4" />,
-    exercise:   <Zap className="h-4 w-4" />,
-    sleep:      <Moon className="h-4 w-4" />,
+    meditation: <Brain className="h-5 w-5" />,
+    journaling: <Target className="h-5 w-5" />,
+    breathing:  <Heart className="h-5 w-5" />,
+    exercise:   <Zap className="h-5 w-5" />,
+    sleep:      <Moon className="h-5 w-5" />,
   };
-  return map[type] ?? <Sparkles className="h-4 w-4" />;
+  return map[type] ?? <Sparkles className="h-5 w-5" />;
 }
 
 function recIconBg(type: string) {
@@ -247,7 +247,7 @@ export default function AIRecommendations() {
           disabled={loading}
           className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>
       </div>
@@ -280,7 +280,7 @@ export default function AIRecommendations() {
                   transition={{ delay: i * 0.08 + j * 0.04 }}
                   className="flex items-start gap-2.5"
                 >
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{item}</span>
                 </motion.li>
               ))}
@@ -301,7 +301,7 @@ export default function AIRecommendations() {
               animate={{ rotate: 360 }}
               transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
             >
-              <Sparkles className="h-4 w-4 text-purple-400" />
+              <Sparkles className="h-5 w-5 text-purple-400" />
             </motion.div>
             <span className="text-base font-semibold text-gray-800 dark:text-gray-100">
               Generating Personalized Activities…
@@ -344,7 +344,7 @@ export default function AIRecommendations() {
           className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm"
         >
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-4 w-4 text-purple-500" />
+            <Sparkles className="h-5 w-5 text-purple-500" />
             <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">
               Personalized Activities
             </h2>

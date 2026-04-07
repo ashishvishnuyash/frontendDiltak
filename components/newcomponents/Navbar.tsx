@@ -235,7 +235,7 @@ if(theme && theme === "light") {
                       <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors bg-gray-200 dark:bg-gray-700">
                         <span
                           className={cn(
-                            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm",
+                            "inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm",
                             theme === 'dark' ? "translate-x-6" : "translate-x-1"
                           )}
                         />

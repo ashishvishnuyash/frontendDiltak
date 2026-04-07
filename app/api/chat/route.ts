@@ -1,6 +1,8 @@
 // app/api/chat/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from 'openai';
+import axios from 'axios';
 import type { ChatMessage } from '@/types/index';
 import { getPersonalHistory, formatPersonalHistoryForAI } from '@/lib/reports-service';
 import { db } from '@/lib/firebase';
@@ -172,7 +174,7 @@ const ASSESSMENT_DATA = {
 };
 
 // Uma (animeshai) agent configuration
-const UMA_API_URL = process.env.UMA_API_URL || 'http://127.0.0.1:8000';
+const UMA_API_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface UmaChatResponse {
   session_id: string;
@@ -197,21 +199,21 @@ interface UmaChatResponse {
 }
 
 async function callUmaChat(message: string, sessionId?: string): Promise<UmaChatResponse> {
-  const response = await fetch(`${UMA_API_URL}/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  try {
+    const response = await axios.post(`${UMA_API_URL}/chat`, {
       message,
       session_id: sessionId || null,
-    }),
-  });
+    }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Uma API error: ${response.status} - ${errorText}`);
+    return response.data;
+  } catch (error: any) {
+    const status = error.response?.status;
+    const errorData = error.response?.data;
+    console.error('Uma API error:', status, errorData);
+    throw new Error(`Uma API error: ${status || 'Unknown'} - ${JSON.stringify(errorData) || error.message}`);
   }
-
-  return await response.json();
 }
 
 interface WellnessReport {

@@ -193,7 +193,7 @@ function EmployerReportsPage() {
             disabled={refreshing}
             className="rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-600 dark:text-gray-300 h-10"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-5 w-5 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           
@@ -201,7 +201,7 @@ function EmployerReportsPage() {
             onClick={() => {/* Build export logic if needed */}}
             className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white h-10 px-4 font-semibold shadow-md shadow-emerald-500/10"
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="h-5 w-5 mr-2" />
             Export Data
           </Button>
         </div>
@@ -228,7 +228,7 @@ function EmployerReportsPage() {
         <CardContent className="p-4 sm:p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
               <Input
                 placeholder="Search employee..."
                 value={searchTerm}
@@ -240,7 +240,7 @@ function EmployerReportsPage() {
             <Select value={filterRisk} onValueChange={setFilterRisk}>
               <SelectTrigger className="h-11 rounded-xl border-gray-200 dark:border-gray-800 focus:border-emerald-500 transition-all">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <AlertTriangle className="h-5 w-5 text-gray-400" />
                   <SelectValue placeholder="All Risk Levels" />
                 </div>
               </SelectTrigger>
@@ -255,7 +255,7 @@ function EmployerReportsPage() {
             <Select value={filterDepartment} onValueChange={setFilterDepartment}>
               <SelectTrigger className="h-11 rounded-xl border-gray-200 dark:border-gray-800 focus:border-emerald-500 transition-all">
                 <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-gray-400" />
+                  <Briefcase className="h-5 w-5 text-gray-400" />
                   <SelectValue placeholder="All Departments" />
                 </div>
               </SelectTrigger>
@@ -270,7 +270,7 @@ function EmployerReportsPage() {
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="h-11 rounded-xl border-gray-200 dark:border-gray-800 focus:border-emerald-500 transition-all">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-gray-400" />
+                  <TrendingUp className="h-5 w-5 text-gray-400" />
                   <SelectValue placeholder="Sort" />
                 </div>
               </SelectTrigger>
@@ -361,7 +361,7 @@ function EmployerReportsPage() {
                       {report.ai_analysis && (
                         <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/30">
                           <div className="flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-400">
-                            <Sparkles className="h-4 w-4" />
+                            <Sparkles className="h-5 w-5" />
                             <h4 className="text-[11px] font-black uppercase tracking-widest">AI Behavioral Insight</h4>
                           </div>
                           <p className="text-sm text-gray-700 dark:text-gray-300 italic leading-relaxed">
@@ -395,7 +395,7 @@ function MetricTiny({ icon: Icon, value, label, color }: { icon: any, value: num
   return (
     <div className="flex items-center gap-2">
       <div className={`w-7 h-7 rounded-lg ${color} bg-opacity-10 flex items-center justify-center`}>
-        <Icon className={`h-4 w-4 ${color}`} />
+        <Icon className={`h-5 w-5 ${color}`} />
       </div>
       <div>
         <div className="text-[11px] font-black text-gray-700 dark:text-gray-200 leading-none">{value}</div>

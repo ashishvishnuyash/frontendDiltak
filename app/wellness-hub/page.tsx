@@ -145,7 +145,7 @@ export default function WellnessHubLanding() {
 
             <Button asChild variant="ghost" className="text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
               <Link href="/">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-5 w-5 mr-2" />
                 <span>Back to Home</span>
               </Link>
             </Button>
@@ -178,7 +178,7 @@ export default function WellnessHubLanding() {
                     Full Name
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 opacity-60" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500 opacity-60" />
                     <Input
                       id="name"
                       name="name"
@@ -197,7 +197,7 @@ export default function WellnessHubLanding() {
                     Email Address
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 opacity-60" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500 opacity-60" />
                     <Input
                       id="email"
                       name="email"
@@ -216,7 +216,7 @@ export default function WellnessHubLanding() {
                     Company Name
                   </Label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 opacity-60" />
+                    <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500 opacity-60" />
                     <Input
                       id="company"
                       name="company"
@@ -274,7 +274,7 @@ export default function WellnessHubLanding() {
                 whileHover={{ y: -5 }}
               >
                 <div className={`w-8 h-8 ${feature.color} rounded-md flex items-center justify-center mx-auto mb-2`}>
-                  <feature.icon className={`h-4 w-4 ${feature.iconColor}`} />
+                  <feature.icon className={`h-5 w-5 ${feature.iconColor}`} />
                 </div>
                 <p className="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">{feature.text}</p>
               </motion.div>
@@ -284,4 +284,4 @@ export default function WellnessHubLanding() {
       </div>
     </div>
   );
-}
+}

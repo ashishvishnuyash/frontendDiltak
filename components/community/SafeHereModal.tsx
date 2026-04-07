@@ -55,7 +55,7 @@ export default function SafeHereModal({ firstName, onSharePost, onReadOnly, onCl
             onClick={onClose}
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -80,7 +80,7 @@ export default function SafeHereModal({ firstName, onSharePost, onReadOnly, onCl
             <span className="text-xs font-bold tracking-widest text-gray-700 dark:text-gray-200 uppercase">Post Anonymously</span>
             {/* Toggle — always on */}
             <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-emerald-500 cursor-default">
-              <span className="inline-block h-4 w-4 transform rounded-full bg-white shadow-sm translate-x-6" />
+              <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm translate-x-6" />
             </div>
           </div>
 

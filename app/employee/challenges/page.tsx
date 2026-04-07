@@ -79,7 +79,7 @@ function StatCard({ icon: Icon, label, value, color }: {
   return (
     <div className="flex flex-col items-center p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm gap-1">
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-1 ${color}`}>
-        <Icon className="h-4 w-4" />
+        <Icon className="h-5 w-5" />
       </div>
       <p className="text-2xl font-black text-gray-900 dark:text-gray-100">{value}</p>
       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center leading-tight">{label}</p>
@@ -279,7 +279,7 @@ function ChallengesPage() {
             disabled={checkingIn}
             className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-emerald-500/20 active:scale-95"
           >
-            <CheckCircle className="h-4 w-4" />
+            <CheckCircle className="h-5 w-5" />
             {checkingIn ? 'Checking in…' : 'Daily Check-In'}
           </button>
         </div>
@@ -288,7 +288,7 @@ function ChallengesPage() {
         {(stats?.badges?.length ?? 0) > 0 && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
-              <Award className="h-4 w-4 text-amber-500" />
+              <Award className="h-5 w-5 text-amber-500" />
               <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Your Badges</h2>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -309,7 +309,7 @@ function ChallengesPage() {
                   onClick={loadData}
                   className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
-                  <RefreshCw className="h-4 w-4" />
+                  <RefreshCw className="h-5 w-5" />
                 </button>
                 <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
                   <TrendingUp className="h-3.5 w-3.5" />

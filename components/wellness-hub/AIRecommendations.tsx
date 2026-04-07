@@ -55,7 +55,7 @@ export default function AIRecommendations({ userRole, userId }: AIRecommendation
           return (
             <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 flex items-center gap-3">
               <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center flex-shrink-0`}>
-                <Icon className={`h-4 w-4 ${item.color}`} />
+                <Icon className={`h-5 w-5 ${item.color}`} />
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-800 dark:text-gray-100">{item.value}</p>
@@ -69,7 +69,7 @@ export default function AIRecommendations({ userRole, userId }: AIRecommendation
       {/* Recommendations */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-          <Lightbulb className="h-4 w-4 text-yellow-500" />
+          <Lightbulb className="h-5 w-5 text-yellow-500" />
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Personalized Recommendations</h2>
         </div>
         <div className="divide-y divide-gray-50 dark:divide-gray-800">
@@ -86,8 +86,8 @@ export default function AIRecommendations({ userRole, userId }: AIRecommendation
               >
                 <button onClick={() => toggle(rec.id)} className="mt-0.5 flex-shrink-0">
                   {rec.completed
-                    ? <CheckCircle className="h-4 w-4 text-emerald-500" />
-                    : <Circle className="h-4 w-4 text-gray-300 dark:text-gray-600" />}
+                    ? <CheckCircle className="h-5 w-5 text-emerald-500" />
+                    : <Circle className="h-5 w-5 text-gray-300 dark:text-gray-600" />}
                 </button>
                 <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
                   <Icon className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
@@ -112,7 +112,7 @@ export default function AIRecommendations({ userRole, userId }: AIRecommendation
       {/* Weekly Focus */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Target className="h-4 w-4 text-indigo-500" />
+          <Target className="h-5 w-5 text-indigo-500" />
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">This Week's Focus</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

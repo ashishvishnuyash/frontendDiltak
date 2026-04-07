@@ -52,7 +52,7 @@ export default function AdminReports() {
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-[11px] font-bold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all shadow-sm active:scale-95">
-            <Download className="h-4 w-4" /> Export All Data
+            <Download className="h-5 w-5" /> Export All Data
           </button>
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function AdminReports() {
       <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -145,7 +145,7 @@ export default function AdminReports() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end">
                       <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-5 w-5" />
                       </button>
                     </div>
                   </td>

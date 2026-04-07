@@ -330,7 +330,7 @@ export function DataList<T extends Record<string, any>>({
             <button onClick={onExport}
               className="p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               aria-label="Export">
-              <Download className="h-4 w-4" />
+              <Download className="h-5 w-5" />
             </button>
           )}
 

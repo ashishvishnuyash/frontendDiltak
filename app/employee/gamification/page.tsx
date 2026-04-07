@@ -157,7 +157,7 @@ function BadgeGrid({ earned }: { earned: string[] }) {
                 : 'bg-gray-100 dark:bg-gray-800 grayscale opacity-40'
               }`}
             >
-              {unlocked ? meta.emoji : <Lock className="h-4 w-4 text-gray-400" />}
+              {unlocked ? meta.emoji : <Lock className="h-5 w-5 text-gray-400" />}
               {unlocked && (
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-gray-900" />
               )}
@@ -445,7 +445,7 @@ function GamificationPage() {
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <Medal className="h-4 w-4 text-amber-500" /> Recent Badges
+                    <Medal className="h-5 w-5 text-amber-500" /> Recent Badges
                   </h3>
                   <button onClick={() => setTab('Badges')} className="text-xs text-emerald-600 hover:underline flex items-center gap-0.5">
                     All badges <ChevronRight className="h-3 w-3" />
@@ -473,7 +473,7 @@ function GamificationPage() {
             {/* goals */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4">
               <h3 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                <Target className="h-4 w-4 text-teal-500" /> Goals
+                <Target className="h-5 w-5 text-teal-500" /> Goals
               </h3>
               {/* weekly */}
               <div className="space-y-1.5">
@@ -520,7 +520,7 @@ function GamificationPage() {
           >
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                <Award className="h-4 w-4 text-amber-500" /> Badge Collection
+                <Award className="h-5 w-5 text-amber-500" /> Badge Collection
               </h3>
               <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 rounded-full">
                 {badges.length}/{ALL_BADGES.length} unlocked

@@ -262,7 +262,7 @@ function ReportDetailPage() {
           disabled={exporting}
           className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
         >
-          <Download className="h-4 w-4" />
+          <Download className="h-5 w-5" />
           {exporting ? 'Exporting…' : 'Export PDF'}
         </button>
       </div>

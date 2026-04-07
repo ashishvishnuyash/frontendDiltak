@@ -53,8 +53,8 @@ function PermRow({ label, granted }: { label: string; granted: boolean }) {
     <div className="flex items-center justify-between py-2.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
       <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
       {granted
-        ? <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-        : <XCircle      className="h-4 w-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />}
+        ? <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+        : <XCircle      className="h-5 w-5 text-gray-300 dark:text-gray-600 flex-shrink-0" />}
     </div>
   );
 }
@@ -63,7 +63,7 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label:
   return (
     <div className="flex items-center gap-3 py-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
       <div className="w-8 h-8 rounded-xl bg-gray-50 dark:bg-gray-800/60 flex items-center justify-center flex-shrink-0">
-        <Icon className="h-4 w-4 text-gray-400" />
+        <Icon className="h-5 w-5 text-gray-400" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</p>
@@ -148,7 +148,7 @@ function EmployeeProfilePage() {
             className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
             aria-label="Refresh profile"
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
 

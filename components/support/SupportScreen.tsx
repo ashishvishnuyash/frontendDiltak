@@ -13,15 +13,27 @@ import { apiPost } from '@/lib/api-client';
 // ── Support type card ──────────────────────────────────────────────────────────
 
 interface SupportType {
-  key: 'hr' | 'manager' | 'urgent';
+  key: 'hr' | 'manager' | 'Wellbing Officer';
   label: string;
   description: string;
 }
 
 const supportTypes: SupportType[] = [
-  { key: 'hr',      label: 'HR Support', description: 'General HR Concerns and workplace issues.' },
-  { key: 'manager', label: 'Manager',    description: 'General HR Concerns and workplace issues.' },
-  { key: 'urgent',  label: 'Urgent',     description: 'General HR Concerns and workplace issues.' },
+  { 
+    key: 'hr', 
+    label: 'HR Support', 
+    description: 'Confidential support for workplace issues, policies, and professional concerns.' 
+  },
+  { 
+    key: 'manager', 
+    label: 'Manager', 
+    description: 'Discuss team dynamics, workload, or work-related challenges with your manager.' 
+  },
+  { 
+    key: 'Wellbing Officer', 
+    label: 'Wellbeing Officer', 
+    description: 'Mental health first aid, emotional support, and wellness guidance.' 
+  },
 ];
 
 // Simple person avatar SVG matching the design
@@ -42,7 +54,7 @@ function SupportCard({ type, onClick }: { type: SupportType; onClick: () => void
       whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="flex flex-col items-center text-center p-8 border-r border-gray-100 dark:border-gray-800 last:border-r-0 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors w-full"
+      className="flex flex-col items-center text-center p-8 px-3 border-r border-gray-100 dark:border-gray-800 last:border-r-0 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors w-full"
     >
       <PersonAvatar />
       <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1.5">{type.label}</h3>
@@ -123,19 +135,9 @@ export default function SupportScreen({ user }: { user: User }) {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 bg-[#f0faf7] dark:bg-gray-950 min-h-full">
-
-      {/* Top bar */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-base font-semibold text-gray-800 dark:text-gray-100">Raise a Concern?</h1>
-        <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
-          Call Now
-          <Phone className="h-4 w-4" />
-        </button>
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-[#f0faf7] dark:bg-gray-950">
       {/* Support type cards */}
-      <div className="max-w-3xl mx-auto">
+      <div className="w-full max-w-3xl">
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
           <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 dark:divide-gray-800">
             {supportTypes.map(type => (

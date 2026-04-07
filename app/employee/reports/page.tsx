@@ -187,7 +187,7 @@ function EmployeeReportsPage() {
           <Link href={`/employee/reports/${row.id}`}
             className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-400 hover:text-emerald-600 transition-colors"
             onClick={e => e.stopPropagation()}>
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-5 w-5" />
           </Link>
         </div>
       ),
@@ -259,7 +259,7 @@ function EmployeeReportsPage() {
             onClick={() => setExportOpen(true)}
             className="flex items-center gap-1.5 px-4 py-1.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-sm transition-colors"
           >
-            <FileDown className="h-4 w-4" />
+            <FileDown className="h-5 w-5" />
             Export
           </button>
 
@@ -295,7 +295,7 @@ function EmployeeReportsPage() {
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-sm">No reports yet</p>
             <Link href="/employee/reports/new" className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors">
-              Create your first report <ArrowRight className="h-4 w-4" />
+              Create your first report <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
         )
@@ -332,7 +332,7 @@ function EmployeeReportsPage() {
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
-                    <FileDown className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <FileDown className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
                     <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Export Report</h2>
@@ -343,7 +343,7 @@ function EmployeeReportsPage() {
                   onClick={() => setExportOpen(false)}
                   className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
@@ -388,7 +388,7 @@ function EmployeeReportsPage() {
                   onClick={handleExport}
                   className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
                 >
-                  <Download className="h-4 w-4" />
+                  <Download className="h-5 w-5" />
                   Download PDF
                 </button>
               </div>

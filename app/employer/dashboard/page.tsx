@@ -1,401 +1,378 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-
-import { useUser } from '@/hooks/use-user';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState, useCallback } from 'react';
+import axios from 'axios';
+import { useAuth } from '@/contexts/auth-context';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
-  Users,
-  TrendingUp,
-  AlertTriangle,
-  Activity,
-  BarChart3,
-  Download,
-  Loader2,
-  Target,
-  Clock,
-  UserCheck,
-  Building,
-  ArrowRight,
-  ArrowLeft,
-  Plus,
-  Sparkles,
-  Heart,
-  Shield,
-  Zap,
-  CheckCircle,
-  Star,
-  Eye,
-  RefreshCw,
-  FileText,
-  BarChart2,
-  MessageSquare
+  Download, Building2, RefreshCw, AlertCircle, ShieldCheck,
+  Zap, Activity, BarChart3, Users, Sparkles, ArrowRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { DashboardStats, MentalHealthReport, User } from '@/types/index';
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  getDocs,
-  orderBy,
-  limit
-} from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
 import { withAuth } from '@/components/auth/with-auth';
-import ComprehensiveMetrics from '@/components/dashboard/ComprehensiveMetrics';
-import { ComprehensiveReportExportService } from '@/lib/comprehensive-report-export-service';
-import { PageLoader } from '@/components/loader';
-import Ring from '@/components/shared/Ring';
+import { BrandLoader } from '@/components/loader';
+import Link from 'next/link';
+
+import WellnessIndexHero from '@/components/employer/WellnessIndexHero';
+import EarlyWarnings from '@/components/employer/EarlyWarnings';
+import BurnoutTrendChart from '@/components/employer/BurnoutTrendChart';
+import WorkloadFriction from '@/components/employer/WorkloadFriction';
+import EngagementSignals from '@/components/employer/EngagementSignals';
+import ActionEngine from '@/components/employer/ActionEngine';
+import OrgWellnessTrend from '@/components/employer/OrgWellnessTrend';
+import DepartmentComparison from '@/components/employer/DepartmentComparison';
+import RetentionRiskSignal from '@/components/employer/RetentionRiskSignal';
+import ROIImpactPanel from '@/components/employer/ROIImpactPanel';
+import ProgramEffectiveness from '@/components/employer/ProgramEffectiveness';
+
+import {
+  EmployerWellnessIndex, EmployerBurnoutTrend, EmployerEngagementSignals,
+  EmployerWorkloadFriction, EmployerProductivityProxy, EmployerEarlyWarnings,
+  EmployerSuggestedActions,
+} from '@/types';
+import ServerAddress from '@/constent/ServerAddress';
+
+
+interface DashboardData {
+  wellness_index: EmployerWellnessIndex | null;
+  burnout_trend: EmployerBurnoutTrend | null;
+  engagement_signals: EmployerEngagementSignals | null;
+  workload_friction: EmployerWorkloadFriction | null;
+  productivity_proxy: EmployerProductivityProxy | null;
+  early_warnings: EmployerEarlyWarnings | null;
+  suggested_actions: EmployerSuggestedActions | null;
+  last_updated: string;
+}
+
+function getToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('access_token');
+}
+
+function KPICard({ label, value, icon: Icon, color, sub }: {
+  label: string; value: string | number; icon: React.ElementType; color: string; sub?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-3 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-700 transition-all group">
+      <div className="flex items-center justify-between">
+        <div className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 group-hover:scale-105 transition-transform">
+          <Icon className="h-5 w-5" style={{ color }} />
+        </div>
+        <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{label}</span>
+      </div>
+      <div>
+        <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
+        {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({ icon: Icon, title, sub }: { icon: React.ElementType; title: string; sub?: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
+        <Icon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+      </div>
+      <div>
+        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">{title}</h2>
+        {sub && <p className="text-xs text-gray-400 dark:text-gray-500">{sub}</p>}
+      </div>
+    </div>
+  );
+}
 
 function EmployerDashboardPage() {
-  const { user, loading: userLoading } = useUser();
-  const router = useRouter();
-
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentReports, setRecentReports] = useState<MentalHealthReport[]>([]);
+  const { user, loading: userLoading } = useAuth();
+  const [data, setData] = useState<DashboardData>({
+    wellness_index: null, burnout_trend: null, engagement_signals: null,
+    workload_friction: null, productivity_proxy: null, early_warnings: null,
+    suggested_actions: null, last_updated: new Date().toISOString(),
+  });
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!userLoading && user && user.company_id) {
-      initializeDashboard();
-    }
-  }, [user, userLoading]);
+  const companyId: string = user?.company_id ?? (user as any)?.companyId ?? '';
 
-  const initializeDashboard = async () => {
-    if (!user?.company_id) return;
+  const fetchAll = useCallback(async () => {
+    if (!companyId) { setLoading(false); return; }
+    const token = getToken();
+    if (!token) { setError('No access token. Please log in again.'); setLoading(false); return; }
+
+    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    const params = { company_id: companyId };
+    const api = `${ServerAddress}`;
+
+    const endpoints = [
+      `${api}/employer/wellness-index`,
+      `${api}/employer/burnout-trend`,
+      `${api}/employer/engagement-signals`,
+      `${api}/employer/workload-friction`,
+      `${api}/employer/productivity-proxy`,
+      `${api}/employer/early-warnings`,
+      `${api}/employer/suggested-actions`,
+    ];
+
     try {
-      setLoading(true);
-      await Promise.all([
-        loadDashboardStats(),
-        loadRecentReports()
-      ]);
-    } catch (error) {
-      console.error('Error initializing dashboard:', error);
-      toast.error('Failed to load dashboard data.');
+      setError(null);
+      const results = await Promise.allSettled(
+        endpoints.map(url => axios.get(url, { headers, params }))
+      );
+      const [wi, bt, es, wf, pp, ew, sa] = results;
+
+      console.log("Employer Dashboard results" , results);
+      setData({
+        wellness_index: wi.status === 'fulfilled' ? wi.value.data : null,
+        burnout_trend: bt.status === 'fulfilled' ? bt.value.data : null,
+        engagement_signals: es.status === 'fulfilled' ? es.value.data : null,
+        workload_friction: wf.status === 'fulfilled' ? wf.value.data : null,
+        productivity_proxy: pp.status === 'fulfilled' ? pp.value.data : null,
+        early_warnings: ew.status === 'fulfilled' ? ew.value.data : null,
+        suggested_actions: sa.status === 'fulfilled' ? sa.value.data : null,
+        last_updated: new Date().toISOString(),
+      });
+      const ok = results.filter(r => r.status === 'fulfilled').length;
+      if (ok < results.length) toast.warning(`Loaded ${ok}/${results.length} dashboard modules`);
+    } catch (err) {
+      console.log("Employer Dashboard errors" , err);
+      const msg = axios.isAxiosError(err)
+        ? `API Error (${err.response?.status}): ${err.response?.data?.detail ?? err.message}`
+        : 'Failed to load dashboard data';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [companyId]);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await initializeDashboard();
-    setRefreshing(false);
-    toast.success('Dashboard refreshed!');
-  };
+  useEffect(() => { if (!userLoading) fetchAll(); }, [userLoading, fetchAll]);
 
-  const loadDashboardStats = async () => {
-    if (!user?.company_id) return;
+  const handleRefresh = async () => { setRefreshing(true); await fetchAll(); };
 
-    try {
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Not authenticated');
+  if (userLoading || loading) return <BrandLoader color="bg-emerald-500" />;
 
-      const response = await fetch(`/api/employer/dashboard-stats?company_id=${user.company_id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md text-center space-y-4">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex items-center justify-center">
+            <AlertCircle className="h-8 w-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Failed to Load Dashboard</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{error}</p>
+          <Button onClick={handleRefresh} className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl">
+            <RefreshCw className="h-5 w-5 mr-2" /> Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard stats');
-      }
-
-      const backendStats = await response.json();
-
-      let trend: 'improving' | 'stable' | 'declining' = 'stable';
-      if (backendStats.wellness_index?.trend_vs_prior_period > 0) trend = 'improving';
-      if (backendStats.wellness_index?.trend_vs_prior_period < 0) trend = 'declining';
-
-      const burnoutRiskLevels = backendStats.burnout_trend?.buckets || {};
-
-      setStats({
-        total_employees: backendStats.company_stats?.totalEmployees || 0,
-        total_managers: Object.values(backendStats.company_stats?.roleBreakdown || {}).reduce((a: any, b: any) => a + b, 0),
-        active_sessions: backendStats.company_stats?.activeEmployees || 0,
-        completed_reports: 0,
-        average_wellness_score: backendStats.wellness_index?.wellness_index ? Math.round(backendStats.wellness_index.wellness_index / 10) : 0,
-        average_mood_score: backendStats.wellness_index?.engagement_score ? Math.round(backendStats.wellness_index.engagement_score / 10) : 0,
-        average_stress_score: backendStats.wellness_index?.stress_score ? Math.round(backendStats.wellness_index.stress_score / 10) : 0,
-        average_energy_score: backendStats.engagement_signals?.wau_pct ? Math.round(backendStats.engagement_signals.wau_pct / 10) : 0,
-        high_risk_employees: backendStats.early_warnings?.alerts?.length || burnoutRiskLevels['High Risk'] || 0,
-        medium_risk_employees: burnoutRiskLevels['Medium Risk'] || 0,
-        low_risk_employees: burnoutRiskLevels['Low Risk'] || 0,
-        wellness_trend: trend,
-        department_stats: backendStats.department_comparison?.departments || {},
-        weekly_reports: 0,
-        participation_rate: backendStats.wellness_index?.check_in_participation_pct || 0,
-        last_updated: backendStats.wellness_index?.computed_at || new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Error loading dashboard stats:', error);
-      toast.error('Failed to load dashboard statistics');
-    }
-  };
-
-  const loadRecentReports = async () => {
-    if (!user?.company_id) return;
-    try {
-      const reportsQuery = query(
-        collection(db, 'mental_health_reports'),
-        where('company_id', '==', user.company_id),
-        orderBy('created_at', 'desc'),
-        limit(5)
-      );
-      const snapshot = await getDocs(reportsQuery);
-      const reportsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as MentalHealthReport[];
-      setRecentReports(reportsData);
-    } catch (error) {
-      console.error('Error loading recent reports:', error);
-    }
-  };
-
-  // if (userLoading || loading) {
-  //   return <PageLoader message="Loading organization dashboard..." iconColor="text-emerald-500" />;
-  // }
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-  };
-
-  return (
-    <div className="px-4 sm:px-6 lg:px-6 py-6 max-w-[1400px] mx-auto space-y-6">
-
-      {/* ── Page Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Building className="h-6 w-6 text-emerald-500" />
-            Organisation Dashboard
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Real-time mental health insights and wellness metrics for your team.
+  if (!companyId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md text-center space-y-4">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex items-center justify-center">
+            <AlertCircle className="h-8 w-8 text-amber-500" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Company Not Linked</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Your account does not have a company associated. Please contact your administrator.
           </p>
         </div>
+      </div>
+    );
+  }
 
-        <div className="flex flex-wrap items-center gap-2">
+  const wi = data.wellness_index;
+  const ew = data.early_warnings;
+  const es = data.engagement_signals;
+  const bt = data.burnout_trend;
+
+  const kpis = [
+    {
+      label: 'Wellness Index',
+      value: wi ? `${wi.wellness_index}/100` : '—',
+      icon: Activity,
+      color: wi ? (wi.wellness_index >= 70 ? '#10B981' : wi.wellness_index >= 40 ? '#F59E0B' : '#EF4444') : '#9CA3AF',
+      sub: wi ? `${wi.trend_vs_prior_period >= 0 ? '+' : ''}${wi.trend_vs_prior_period}% vs prior` : undefined,
+    },
+    {
+      label: 'Burnout Alert',
+      value: bt?.alert_level?.toUpperCase() ?? '—',
+      icon: Zap,
+      color: bt?.alert_level === 'high' ? '#EF4444' : bt?.alert_level === 'medium' ? '#F59E0B' : '#10B981',
+      sub: bt ? `${bt.period_weeks}w trend` : undefined,
+    },
+    {
+      label: 'Engagement Rate',
+      value: es ? `${es.check_in_completion_pct}%` : '—',
+      icon: BarChart3,
+      color: '#8B5CF6',
+      sub: es ? `DAU ${es.dau_pct}% · WAU ${es.wau_pct}%` : undefined,
+    },
+    {
+      label: 'Active Warnings',
+      value: ew?.alerts?.length ?? '—',
+      icon: AlertCircle,
+      color: (ew?.alerts?.length ?? 0) > 0 ? '#F59E0B' : '#10B981',
+      sub: ew ? `Overall: ${ew.overall_risk} risk` : undefined,
+    },
+  ];
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-6 py-6 max-w-[1400px] mx-auto space-y-5">
+
+      {/* ── Header ── */}
+      <motion.div
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Building2 className="h-5 w-5 text-emerald-500" />
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Organisation Dashboard</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {user?.company_name ?? (user as any)?.companyName ?? 'Company'} Insights
+          </h1>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
+            Privacy-first analytics · All data aggregated · No individual data exposed
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
           <Button
             onClick={handleRefresh}
-            variant="outline"
-            size="sm"
             disabled={refreshing}
-            className="rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-600 dark:text-gray-300 h-10 px-4"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh Data
-          </Button>
-
-          <Button
-            onClick={() => ComprehensiveReportExportService.exportToPDF(stats, user)}
             variant="outline"
             size="sm"
-            className="rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-600 dark:text-gray-300 h-10 px-4"
+            className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 h-9 px-3 text-xs font-medium"
           >
-            <Download className="h-4 w-4 mr-2" />
-            Export Analysis
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
-
-          <Link href="/employer/employees/add">
-            <Button className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white h-10 px-4 font-semibold shadow-md shadow-emerald-500/10">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Employee
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* ── ROW 1: Organisation Wellness Snap ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-        {/* Wellness Snap (Large Card) */}
-        <div className="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-              <Activity className="h-5 w-5 text-emerald-500" />
-              Organisation Wellness Snap
-            </h2>
-            <div className="flex items-center gap-2 text-[11px] font-medium text-gray-400">
-              <Clock className="h-3 w-3" />
-              Last updated: {stats?.last_updated ? new Date(stats.last_updated).toLocaleTimeString() : 'Just now'}
-            </div>
-          </div>
-
-          <div className="bg-emerald-50/50 dark:bg-emerald-950/10 rounded-2xl p-8 flex items-center justify-around flex-wrap gap-8 border border-emerald-100/50 dark:border-emerald-800/10">
-            <Ring value={stats?.average_mood_score || 0} color="#3B82F6" emoji="😊" label="MOOD" />
-            <Ring value={stats?.average_energy_score || 0} color="#10B981" emoji="⚡" label="ENERGY" />
-            <Ring value={stats?.average_stress_score || 0} color="#F59E0B" emoji="🌸" label="STRESS" />
-            <Ring value={stats?.average_wellness_score || 0} color="#10B981" emoji="🌿" label="WELLNESS" />
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-8 px-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                <Users className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Team</p>
-                <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{stats?.total_employees || 0}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                <Activity className="h-5 w-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Participation</p>
-                <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{stats?.participation_rate || 0}%</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Active Now</p>
-                <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{stats?.active_sessions || 0}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* High Risk Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Risk Assessment
-            </h2>
-          </div>
-
-          <div className="flex-1 flex flex-col justify-center items-center text-center gap-4 py-4">
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center ${stats?.high_risk_employees ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'} dark:bg-opacity-10`}>
-              {stats?.high_risk_employees ? <AlertTriangle className="h-10 w-10 animate-pulse" /> : <CheckCircle className="h-10 w-10" />}
-            </div>
-            <div>
-              <h3 className={`text-3xl font-black ${stats?.high_risk_employees ? 'text-red-500' : 'text-emerald-500'}`}>
-                {stats?.high_risk_employees || 0}
-              </h3>
-              <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mt-1">High Risk Cases</p>
-            </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[200px]">
-              {stats?.high_risk_employees
-                ? 'Action required. Multiple employees are reporting critical levels of stress or low wellness.'
-                : 'Excellent! No critical risk cases detected in your organisation currently.'}
-            </p>
-          </div>
-
-          <Button variant="outline" className="w-full mt-4 rounded-xl border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-600 dark:text-gray-300 h-10 group">
-            View Risk Analysis
-            <ArrowRight className="h-3 w-3 ml-2 group-hover:translate-x-1 transition-transform" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 h-9 px-3 text-xs font-medium"
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Export PDF
           </Button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* ── ROW 2: Comprehensive Metrics ── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <BarChart2 className="h-5 w-5 text-emerald-500" />
-            Detailed Wellness Analysis
-          </h2>
+      {/* ── ROW 1: KPI Strip ── */}
+      <motion.div
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+      >
+        {kpis.map(k => <KPICard key={k.label} {...k} />)}
+      </motion.div>
+
+      {/* ── ROW 2: Wellness Hero + Early Warnings ── */}
+      <motion.div
+        className="grid grid-cols-1 xl:grid-cols-3 gap-5"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        <div className="xl:col-span-2">
+          <WellnessIndexHero data={data.wellness_index ?? undefined} />
         </div>
+        <div>
+          <EarlyWarnings data={data.early_warnings ?? undefined} />
+        </div>
+      </motion.div>
 
-        <ComprehensiveMetrics
-          companyId={user?.company_id}
-          userRole="employer"
-          showExport={false}
+      {/* ── ROW 3: Burnout + Workload ── */}
+      <motion.div
+        className="grid grid-cols-1 xl:grid-cols-2 gap-5"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.15 }}
+      >
+        <BurnoutTrendChart data={data.burnout_trend ?? undefined} />
+        <WorkloadFriction data={data.workload_friction ?? undefined} />
+      </motion.div>
+
+      {/* ── ROW 4: Engagement Signals ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+        <SectionHeader icon={Users} title="Engagement Signals" sub="Percentages only · No individual data" />
+        <EngagementSignals data={data.engagement_signals ?? undefined} />
+      </motion.div>
+
+      {/* ── ROW 5: Org Wellness Trend + Department Comparison ── */}
+      <motion.div
+        className="grid grid-cols-1 xl:grid-cols-2 gap-5"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.25 }}
+      >
+        <OrgWellnessTrend
+          data={data.productivity_proxy ?? undefined}
+          wellnessIndex={data.wellness_index?.wellness_index}
         />
-      </div>
+        <DepartmentComparison />
+      </motion.div>
 
-      {/* ── ROW 3: Recent Activity & Quick Actions ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* ── ROW 6: Retention Risk + ROI Panel ── */}
+      <motion.div
+        className="grid grid-cols-1 xl:grid-cols-2 gap-5"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
+      >
+        <RetentionRiskSignal burnoutData={data.burnout_trend ?? undefined} />
+        <ROIImpactPanel
+          productivityData={data.productivity_proxy ?? undefined}
+          wellnessIndex={data.wellness_index?.wellness_index}
+        />
+      </motion.div>
 
-        {/* Recent Activity */}
-        <div className="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Recent Employee Reports</h2>
-            <Link href="/employer/reports" className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center">
-              View All <ArrowRight className="h-3 w-3 ml-1" />
-            </Link>
-          </div>
+      {/* ── ROW 7: Program Effectiveness ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.35 }}
+      >
+        <SectionHeader icon={Sparkles} title="Program Effectiveness" sub="Before/After · Cohort-level analysis" />
+        <ProgramEffectiveness
+          wellnessIndex={data.wellness_index?.wellness_index}
+          burnoutAlertLevel={data.burnout_trend?.alert_level}
+        />
+      </motion.div>
 
-          <div className="space-y-3">
-            {recentReports.length > 0 ? (
-              recentReports.map((report) => (
-                <div key={report.id} className="group flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-800/60 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 font-bold text-sm">
-                      {report.overall_wellness}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Report #{report.id.slice(-6)}</p>
-                      <p className="text-[11px] text-gray-400">{new Date(report.created_at).toLocaleDateString()} • {new Date(report.created_at).toLocaleTimeString()}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={report.risk_level === 'high' ? 'destructive' : 'secondary'} className="rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                      {report.risk_level} Risk
-                    </Badge>
-                    <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-emerald-500 transition-colors" />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="py-12 flex flex-col items-center justify-center text-center gap-3 opacity-50">
-                <FileText className="h-10 w-10" />
-                <p className="text-sm">No recent reports found.</p>
-              </div>
-            )}
-          </div>
-        </div>
+      {/* ── ROW 8: Action Engine ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
+      >
+        <SectionHeader icon={Zap} title="Action Engine" sub="Insight → Recommendation → Expected Impact → Playbook" />
+        <ActionEngine data={data.suggested_actions ?? undefined} />
+      </motion.div>
 
-        {/* Quick Actions */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 gap-3">
-            {[
-              { label: 'Manage Team', icon: Users, href: '/employer/employees', color: 'bg-blue-500', sub: 'View and edit team' },
-              { label: 'Wellness Hub', icon: Sparkles, href: '/employer/wellness-hub', color: 'bg-emerald-500', sub: 'Resource settings' },
-              { label: 'Analytics', icon: BarChart3, href: '/employer/analytics', color: 'bg-purple-500', sub: 'Deep insights' },
-              { label: 'Safety Settings', icon: Shield, href: '/employer/settings', color: 'bg-amber-500', sub: 'Security & compliance' }
-            ].map((action) => (
-              <Link href={action.href} key={action.label}>
-                <div className="group flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-emerald-200 dark:hover:border-emerald-800 hover:shadow-md transition-all cursor-pointer">
-                  <div className={`${action.color} p-2.5 rounded-xl flex-shrink-0 text-white shadow-sm shadow-black/10`}>
-                    <action.icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{action.label}</p>
-                    <p className="text-xs text-gray-400 group-hover:text-emerald-500 transition-colors">{action.sub}</p>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-gray-200 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-                </div>
-              </Link>
-            ))}
+      {/* ── Footer ── */}
+      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            <span className="font-medium">Privacy-First · k-Anonymity Enforced</span>
           </div>
         </div>
+        <span>Last sync: {new Date(data.last_updated).toLocaleString()}</span>
       </div>
 
     </div>
