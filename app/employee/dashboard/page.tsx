@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useUser } from '@/hooks/use-user';
+import { useAuth } from '@/contexts/auth-context';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { withAuth } from '@/components/auth/with-auth';
@@ -81,7 +81,7 @@ function QuickAction({ href, icon: Icon, iconBg, label, sub }: {
           <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{label}</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{sub}</p>
         </div>
-        <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+        <ArrowRight className="h-5 w-5 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
       </div>
     </Link>
   );
@@ -90,7 +90,7 @@ function QuickAction({ href, icon: Icon, iconBg, label, sub }: {
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 function EmployeeDashboard() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading } = useAuth();
   const [reports, setReports] = useState<MentalHealthReport[]>([]);
   const [loading, setLoading] = useState(true);
 

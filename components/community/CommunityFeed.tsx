@@ -161,18 +161,18 @@ function PostCard({
           onClick={e => { e.stopPropagation(); onLike(post.id); }}
           className="flex items-center gap-1.5 text-gray-400 hover:text-emerald-500 transition-colors"
         >
-          <Heart className="h-4 w-4" />
+          <Heart className="h-5 w-5" />
           <span className="text-xs font-medium">{pad(post.likes)}</span>
         </button>
         <button
           onClick={e => { e.stopPropagation(); onSelect(); }}
           className="flex items-center gap-1.5 text-gray-400 hover:text-orange-400 transition-colors"
         >
-          <MessageCircle className="h-4 w-4" />
+          <MessageCircle className="h-5 w-5" />
           <span className="text-xs font-medium">{pad(post.replies)}</span>
         </button>
         <span className="flex items-center gap-1.5 text-gray-400">
-          <Eye className="h-4 w-4" />
+          <Eye className="h-5 w-5" />
           <span className="text-xs font-medium">{pad(post.views)}</span>
         </span>
       </div>
@@ -219,13 +219,13 @@ function DetailPanel({
         <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{post.content}</p>
         <div className="flex items-center justify-end gap-5 mt-4">
           <button onClick={() => onLike(post.id)} className="flex items-center gap-1.5 text-gray-400 hover:text-emerald-500 transition-colors">
-            <Heart className="h-4 w-4" /><span className="text-xs font-medium">{pad(post.likes)}</span>
+            <Heart className="h-5 w-5" /><span className="text-xs font-medium">{pad(post.likes)}</span>
           </button>
           <span className="flex items-center gap-1.5 text-gray-400">
-            <MessageCircle className="h-4 w-4" /><span className="text-xs font-medium">{pad(post.replies)}</span>
+            <MessageCircle className="h-5 w-5" /><span className="text-xs font-medium">{pad(post.replies)}</span>
           </span>
           <span className="flex items-center gap-1.5 text-gray-400">
-            <Eye className="h-4 w-4" /><span className="text-xs font-medium">{pad(post.views)}</span>
+            <Eye className="h-5 w-5" /><span className="text-xs font-medium">{pad(post.views)}</span>
           </span>
         </div>
       </div>
@@ -447,7 +447,7 @@ export default function CommunityFeed({ user }: { user: User }) {
 
           {/* Refresh */}
           <button onClick={fetchPosts} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-white dark:hover:bg-gray-800 transition-colors">
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-5 w-5" />
           </button>
         </div>
       </div>

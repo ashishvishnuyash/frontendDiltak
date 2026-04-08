@@ -179,7 +179,7 @@ function AnalyticsPage() {
             variant="outline"
             className={`rounded-xl border-gray-200 dark:border-gray-800 ${useDemoData ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'bg-white dark:bg-gray-950 text-gray-600'} h-10`}
           >
-            <Brain className="h-4 w-4 mr-2" />
+            <Brain className="h-5 w-5 mr-2" />
             {useDemoData ? 'Demo Mode: ON' : 'Use Demo Data'}
           </Button>
           
@@ -188,12 +188,12 @@ function AnalyticsPage() {
             onClick={fetchAnalytics}
             className="rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-600 dark:text-gray-300 h-10"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-5 w-5 mr-2" />
             Refresh
           </Button>
 
           <Button className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white h-10 px-4 font-semibold shadow-md shadow-emerald-500/10">
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="h-5 w-5 mr-2" />
             Download PDF
           </Button>
         </div>
@@ -223,7 +223,7 @@ function AnalyticsPage() {
           <CardHeader className="border-b border-gray-50 dark:border-gray-800/50 px-6 py-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                <TrendingUp className="h-5 w-5 text-emerald-500" />
                 Wellness Trends
               </CardTitle>
               <div className="flex items-center gap-2">
@@ -270,7 +270,7 @@ function AnalyticsPage() {
         <Card className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm">
           <CardHeader className="border-b border-gray-50 dark:border-gray-800/50 px-6 py-4">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Shield className="h-4 w-4 text-emerald-500" />
+              <Shield className="h-5 w-5 text-emerald-500" />
               Risk Distribution
             </CardTitle>
           </CardHeader>
@@ -320,7 +320,7 @@ function AnalyticsPage() {
         <CardHeader className="border-b border-gray-50 dark:border-gray-800/50 px-6 py-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Users className="h-4 w-4 text-emerald-500" />
+              <Users className="h-5 w-5 text-emerald-500" />
               Department Comparison
             </CardTitle>
             <div className="flex items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">

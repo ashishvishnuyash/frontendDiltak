@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Plus, RefreshCw, Download, ArrowRight, MessageSquare,
-  TrendingDown, TrendingUp, Minus,
+  TrendingDown, TrendingUp, Minus, X, FileDown,
 } from 'lucide-react';
-import { useUser } from '@/hooks/use-user';
+import { useAuth } from '@/contexts/auth-context';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { withAuth } from '@/components/auth/with-auth';
@@ -16,6 +16,7 @@ import InteractiveAnalytics from '@/components/analytics/InteractiveAnalytics';
 import { DataList } from '@/components/list/DataList';
 import type { ColumnDef } from '@/components/list/DataList';
 import { BrandLoader } from '@/components/loader';
+import { generateReportPDF } from '@/lib/generate-report-pdf';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,11 +55,14 @@ function TrendIcon({ value }: { value: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function EmployeeReportsPage() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading } = useAuth();
   const [reports, setReports] = useState<UIMentalHealthReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<'interactive' | 'list'>('interactive');
+  const [exportOpen, setExportOpen] = useState(false);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const router = useRouter();
 
   const fetchReports = useCallback(async () => {
@@ -183,7 +187,7 @@ function EmployeeReportsPage() {
           <Link href={`/employee/reports/${row.id}`}
             className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-400 hover:text-emerald-600 transition-colors"
             onClick={e => e.stopPropagation()}>
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-5 w-5" />
           </Link>
         </div>
       ),
@@ -191,7 +195,28 @@ function EmployeeReportsPage() {
   ];
 
   const handleExport = () => {
-    router.push('/export/report?type=employee&range=30d');
+    const from = fromDate ? new Date(fromDate) : null;
+    const to = toDate ? new Date(toDate + 'T23:59:59') : null;
+
+    const filtered = reports.filter(r => {
+      const d = new Date(r.created_at);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      alert('No reports found in the selected date range.');
+      return;
+    }
+
+    generateReportPDF(
+      filtered,
+      user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || user.email : 'Employee',
+      fromDate,
+      toDate,
+    );
+    setExportOpen(false);
   };
 
   return (
@@ -229,6 +254,15 @@ function EmployeeReportsPage() {
           {/* View toggle — pill style matching image */}
       
 
+          {/* Export */}
+          <button
+            onClick={() => setExportOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-1.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-sm transition-colors"
+          >
+            <FileDown className="h-5 w-5" />
+            Export
+          </button>
+
           {/* Add Report */}
           <Link href="/employee/reports/new" className="flex items-center gap-1.5 px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-sm transition-colors">
             Add Report <Plus className="h-5 w-5" />
@@ -261,7 +295,7 @@ function EmployeeReportsPage() {
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-sm">No reports yet</p>
             <Link href="/employee/reports/new" className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors">
-              Create your first report <ArrowRight className="h-4 w-4" />
+              Create your first report <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
         )
@@ -280,6 +314,87 @@ function EmployeeReportsPage() {
           defaultPageSize={25}
           pageSizeOptions={[10, 25, 50, 100]}
         />
+      )}
+
+      {/* ── Export Modal ── */}
+      {exportOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/30 dark:bg-black/50 z-40 backdrop-blur-sm"
+            onClick={() => setExportOpen(false)}
+          />
+          {/* Dialog */}
+          <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-sm p-6">
+
+              {/* Header */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
+                    <FileDown className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Export Report</h2>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Download detailed PDF</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setExportOpen(false)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Date range inputs */}
+              <div className="space-y-3 mb-5">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">From</label>
+                  <input
+                    type="date"
+                    value={fromDate}
+                    onChange={e => setFromDate(e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-600 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">To</label>
+                  <input
+                    type="date"
+                    value={toDate}
+                    onChange={e => setToDate(e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-600 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Info */}
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">
+                {fromDate || toDate
+                  ? `Exporting reports ${fromDate ? `from ${new Date(fromDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''} ${toDate ? `to ${new Date(toDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}`
+                  : 'Leave both empty to export all reports.'}
+              </p>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setExportOpen(false)}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleExport}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                >
+                  <Download className="h-5 w-5" />
+                  Download PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -74,7 +74,7 @@ export default function AdminAnalytics() {
             <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                  <Icon className="h-4 w-4 text-indigo-500" />
+                  <Icon className="h-5 w-5 text-indigo-500" />
                 </div>
                 <span className={`text-[11px] font-semibold ${m.up ? 'text-emerald-600' : 'text-red-500'}`}>{m.delta}</span>
               </div>

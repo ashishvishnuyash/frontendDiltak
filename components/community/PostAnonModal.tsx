@@ -51,7 +51,7 @@ export default function PostAnonModal({ firstName, onConfirm, onCancel }: PostAn
             onClick={onCancel}
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 

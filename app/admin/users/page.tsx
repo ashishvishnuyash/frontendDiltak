@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Search, Plus, Eye, Edit, Trash2, CheckCircle, XCircle, Download, Shield, Building2 } from 'lucide-react';
+import { Users, Search, Plus, Eye, Edit, Trash2, CheckCircle, XCircle, Download, Shield, Building2, Link } from 'lucide-react';
 
 const users = [
   { id: '1', name: 'Sarah Johnson',  email: 'sarah@acme.com',       company: 'Acme Corp',       role: 'employee', wellness: 8.4, status: 'active',   lastSeen: '2 min ago' },
@@ -49,7 +49,7 @@ export default function AdminUsers() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/admin/users/invite" className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-500/20 active:scale-95">
-            <Plus className="h-4 w-4" /> Invite User
+            <Plus className="h-5 w-5" /> Invite User
           </Link>
         </div>
       </div>
@@ -74,7 +74,7 @@ export default function AdminUsers() {
       <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -94,7 +94,7 @@ export default function AdminUsers() {
             ))}
           </div>
           <button className="flex items-center gap-2 px-4 h-11 border border-border rounded-xl text-[11px] font-bold text-muted-foreground hover:bg-secondary transition-all">
-            <Download className="h-4 w-4" /> Export
+            <Download className="h-5 w-5" /> Export
           </button>
         </div>
       </div>
@@ -151,9 +151,9 @@ export default function AdminUsers() {
                   <td className="px-6 py-4 text-muted-foreground font-medium whitespace-nowrap">{u.lastSeen}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
-                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Eye className="h-4 w-4" /></button>
-                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Edit className="h-4 w-4" /></button>
-                      <button className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"><Trash2 className="h-4 w-4" /></button>
+                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Eye className="h-5 w-5" /></button>
+                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Edit className="h-5 w-5" /></button>
+                      <button className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"><Trash2 className="h-5 w-5" /></button>
                     </div>
                   </td>
                 </motion.tr>

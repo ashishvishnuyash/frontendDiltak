@@ -77,7 +77,7 @@ export default function AdminDashboard() {
           </div>
           <div className="h-8 w-px bg-border hidden sm:block mx-1" />
           <button className="p-2 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors border border-border">
-            <Zap className="h-4 w-4 text-amber-500" />
+            <Zap className="h-5 w-5 text-amber-500" />
           </button>
         </div>
       </div>
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
                 <div key={i} className="flex gap-4 group cursor-pointer">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-xl ${a.dot.replace('bg-', 'bg-').split('-')[0]}-500/10 dark:${a.dot}-500/20 flex items-center justify-center border border-border group-hover:border-indigo-500/30 transition-all`}>
-                      <Icon className={`h-4 w-4 ${a.dot.replace('bg-', 'text-')}`} />
+                      <Icon className={`h-5 w-5 ${a.dot.replace('bg-', 'text-')}`} />
                     </div>
                     {i < recentActivity.length - 1 && <div className="w-px flex-1 bg-border my-1" />}
                   </div>
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
                 <div className="min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-black text-foreground tracking-tight">{q.label}</p>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
                   </div>
                   <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mt-1 opacity-60">{q.sub}</p>
                 </div>

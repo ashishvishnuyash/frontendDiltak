@@ -1,31 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Brain, 
-  Play, 
-  Clock, 
-  Star, 
-  Target, 
-  Heart, 
-  Zap, 
-  Moon,
-  RefreshCw,
-  CheckCircle,
-  Loader2,
-  Sparkles,
-  Shield,
-  Users,
-  TrendingUp,
-  CheckCircle2
+import {
+  Brain, Heart, Zap, Moon, Target, Sparkles,
+  Shield, Users, TrendingUp, CheckCircle2,
+  RefreshCw, Clock, Play, CheckCircle, ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUser } from '@/hooks/use-user';
-import { SectionLoader, ButtonLoader } from '@/components/loader';
+import { useAuth } from '@/contexts/auth-context';
+import { BrandLoader } from '@/components/loader';
+import { apiPost } from '@/lib/api-client';
+
+// ── Types ──────────────────────────────────────────────────────────────────────
 
 interface AIRecommendation {
   id: string;
@@ -49,381 +36,384 @@ interface RecommendationCategory {
   id: string;
   title: string;
   icon: React.ReactNode;
-  color: string;
-  headerColor: string;
+  accent: string;
+  iconBg: string;
   items: string[];
 }
 
+// ── Category config ────────────────────────────────────────────────────────────
+
+const EMPLOYEE_CATEGORIES: RecommendationCategory[] = [
+  {
+    id: 'stress-management',
+    title: 'Stress Management',
+    icon: <Heart className="h-5 w-5" />,
+    accent: 'border-rose-200 dark:border-rose-800',
+    iconBg: 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400',
+    items: [
+      'Try the 4-7-8 breathing technique during stressful moments',
+      'Take a 5-minute walk between meetings to reset your mind',
+      'Use the Pomodoro technique for focused work sessions',
+      'Practice saying "no" to non-essential commitments',
+    ],
+  },
+  {
+    id: 'personal-wellness',
+    title: 'Personal Wellness',
+    icon: <Brain className="h-5 w-5" />,
+    accent: 'border-blue-200 dark:border-blue-800',
+    iconBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
+    items: [
+      'Practice 5 minutes of mindfulness meditation daily',
+      'Take regular breaks to stretch and move your body',
+      'Stay hydrated and maintain regular meal times',
+      'Get 7-9 hours of quality sleep each night',
+    ],
+  },
+  {
+    id: 'work-life-balance',
+    title: 'Work-Life Balance',
+    icon: <Zap className="h-5 w-5" />,
+    accent: 'border-emerald-200 dark:border-emerald-800',
+    iconBg: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400',
+    items: [
+      'Set clear boundaries between work and personal time',
+      'Schedule time for hobbies and activities you enjoy',
+      'Disconnect from work emails after hours',
+      'Plan regular time off to recharge and prevent burnout',
+    ],
+  },
+  {
+    id: 'self-care',
+    title: 'Self-Care',
+    icon: <Sparkles className="h-5 w-5" />,
+    accent: 'border-purple-200 dark:border-purple-800',
+    iconBg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+    items: [
+      'Engage in activities that bring you joy and relaxation',
+      'Connect with friends and family regularly',
+      'Practice gratitude by writing down 3 things daily',
+      'Seek support when needed from colleagues or professionals',
+    ],
+  },
+];
+
+const MANAGER_CATEGORIES: RecommendationCategory[] = [
+  {
+    id: 'leadership-wellness',
+    title: 'Leadership Wellness',
+    icon: <Shield className="h-5 w-5" />,
+    accent: 'border-blue-200 dark:border-blue-800',
+    iconBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
+    items: [
+      'Schedule regular one-on-ones with your team to reduce communication stress',
+      'Block 30 minutes daily for strategic thinking and planning',
+      'Practice delegation to reduce your workload and develop your team',
+      'Set clear boundaries between work and personal time',
+    ],
+  },
+  {
+    id: 'stress-management',
+    title: 'Stress Management',
+    icon: <Heart className="h-5 w-5" />,
+    accent: 'border-rose-200 dark:border-rose-800',
+    iconBg: 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400',
+    items: [
+      'Try the 4-7-8 breathing technique during stressful moments',
+      'Take a 5-minute walk between meetings to reset your mind',
+      'Use the Pomodoro technique for focused work sessions',
+      'Practice saying "no" to non-essential commitments',
+    ],
+  },
+  {
+    id: 'team-support',
+    title: 'Team Support',
+    icon: <Users className="h-5 w-5" />,
+    accent: 'border-emerald-200 dark:border-emerald-800',
+    iconBg: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400',
+    items: [
+      'Check in with team members about their workload and wellbeing',
+      'Recognize and celebrate team achievements regularly',
+      'Create psychological safety for open communication',
+      'Provide growth opportunities and learning resources',
+    ],
+  },
+  {
+    id: 'personal-development',
+    title: 'Personal Development',
+    icon: <TrendingUp className="h-5 w-5" />,
+    accent: 'border-purple-200 dark:border-purple-800',
+    iconBg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+    items: [
+      'Read leadership books for 15 minutes daily',
+      'Join a leadership peer group or mastermind',
+      'Seek feedback from your team and peers regularly',
+      'Invest in executive coaching or mentoring',
+    ],
+  },
+];
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function recIcon(type: string) {
+  const map: Record<string, React.ReactNode> = {
+    meditation: <Brain className="h-5 w-5" />,
+    journaling: <Target className="h-5 w-5" />,
+    breathing:  <Heart className="h-5 w-5" />,
+    exercise:   <Zap className="h-5 w-5" />,
+    sleep:      <Moon className="h-5 w-5" />,
+  };
+  return map[type] ?? <Sparkles className="h-5 w-5" />;
+}
+
+function recIconBg(type: string) {
+  const map: Record<string, string> = {
+    meditation: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+    journaling: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
+    breathing:  'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+    exercise:   'bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400',
+    sleep:      'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400',
+  };
+  return map[type] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400';
+}
+
+function diffBadge(d: string) {
+  if (d === 'beginner')     return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+  if (d === 'intermediate') return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+  return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+}
+
+// ── Component ──────────────────────────────────────────────────────────────────
+
 export default function AIRecommendations() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
-  const [completedRecommendations, setCompletedRecommendations] = useState<string[]>([]);
-  const [categories, setCategories] = useState<RecommendationCategory[]>([]);
+  const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [categories, setCategories] = useState<RecommendationCategory[]>(EMPLOYEE_CATEGORIES);
 
-  const getRecommendations = async () => {
+  const buildCategories = useCallback((role: string) => {
+    setCategories(role === 'manager' || role === 'admin' ? MANAGER_CATEGORIES : EMPLOYEE_CATEGORIES);
+  }, []);
+
+  const fetchRecommendations = useCallback(async () => {
     if (!user) return;
-
     setLoading(true);
     try {
-      const response = await fetch('/api/recommendations/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const result = await apiPost<{ success: boolean; recommendations: AIRecommendation[] }>(
+        '/recommendations/generate',
+        {
           employee_id: user.id,
           company_id: user.company_id,
-          current_mood: 5, // Default neutral mood
-          current_stress: 5, // Default neutral stress
-          current_energy: 5, // Default neutral energy
-          time_available: 15
-        })
-      });
-
-      const result = await response.json();
-
+          current_mood: 5,
+          current_stress: 5,
+          current_energy: 5,
+          time_available: 15,
+        }
+      );
       if (result.success) {
         setRecommendations(result.recommendations);
-        generateCategories(result.recommendations, user.role || 'employee');
-        toast.success('Personalized recommendations generated based on your chat history!');
-      } else {
-        // Generate fallback categories
-        generateCategories([], user.role || 'employee');
-        toast.error('Failed to generate recommendations');
+        toast.success('Recommendations refreshed!');
       }
-    } catch (error) {
-      console.error('Error fetching recommendations:', error);
-      generateCategories([], user.role || 'employee');
-      toast.error('An error occurred while generating recommendations');
+    } catch {
+      // silent — categories still show
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateCategories = (recs: AIRecommendation[], role: string) => {
-    if (role === 'manager' || role === 'admin') {
-      // Manager/Leadership categories
-      setCategories([
-        {
-          id: 'leadership-wellness',
-          title: 'Leadership Wellness',
-          icon: <Shield className="h-6 w-6" />,
-          color: 'bg-blue-50 dark:bg-blue-950/30',
-          headerColor: 'bg-blue-100 dark:bg-blue-900/50',
-          items: [
-            'Schedule regular one-on-ones with your team to reduce communication stress',
-            'Block 30 minutes daily for strategic thinking and planning',
-            'Practice delegation to reduce your workload and develop your team',
-            'Set clear boundaries between work and personal time'
-          ]
-        },
-        {
-          id: 'stress-management',
-          title: 'Stress Management',
-          icon: <Heart className="h-6 w-6" />,
-          color: 'bg-red-50 dark:bg-red-950/30',
-          headerColor: 'bg-red-100 dark:bg-red-900/50',
-          items: [
-            'Try the 4-7-8 breathing technique during stressful moments',
-            'Take a 5-minute walk between meetings to reset your mind',
-            'Use the Pomodoro technique for focused work sessions',
-            'Practice saying "no" to non-essential commitments'
-          ]
-        },
-        {
-          id: 'team-support',
-          title: 'Team Support',
-          icon: <Users className="h-6 w-6" />,
-          color: 'bg-green-50 dark:bg-green-950/30',
-          headerColor: 'bg-green-100 dark:bg-green-900/50',
-          items: [
-            'Check in with team members about their workload and wellbeing',
-            'Recognize and celebrate team achievements regularly',
-            'Create psychological safety for open communication',
-            'Provide growth opportunities and learning resources'
-          ]
-        },
-        {
-          id: 'personal-development',
-          title: 'Personal Development',
-          icon: <TrendingUp className="h-6 w-6" />,
-          color: 'bg-purple-50 dark:bg-purple-950/30',
-          headerColor: 'bg-purple-100 dark:bg-purple-900/50',
-          items: [
-            'Read leadership books for 15 minutes daily',
-            'Join a leadership peer group or mastermind',
-            'Seek feedback from your team and peers regularly',
-            'Invest in executive coaching or mentoring'
-          ]
-        }
-      ]);
-    } else {
-      // Employee categories
-      setCategories([
-        {
-          id: 'stress-management',
-          title: 'Stress Management',
-          icon: <Heart className="h-6 w-6" />,
-          color: 'bg-red-50 dark:bg-red-950/30',
-          headerColor: 'bg-red-100 dark:bg-red-900/50',
-          items: [
-            'Try the 4-7-8 breathing technique during stressful moments',
-            'Take a 5-minute walk between meetings to reset your mind',
-            'Use the Pomodoro technique for focused work sessions',
-            'Practice saying "no" to non-essential commitments'
-          ]
-        },
-        {
-          id: 'personal-wellness',
-          title: 'Personal Wellness',
-          icon: <Brain className="h-6 w-6" />,
-          color: 'bg-blue-50 dark:bg-blue-950/30',
-          headerColor: 'bg-blue-100 dark:bg-blue-900/50',
-          items: [
-            'Practice 5 minutes of mindfulness meditation daily',
-            'Take regular breaks to stretch and move your body',
-            'Stay hydrated and maintain regular meal times',
-            'Get 7-9 hours of quality sleep each night'
-          ]
-        },
-        {
-          id: 'work-life-balance',
-          title: 'Work-Life Balance',
-          icon: <Zap className="h-6 w-6" />,
-          color: 'bg-green-50 dark:bg-green-950/30',
-          headerColor: 'bg-green-100 dark:bg-green-900/50',
-          items: [
-            'Set clear boundaries between work and personal time',
-            'Schedule time for hobbies and activities you enjoy',
-            'Disconnect from work emails after hours',
-            'Plan regular time off to recharge and prevent burnout'
-          ]
-        },
-        {
-          id: 'self-care',
-          title: 'Self-Care',
-          icon: <Sparkles className="h-6 w-6" />,
-          color: 'bg-purple-50 dark:bg-purple-950/30',
-          headerColor: 'bg-purple-100 dark:bg-purple-900/50',
-          items: [
-            'Engage in activities that bring you joy and relaxation',
-            'Connect with friends and family regularly',
-            'Practice gratitude by writing down 3 things daily',
-            'Seek support when needed from colleagues or professionals'
-          ]
-        }
-      ]);
-    }
-  };
-
-  const completeRecommendation = async (recommendationId: string) => {
-    setCompletedRecommendations(prev => [...prev, recommendationId]);
-    toast.success('Great job completing this recommendation!');
-    
-    // Here you would typically send completion data to the backend
-    // and update user's wellness metrics
-  };
-
-  const getRecommendationIcon = (type: string) => {
-    switch (type) {
-      case 'meditation': return <Brain className="h-6 w-6" />;
-      case 'journaling': return <Target className="h-6 w-6" />;
-      case 'breathing': return <Heart className="h-6 w-6" />;
-      case 'exercise': return <Zap className="h-6 w-6" />;
-      case 'sleep': return <Moon className="h-6 w-6" />;
-      default: return <Sparkles className="h-6 w-6" />;
-    }
-  };
-
-  const getRecommendationColor = (type: string) => {
-    switch (type) {
-      case 'meditation': return 'bg-purple-100 text-purple-600';
-      case 'journaling': return 'bg-blue-100 text-blue-600';
-      case 'breathing': return 'bg-green-100 text-green-600';
-      case 'exercise': return 'bg-orange-100 text-orange-600';
-      case 'sleep': return 'bg-indigo-100 text-indigo-600';
-      default: return 'bg-gray-100 text-gray-600';
-    }
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-700';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-700';
-      case 'advanced': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
-      generateCategories([], user.role || 'employee');
-      getRecommendations();
+      buildCategories(user.role || 'employee');
+      fetchRecommendations();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, buildCategories, fetchRecommendations]);
+
+  // never block render — categories always have a default value
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-lime-600 to-emerald-600 mb-3 dark:from-green-400 dark:via-lime-400 dark:to-emerald-400">
-          Wellness Recommendations
-        </h1>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Personalized wellness strategies to help you thrive. Based on your current state and best practices.
-        </p>
-      </motion.div>
+    <div className="space-y-6">
 
-      {/* Category Cards Grid - 2x2 Layout */}
-      {loading ? (
-        <SectionLoader message="Generating recommendations..." />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">          {categories.map((category, index) => (
-            <motion.div
-              key={category.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              className="h-full"
-            >
-              <Card className={`h-full ${category.color} border-2 border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300`}>
-                {/* Header with Icon and Title */}
-                <div className={`${category.headerColor} px-4 sm:px-6 py-4 rounded-t-lg flex items-center space-x-3`}>
-                  <div className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                    <div className="text-gray-700 dark:text-gray-300">
-                      {category.icon}
-                    </div>
-                  </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
-                    {category.title}
-                  </h2>
-                </div>
-
-                {/* Content with Items */}
-                <CardContent className="p-4 sm:p-6">
-                  <ul className="space-y-3 sm:space-y-4">
-                    {category.items.map((item, itemIndex) => (
-                      <motion.li
-                        key={itemIndex}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 + itemIndex * 0.05 }}
-                        className="flex items-start space-x-3"
-                      >
-                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
-                          {item}
-                        </span>
-                      </motion.li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">AI Recommendations</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            Personalized wellness strategies based on your current state
+          </p>
         </div>
-      )}
-
-      {/* Refresh Button */}
-      <div className="flex justify-center pt-4">
-        <Button
-          onClick={getRecommendations}
+        <button
+          onClick={fetchRecommendations}
           disabled={loading}
-          variant="outline"
-          className="border-2 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 px-6 py-2"
+          className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
-          {loading ? (
-            <><ButtonLoader message="Refreshing..." /></>
-          ) : (
-            <>
-              <RefreshCw className="h-5 w-5 mr-2" />
-              Refresh Recommendations
-            </>
-          )}
-        </Button>
+          <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
 
-      {/* Detailed Recommendations Section (Collapsible) */}
-      {recommendations.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-8"
-        >
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-                <Sparkles className="h-5 w-5 text-purple-500" />
-                <span>Detailed Activity Recommendations</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {recommendations.slice(0, 6).map((rec, index) => (
-                  <motion.div
-                    key={rec.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className={`h-full ${completedRecommendations.includes(rec.id) ? 'bg-green-50 border-green-200' : 'hover:shadow-lg'} transition-all duration-300`}>
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className={`p-2 rounded-lg ${getRecommendationColor(rec.recommendation_type)}`}>
-                            {getRecommendationIcon(rec.recommendation_type)}
-                          </div>
-                          <Badge className={getDifficultyColor(rec.difficulty_level)}>
-                            {rec.difficulty_level}
-                          </Badge>
-                        </div>
-                        <CardTitle className="text-base">{rec.title}</CardTitle>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{rec.description}</p>
-                      </CardHeader>
-
-                      <CardContent className="space-y-3">
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center space-x-1">
-                            <Clock className="h-3 w-3 text-gray-500" />
-                            <span>{rec.duration_minutes} min</span>
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={() => completeRecommendation(rec.id)}
-                          disabled={completedRecommendations.includes(rec.id)}
-                          size="sm"
-                          className={`w-full text-xs ${
-                            completedRecommendations.includes(rec.id)
-                              ? 'bg-green-600 hover:bg-green-700'
-                              : 'bg-blue-600 hover:bg-blue-700'
-                          }`}
-                        >
-                          {completedRecommendations.includes(rec.id) ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Completed
-                            </>
-                          ) : (
-                            <>
-                              <Play className="h-3 w-3 mr-1" />
-                              Start Activity
-                            </>
-                          )}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+      {/* ── Category Cards ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {categories.map((cat, i) => (
+          <motion.div
+            key={cat.id}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+            className={`bg-white dark:bg-gray-900 rounded-2xl border ${cat.accent} p-5 shadow-sm`}
+          >
+            {/* Card header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`p-2 rounded-xl ${cat.iconBg}`}>
+                {cat.icon}
               </div>
-            </CardContent>
-          </Card>
+              <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">{cat.title}</h2>
+            </div>
+
+            {/* Items */}
+            <ul className="space-y-3">
+              {cat.items.map((item, j) => (
+                <motion.li
+                  key={j}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.08 + j * 0.04 }}
+                  className="flex items-start gap-2.5"
+                >
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{item}</span>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ── Loading skeleton for AI activities ── */}
+      {loading && recommendations.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+            >
+              <Sparkles className="h-5 w-5 text-purple-400" />
+            </motion.div>
+            <span className="text-base font-semibold text-gray-800 dark:text-gray-100">
+              Generating Personalized Activities…
+            </span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">AI is working</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0.4, 0.8, 0.4] }}
+                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
+                className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 space-y-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-gray-700" />
+                  <div className="w-14 h-4 rounded-full bg-gray-200 dark:bg-gray-700" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                  <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+                  <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
+                </div>
+                <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+                <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded-lg w-full" />
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       )}
+
+      {/* ── AI-generated Activity Recommendations ── */}
+      {recommendations.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-5 w-5 text-purple-500" />
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">
+              Personalized Activities
+            </h2>
+            <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">AI-generated</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {recommendations.slice(0, 6).map((rec, i) => {
+              const isDone = completed.has(rec.id);
+              return (
+                <motion.div
+                  key={rec.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 + i * 0.06 }}
+                  className={`rounded-xl border p-4 flex flex-col gap-3 transition-colors ${
+                    isDone
+                      ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800'
+                      : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600'
+                  }`}
+                >
+                  {/* Top row */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className={`p-2 rounded-lg flex-shrink-0 ${recIconBg(rec.recommendation_type)}`}>
+                      {recIcon(rec.recommendation_type)}
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${diffBadge(rec.difficulty_level)}`}>
+                      {rec.difficulty_level}
+                    </span>
+                  </div>
+
+                  {/* Title + desc */}
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug">{rec.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed line-clamp-2">{rec.description}</p>
+                  </div>
+
+                  {/* Duration */}
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <Clock className="h-3 w-3" />
+                    <span>{rec.duration_minutes} min</span>
+                  </div>
+
+                  {/* Action button */}
+                  <button
+                    onClick={() => {
+                      setCompleted(prev => new Set([...prev, rec.id]));
+                      toast.success('Great job completing this!');
+                    }}
+                    disabled={isDone}
+                    className={`w-full flex items-center justify-center gap-1.5 text-xs font-medium py-1.5 rounded-lg transition-colors ${
+                      isDone
+                        ? 'bg-emerald-500 text-white cursor-default'
+                        : 'bg-gray-800 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {isDone ? (
+                      <><CheckCircle className="h-3.5 w-3.5" /> Completed</>
+                    ) : (
+                      <><Play className="h-3.5 w-3.5" /> Start Activity</>
+                    )}
+                  </button>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
     </div>
   );
 }

@@ -55,8 +55,13 @@ export function DesktopTopBar({
   const handleSignOut = useCallback(async () => {
     setProfileOpen(false);
     try {
+      // Clear local auth tokens first (AuthContext reads these as primary source)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_profile');
+      }
       await signOut(auth);
-      toast.success('Signed out');
+      toast.success('Signed out successfully');
       router.push('/');
     } catch {
       toast.error('Failed to sign out');
@@ -230,7 +235,7 @@ if(theme && theme === "light") {
                       <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors bg-gray-200 dark:bg-gray-700">
                         <span
                           className={cn(
-                            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm",
+                            "inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm",
                             theme === 'dark' ? "translate-x-6" : "translate-x-1"
                           )}
                         />
@@ -306,6 +311,11 @@ function Navbar({ user, items = [], onNavigate, className }: NavbarProps) {
     onNavigate?.();
     setMobileOpen(false);
     try {
+      // Clear local auth tokens first (AuthContext reads these as primary source)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_profile');
+      }
       await signOut(auth);
       toast.success('Signed out successfully');
       router.push('/');

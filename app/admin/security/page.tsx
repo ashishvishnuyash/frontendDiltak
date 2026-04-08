@@ -53,7 +53,7 @@ export default function AdminSecurity() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 shadow-sm">
-            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            <ShieldCheck className="h-5 w-5 text-emerald-500" />
             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Platform Secure</span>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function AdminSecurity() {
           {/* Security controls */}
           <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <Key className="h-4 w-4 text-indigo-500" />
+              <Key className="h-5 w-5 text-indigo-500" />
               <h2 className="text-sm font-black text-foreground tracking-tight uppercase">Admin Security Protocols</h2>
             </div>
             <div className="space-y-4">
@@ -140,7 +140,7 @@ export default function AdminSecurity() {
                   >
                     <motion.span 
                       animate={{ x: s.state ? 24 : 4 }}
-                      className="inline-block h-4 w-4 rounded-full bg-white shadow-md" 
+                      className="inline-block h-5 w-5 rounded-full bg-white shadow-md" 
                     />
                   </button>
                 </div>
@@ -152,7 +152,7 @@ export default function AdminSecurity() {
           <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <AlertTriangle className="h-5 w-5 text-red-500" />
                 <h2 className="text-sm font-black text-foreground tracking-tight uppercase">Critical Alerts</h2>
               </div>
               <button className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors">Clear All</button>
@@ -220,7 +220,7 @@ export default function AdminSecurity() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-all">
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-5 w-5" />
                         </button>
                       </td>
                     </tr>

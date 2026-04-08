@@ -23,15 +23,21 @@ import {
   Database,
   Lock,
   Star,
+  Home,
+  User,
 } from 'lucide-react';
 import type { NavItem } from './Sidebar';
 
 export const employeeNavItems: NavItem[] = [
-  { path: '/employee/dashboard',   label: 'Wellness Dashboard', icon: LayoutDashboard, exact: true },
-  { path: '/employee/chat',        label: 'AI Chat',            icon: MessageSquare },
-  { path: '/employee/community',   label: 'Community',          icon: Users },
-  { path: '/employee/challenges',  label: 'Challenges',         icon: Star },
-  { path: '/employee/support',     label: 'Support',            icon: HelpCircle },
+  { path: '/employee/dashboard',       label: 'Wellness Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/employee/chat',            label: 'AI Chat',            icon: MessageSquare },
+  { path: '/employee/reports',         label: 'My Reports',         icon: FileText },
+  { path: '/employee/recommendations', label: 'Recommendations',    icon: Sparkles },
+  { path: '/employee/community',       label: 'Community',          icon: Users },
+  // { path: '/employee/challenges',      label: 'Challenges',         icon: Star },
+  { path: '/employee/gamification',    label: 'Gamification',       icon: Trophy },
+  { path: '/employee/support',         label: 'Support',            icon: HelpCircle },
+  // { path: '/employee/profile',         label: 'My Profile',         icon: UserCheck },
 ];
 
 export const managerNavItems: NavItem[] = [
@@ -51,9 +57,11 @@ export const managerNavItems: NavItem[] = [
 export const employerNavItems: NavItem[] = [
   { path: '/employer/dashboard',   label: 'Dashboard',  icon: LayoutDashboard, exact: true },
   { path: '/employer/employees',   label: 'Employees',  icon: Users },
-  { path: '/employer/reports',     label: 'Reports',    icon: FileText },
-  { path: '/employer/analytics',   label: 'Analytics',  icon: BarChart3 },
-  { path: '/employer/wellness-hub',label: 'Wellness',   icon: Heart },
+  { path: '/employer/departments',   label: 'Department',  icon: Home  },
+  { path: '/employer/roles',   label: 'Role',  icon: User },
+  // { path: '/employer/reports',     label: 'Reports',    icon: FileText },
+  // { path: '/employer/analytics',   label: 'Analytics',  icon: BarChart3 },
+  // { path: '/employer/wellness-hub',label: 'Wellness',   icon: Heart },
 ];
 
 export const adminNavItems: NavItem[] = [

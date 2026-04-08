@@ -59,7 +59,7 @@ export default function EscalationSupport({ userRole, userId }: EscalationSuppor
       {/* Emergency contacts */}
       <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800 rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="h-4 w-4 text-red-500" />
+          <AlertTriangle className="h-5 w-5 text-red-500" />
           <h2 className="text-sm font-semibold text-red-700 dark:text-red-300">Emergency Support Contacts</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -72,7 +72,7 @@ export default function EscalationSupport({ userRole, userId }: EscalationSuppor
             return (
               <div key={i} className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-xl p-3 border border-gray-100 dark:border-gray-800">
                 <div className={`w-8 h-8 rounded-lg ${c.bg} flex items-center justify-center flex-shrink-0`}>
-                  <Icon className={`h-4 w-4 ${c.color}`} />
+                  <Icon className={`h-5 w-5 ${c.color}`} />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-100">{c.label}</p>
@@ -87,7 +87,7 @@ export default function EscalationSupport({ userRole, userId }: EscalationSuppor
       {/* Report form */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
         <div className="flex items-center gap-2 mb-4">
-          <Shield className="h-4 w-4 text-indigo-500" />
+          <Shield className="h-5 w-5 text-indigo-500" />
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Report New Case</h2>
         </div>
         <div className="space-y-3">
@@ -160,7 +160,7 @@ export default function EscalationSupport({ userRole, userId }: EscalationSuppor
       {/* Active cases */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-          <Clock className="h-4 w-4 text-gray-400" />
+          <Clock className="h-5 w-5 text-gray-400" />
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Active Cases</h2>
           <span className="ml-auto text-xs text-gray-400">{cases.filter(c => c.status !== 'resolved').length} open</span>
         </div>

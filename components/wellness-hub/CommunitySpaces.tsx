@@ -165,7 +165,7 @@ export default function CommunitySpaces({ userRole, userId }: CommunitySpacesPro
               >
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                    <TypeIcon className="h-4 w-4 text-gray-500" />
+                    <TypeIcon className="h-5 w-5 text-gray-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{s.name}</p>
@@ -199,7 +199,7 @@ export default function CommunitySpaces({ userRole, userId }: CommunitySpacesPro
       {activeTab === 'create' && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Plus className="h-4 w-4 text-emerald-500" />
+            <Plus className="h-5 w-5 text-emerald-500" />
             <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Share with the Community</h2>
           </div>
           <div className="space-y-3">

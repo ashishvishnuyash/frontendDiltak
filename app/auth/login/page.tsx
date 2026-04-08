@@ -9,14 +9,14 @@ import axios from 'axios';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 import ForgotPasswordModal from '@/components/modals/ForgotPasswordModal';
+import ServerAddress from '@/constent/ServerAddress';
 
-const BASE_URL = 'http://74.162.66.197/api';
 
 function routeForRole(role: string): string {
   const r = role?.toLowerCase();
-  if (r === 'employee')            return '/employee/dashboard';
-  if (r === 'manager')             return '/manager/dashboard';
-  if (r === 'employer')            return '/employer/dashboard';
+  if (r === 'employee' || r === "manager") return '/employee/dashboard';
+  // if (r === 'manager') return '/manager/dashboard';
+  if (r === 'employer') return '/employer/dashboard';
   if (r === 'admin' || r === 'super_admin') return '/admin/dashboard';
   return '/employee/dashboard';
 }
@@ -24,11 +24,11 @@ function routeForRole(role: string): string {
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [showPw, setShowPw]       = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [fieldError, setFieldError] = useState('');
-  const [loading, setLoading]     = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
 
   const { refreshUser } = useAuth();
@@ -43,39 +43,69 @@ export default function LoginPage() {
 
     try {
       // Step 1 — credentials → access_token
-      const { data: loginData } = await axios.post(`${BASE_URL}/auth/login`, {
+      const { data: loginData } = await axios.post(`${ServerAddress}/auth/login`, {
         email: email.trim(),
         password,
       });
+
+      console.log("loginData", loginData);
       const access_token: string = loginData.access_token;
       if (!access_token) throw new Error('No access token received');
 
-      // Persist token immediately
+      // Persist token & raw login data immediately
       localStorage.setItem('access_token', access_token);
+      localStorage.setItem('login_data', JSON.stringify(loginData));
 
       // Step 2 — GET /api/auth/me → full profile with role
-      const { data: meData } = await axios.get(`${BASE_URL}/auth/me`, {
+      const { data: meData } = await axios.get(`${ServerAddress}/auth/me`, {
         headers: { Authorization: `Bearer ${access_token}` },
       });
 
-      // API returns { database_profile: {...} }
-      const profile = meData?.database_profile ?? meData?.user ?? meData;
-      if (!profile?.role) throw new Error('No profile data received');
+      // API returns { database_profile: {...} } or the user directly from loginData
+      const rawProfile = meData?.database_profile ?? meData?.user ?? meData;
 
-      // Persist profile — AuthContext reads this on next render
-      localStorage.setItem('user_profile', JSON.stringify(profile));
+      // Also merge loginData.user fields (uid, companyId, companyName, role) as fallback
+      const loginUser = loginData?.user ?? {};
 
-      // ── NEW: Force context to update BEFORE redirecting ──
+      // ── Normalize field names to match app conventions ──
+      // API uses { uid, companyId, companyName, displayName }
+      // App expects { id, company_id, company_name, first_name, last_name }
+      const normalizedProfile = {
+        ...rawProfile,
+        // identity
+        id:           rawProfile?.id   ?? rawProfile?.uid   ?? loginUser?.uid   ?? '',
+        uid:          rawProfile?.uid  ?? loginUser?.uid    ?? '',
+        // role & email
+        role:         rawProfile?.role ?? loginUser?.role   ?? '',
+        email:        rawProfile?.email ?? loginUser?.email ?? '',
+        // company
+        company_id:   rawProfile?.company_id   ?? rawProfile?.companyId   ?? loginUser?.companyId   ?? '',
+        company_name: rawProfile?.company_name ?? rawProfile?.companyName ?? loginUser?.companyName ?? '',
+        // name — split displayName if first/last not provided
+        first_name:   rawProfile?.first_name ?? (loginUser?.displayName?.split(' ')?.[0] ?? ''),
+        last_name:    rawProfile?.last_name  ?? (loginUser?.displayName?.split(' ')?.slice(1).join(' ') ?? ''),
+        is_active:    rawProfile?.is_active ?? true,
+        created_at:   rawProfile?.created_at ?? new Date().toISOString(),
+        updated_at:   rawProfile?.updated_at ?? new Date().toISOString(),
+      };
+
+      if (!normalizedProfile?.role) throw new Error('No profile data received');
+
+      // Persist normalized profile — AuthContext reads this on next render
+      localStorage.setItem('user_profile', JSON.stringify(normalizedProfile));
+
+      // ── Force context to update BEFORE redirecting ──
       await refreshUser();
 
-      toast.success(`Welcome back, ${profile.first_name || 'there'}!`);
+      toast.success(`Welcome back, ${normalizedProfile.first_name || normalizedProfile.email || 'there'}!`);
 
       // Navigate based on role
-      router.push(routeForRole(profile.role));
+      router.push(routeForRole(normalizedProfile.role));
 
     } catch (err: any) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user_profile');
+      localStorage.removeItem('login_data');
       const msg =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
@@ -146,7 +176,7 @@ export default function LoginPage() {
                         type="text"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
-                        placeholder="username"
+                        placeholder="Enter Email"
                         className="w-full text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:border-emerald-400 transition-colors"
                       />
                     </div>
@@ -161,7 +191,7 @@ export default function LoginPage() {
                           type={showPw ? 'text' : 'password'}
                           value={password}
                           onChange={e => setPassword(e.target.value)}
-                          placeholder="enter password"
+                          placeholder="Enter Password"
                           className="w-full text-sm px-3.5 py-2.5 pr-10 rounded-lg border border-gray-200 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:border-emerald-400 transition-colors"
                         />
                         <button
@@ -169,7 +199,7 @@ export default function LoginPage() {
                           onClick={() => setShowPw(v => !v)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
-                          {showPw ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                          {showPw ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                         </button>
                       </div>
                     </div>
@@ -189,7 +219,7 @@ export default function LoginPage() {
             )}
 
             {/* ── Loading screen ── */}
-            {loading && (
+            {/* {loading && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0, scale: 0.97 }}
@@ -211,7 +241,31 @@ export default function LoginPage() {
                   </motion.span>
                 </div>
               </motion.div>
-            )}
+            )} */}
+
+            {loading && (
+  <motion.div
+    key="loading"
+    initial={{ opacity: 0, scale: 0.97 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0, scale: 0.97 }}
+    transition={{ duration: 0.2 }}
+    className="bg-white rounded-t-2xl shadow-xl px-10 py-12 flex flex-col items-center gap-8"
+  >
+    <h2 className="text-2xl font-bold text-gray-900 self-start">Loading your session...</h2>
+    <motion.div
+      animate={{ scale: [1, 1.1, 1] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+    >
+      <Heart className="h-64 w-64 text-emerald-500 fill-emerald-500" />
+    </motion.div>
+    <div className="px-14 py-2.5 text-sm font-semibold text-white bg-emerald-500 rounded-lg opacity-80">
+      <motion.span animate={{ opacity: [1, 0.45, 1] }} transition={{ duration: 1.1, repeat: Infinity }}>
+        Loading...
+      </motion.span>
+    </div>
+  </motion.div>
+)}
 
           </AnimatePresence>
 

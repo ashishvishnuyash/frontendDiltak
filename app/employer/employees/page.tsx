@@ -8,6 +8,7 @@ import { withAuth } from '@/components/auth/with-auth';
 import { DataList, type ColumnDef } from '@/components/list/DataList';
 import { BrandLoader } from '@/components/loader';
 import Link from 'next/link';
+import ServerAddress from '@/constent/ServerAddress';
 
 // ── types ──────────────────────────────────────────────────────────────────────
 
@@ -29,8 +30,7 @@ interface Employee {
   created_at?: string;
 }
 
-const BASE_URL = 'http://74.162.66.197/api';
-
+ 
 // ── Employees Page ─────────────────────────────────────────────────────────────
 
 function EmployeesPage() {
@@ -76,15 +76,14 @@ function EmployeesPage() {
       filterable: true,
       filterOptions: [
         { label: 'Employee', value: 'employee' },
-        { label: 'Manager',  value: 'manager' },
-        { label: 'HR',       value: 'hr' },
+        { label: 'Manager', value: 'manager' },
+        { label: 'HR', value: 'hr' },
       ],
       render: (val) => (
-        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-          val === 'manager' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-          val === 'hr'      ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' :
-                              'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-        }`}>{val}</span>
+        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${val === 'manager' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
+            val === 'hr' ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' :
+              'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+          }`}>{val}</span>
       ),
     },
     {
@@ -103,7 +102,7 @@ function EmployeesPage() {
       title: 'Status',
       filterable: true,
       filterOptions: [
-        { label: 'Active',   value: 'true' },
+        { label: 'Active', value: 'true' },
         { label: 'Inactive', value: 'false' },
       ],
       render: (_, row) => {
@@ -121,11 +120,11 @@ function EmployeesPage() {
       title: '',
       width: '60px',
       render: (_, row) => (
-        <Link 
-          href={`/employer/employees/${row.uid || row.id}`} 
+        <Link
+          href={`/employer/employees/${row.uid || row.id}`}
           className="p-2 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all inline-flex items-center justify-center border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900/30"
         >
-          <Eye className="h-4 w-4" />
+          <Eye className="h-5 w-5" />
         </Link>
       ),
     },
@@ -149,7 +148,7 @@ function EmployeesPage() {
         </div>
         <Link href="/employer/employees/add">
           <button className="flex items-center justify-center gap-2 px-6 h-11 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-all shadow-md shadow-emerald-500/10 active:scale-95">
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className="h-5 w-5" />
             Add Employee
           </button>
         </Link>
@@ -175,7 +174,7 @@ function EmployeesPage() {
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
         <DataList<Employee>
           key={refreshKey}
-          apiPath={`${BASE_URL}/employees`}
+          apiPath={`${ServerAddress}/employees`}
           dataPath="employees"
           onDataLoaded={(data) => setEmployees(data)}
           columns={columns}
