@@ -8,7 +8,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND = process.env.UMA_API_URL || 'http://127.0.0.1:8000';
+const BACKEND = process.env.UMA_API_URL || 'http://74.162.66.197';
 
 export async function POST(request: NextRequest) {
   try {
