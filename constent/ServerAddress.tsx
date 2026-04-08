@@ -1,4 +1,4 @@
 
-const ServerAddress = `${process.env.UMA_API_URL}/api`;
+const ServerAddress = `${process.env.NEXT_PUBLIC_APP_URL}/api`;
 
 export default ServerAddress
