@@ -174,7 +174,7 @@ const ASSESSMENT_DATA = {
 };
 
 // Uma (animeshai) agent configuration
-const UMA_API_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const UMA_API_URL = process.env.UMA_API_URL;
 
 interface UmaChatResponse {
   session_id: string;

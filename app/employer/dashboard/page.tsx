@@ -31,7 +31,6 @@ import {
   EmployerWorkloadFriction, EmployerProductivityProxy, EmployerEarlyWarnings,
   EmployerSuggestedActions,
 } from '@/types';
-import ServerAddress from '@/constent/ServerAddress';
 
 
 interface DashboardData {
@@ -101,42 +100,23 @@ function EmployerDashboardPage() {
     const token = getToken();
     if (!token) { setError('No access token. Please log in again.'); setLoading(false); return; }
 
-    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-    const params = { company_id: companyId };
-    const api = `${ServerAddress}`;
-
-    const endpoints = [
-      `${api}/employer/wellness-index`,
-      `${api}/employer/burnout-trend`,
-      `${api}/employer/engagement-signals`,
-      `${api}/employer/workload-friction`,
-      `${api}/employer/productivity-proxy`,
-      `${api}/employer/early-warnings`,
-      `${api}/employer/suggested-actions`,
-    ];
-
     try {
       setError(null);
-      const results = await Promise.allSettled(
-        endpoints.map(url => axios.get(url, { headers, params }))
-      );
-      const [wi, bt, es, wf, pp, ew, sa] = results;
-
-      console.log("Employer Dashboard results" , results);
-      setData({
-        wellness_index: wi.status === 'fulfilled' ? wi.value.data : null,
-        burnout_trend: bt.status === 'fulfilled' ? bt.value.data : null,
-        engagement_signals: es.status === 'fulfilled' ? es.value.data : null,
-        workload_friction: wf.status === 'fulfilled' ? wf.value.data : null,
-        productivity_proxy: pp.status === 'fulfilled' ? pp.value.data : null,
-        early_warnings: ew.status === 'fulfilled' ? ew.value.data : null,
-        suggested_actions: sa.status === 'fulfilled' ? sa.value.data : null,
-        last_updated: new Date().toISOString(),
+      const res = await axios.get(`/api/employer/dashboard-stats?company_id=${companyId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const ok = results.filter(r => r.status === 'fulfilled').length;
-      if (ok < results.length) toast.warning(`Loaded ${ok}/${results.length} dashboard modules`);
+      const d = res.data;
+      setData({
+        wellness_index: d.wellness_index ?? null,
+        burnout_trend: d.burnout_trend ?? null,
+        engagement_signals: d.engagement_signals ?? null,
+        workload_friction: d.workload_friction ?? null,
+        productivity_proxy: d.productivity_proxy ?? null,
+        early_warnings: d.early_warnings ?? null,
+        suggested_actions: d.suggested_actions ?? null,
+        last_updated: d.last_updated ?? new Date().toISOString(),
+      });
     } catch (err) {
-      console.log("Employer Dashboard errors" , err);
       const msg = axios.isAxiosError(err)
         ? `API Error (${err.response?.status}): ${err.response?.data?.detail ?? err.message}`
         : 'Failed to load dashboard data';

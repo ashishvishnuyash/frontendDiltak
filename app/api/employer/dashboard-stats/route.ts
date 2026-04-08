@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import axios from 'axios';
 
-const UMA_API_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const UMA_API_URL = process.env.UMA_API_URL;
 
 /**
  * Normalizes the burnout distribution which often comes as a list of single-key objects
