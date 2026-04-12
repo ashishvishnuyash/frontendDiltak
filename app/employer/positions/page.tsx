@@ -21,6 +21,7 @@ import {
   doc, query, where, onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Department {
   id: string;
@@ -73,9 +74,9 @@ function StatCard({ label, value, icon: Icon, color, bgColor, borderColor, delay
   );
 }
 
-function DepartmentsPage() {
+function PositionPage() {
   const { user, loading: userLoading } = useUser();
-  const [departments, setDepartments] = useState<Department[]>([]);
+  const [Position, setPosition] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -91,9 +92,9 @@ function DepartmentsPage() {
   // ─── Firestore listener ────────────────────────────────────────────────────
   useEffect(() => {
     if (!companyId) { setLoading(false); return; }
-    const q = query(collection(db, 'departments'), where('company_id', '==', companyId));
+    const q = query(collection(db, 'Position'), where('company_id', '==', companyId));
     const unsub = onSnapshot(q, snap => {
-      setDepartments(snap.docs.map(d => ({ id: d.id, ...d.data() } as Department)));
+      setPosition(snap.docs.map(d => ({ id: d.id, ...d.data() } as Department)));
       setLoading(false);
     }, () => setLoading(false));
     return unsub;
@@ -103,23 +104,23 @@ function DepartmentsPage() {
     setIsRefreshing(true);
     setTimeout(() => {
       setIsRefreshing(false);
-      toast.success('Departments refreshed');
+      toast.success('Position refreshed');
     }, 500);
   };
 
   // Calculate statistics
   const stats = useMemo(() => {
-    const totalEmployees = departments.reduce((s, d) => s + (d.employeeCount ?? 0), 0);
-    const withHead = departments.filter(d => d.head).length;
-    const avgEmployees = departments.length > 0 ? Math.round(totalEmployees / departments.length) : 0;
+    const totalEmployees = Position.reduce((s, d) => s + (d.employeeCount ?? 0), 0);
+    const withHead = Position.filter(d => d.head).length;
+    const avgEmployees = Position.length > 0 ? Math.round(totalEmployees / Position.length) : 0;
     
     return {
-      total: departments.length,
+      total: Position.length,
       totalEmployees,
       withHead,
       avgEmployees,
     };
-  }, [departments]);
+  }, [Position]);
 
   const openAdd = () => { setEditing(null); setForm({ name: '', description: '', head: '' }); setErrors({}); setShowForm(true); };
   const openEdit = (dept: Department) => { setEditing(dept); setForm({ name: dept.name, description: dept.description ?? '', head: dept.head ?? '' }); setErrors({}); setShowForm(true); };
@@ -138,14 +139,14 @@ function DepartmentsPage() {
     setSubmitting(true);
     try {
       if (editing) {
-        await updateDoc(doc(db, 'departments', editing.id), {
+        await updateDoc(doc(db, 'Position', editing.id), {
           name: form.name.trim(),
           description: form.description.trim(),
           head: form.head.trim(),
         });
         toast.success('Department updated successfully');
       } else {
-        await addDoc(collection(db, 'departments'), {
+        await addDoc(collection(db, 'Position'), {
           name: form.name.trim(),
           description: form.description.trim(),
           head: form.head.trim(),
@@ -166,7 +167,7 @@ function DepartmentsPage() {
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
-      await deleteDoc(doc(db, 'departments', id));
+      await deleteDoc(doc(db, 'Position', id));
       toast.success('Department deleted successfully');
     } catch {
       toast.error('Failed to delete department');
@@ -175,11 +176,14 @@ function DepartmentsPage() {
     }
   };
 
-  const filtered = departments.filter(d =>
+  const filtered = Position.filter(d =>
     d.name.toLowerCase().includes(search.toLowerCase()) ||
     (d.description ?? '').toLowerCase().includes(search.toLowerCase()) ||
     (d.head ?? '').toLowerCase().includes(search.toLowerCase())
   );
+
+
+    const router = useRouter();
 
   if (userLoading || loading) return <BrandLoader />;
 
@@ -197,14 +201,14 @@ function DepartmentsPage() {
               <Building2 className="h-5 w-5 text-emerald-500" />
             </div>
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-              Organization Structure
+              Organization 
             </span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Departments
+            Position
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Organize your company into departments and assign team leads.
+            Organize your company into Position and assign team leads.
           </p>
         </div>
         
@@ -221,12 +225,16 @@ function DepartmentsPage() {
           </Button>
           
           <Button
-            onClick={openAdd}
+            // onClick={openAdd}
+
+            onClick={() => {
+                  router.push('/employer/positions/add');
+            }}
             size="sm"
             className="gap-2 bg-emerald-500 hover:bg-emerald-600"
           >
             <Plus className="h-5 w-5" />
-            Add Department
+            Add Positions
           </Button>
         </div>
       </motion.div>
@@ -234,7 +242,7 @@ function DepartmentsPage() {
       {/* ─── Summary cards ─── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Total Departments"
+          label="Total Position"
           value={stats.total}
           icon={Building2}
           color="tw-gray-800"
@@ -282,7 +290,7 @@ function DepartmentsPage() {
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search departments by name, description, or team lead..."
+          placeholder="Search Position by name, description, or team lead..."
           className="pl-9 h-10 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl text-sm"
         />
       </motion.div>
@@ -301,7 +309,7 @@ function DepartmentsPage() {
             </div>
             <div className="text-center">
               <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                {search ? 'No departments match your search' : 'No departments yet'}
+                {search ? 'No Position match your search' : 'No Position yet'}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 {search ? 'Try adjusting your search terms' : 'Get started by creating your first department'}
@@ -555,4 +563,4 @@ function DepartmentsPage() {
   );
 }
 
-export default withAuth(DepartmentsPage, ['employer', 'hr', 'admin']);
+export default withAuth(PositionPage, ['employer', 'hr', 'admin']);

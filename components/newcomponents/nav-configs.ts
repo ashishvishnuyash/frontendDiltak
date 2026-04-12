@@ -56,9 +56,10 @@ export const managerNavItems: NavItem[] = [
 
 export const employerNavItems: NavItem[] = [
   { path: '/employer/dashboard',   label: 'Dashboard',  icon: LayoutDashboard, exact: true },
+  { path: '/employer/teamDashboard',   label: 'Team Dashboard',  icon: Users, exact: true },
   { path: '/employer/employees',   label: 'Employees',  icon: Users },
   { path: '/employer/departments',   label: 'Department',  icon: Home  },
-  { path: '/employer/roles',   label: 'Role',  icon: User },
+  { path: '/employer/positions',   label: 'Positions',  icon: User },
   // { path: '/employer/reports',     label: 'Reports',    icon: FileText },
   // { path: '/employer/analytics',   label: 'Analytics',  icon: BarChart3 },
   // { path: '/employer/wellness-hub',label: 'Wellness',   icon: Heart },
