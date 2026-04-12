@@ -226,7 +226,7 @@ export default function NewEmployeePage() {
         {/* Header */}
         <div className="mb-8">
           <Link href="/employer/employees" className="inline-flex items-center text-xs font-bold text-emerald-600 hover:text-emerald-700 uppercase tracking-widest mb-4 group">
-            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to Employees
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Add New Employee (Legacy)</h1>
@@ -287,7 +287,7 @@ export default function NewEmployeePage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Email Address *</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 opacity-50" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 opacity-50" />
                     <Input
                       id="email"
                       type="email"
@@ -356,7 +356,7 @@ export default function NewEmployeePage() {
                           return (
                             <SelectItem key={level.value} value={level.value} className="text-sm font-medium">
                               <div className="flex items-center space-x-2">
-                                <IconComponent className="h-4 w-4" />
+                                <IconComponent className="h-5 w-5" />
                                 <span>{level.label}</span>
                               </div>
                             </SelectItem>
@@ -477,7 +477,7 @@ export default function NewEmployeePage() {
                     </div>
                   ) : (
                     <div className="flex items-center">
-                      <UserPlus className="h-4 w-4 mr-2" />
+                      <UserPlus className="h-5 w-5 mr-2" />
                       Create Account
                     </div>
                   )}

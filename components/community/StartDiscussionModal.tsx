@@ -42,7 +42,7 @@ export default function StartDiscussionModal({ onSubmit, onClose }: StartDiscuss
             onClick={onClose}
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -75,7 +75,7 @@ export default function StartDiscussionModal({ onSubmit, onClose }: StartDiscuss
                   ))}
                 </select>
                 <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
-                  <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>

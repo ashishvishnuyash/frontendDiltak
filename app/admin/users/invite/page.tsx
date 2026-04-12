@@ -63,7 +63,7 @@ export default function InviteUserPage() {
         {/* Header */}
         <div className="mb-8">
           <Link href="/admin/users" className="inline-flex items-center text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 uppercase tracking-widest mb-4 group">
-            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to Users
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Invite System User</h1>
@@ -119,7 +119,7 @@ export default function InviteUserPage() {
                     <div className="space-y-1.5 md:col-span-2">
                       <Label htmlFor="email" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Email Address *</Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 opacity-50" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 opacity-50" />
                         <Input
                           id="email"
                           name="email"
@@ -136,7 +136,7 @@ export default function InviteUserPage() {
                     <div className="space-y-1.5">
                       <Label htmlFor="company" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Assign to Company</Label>
                       <div className="relative">
-                        <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 opacity-50" />
+                        <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 opacity-50" />
                         <Select value={formData.company} onValueChange={(v) => handleSelectChange('company', v)}>
                           <SelectTrigger className="h-11 bg-transparent border-gray-200 dark:border-gray-800 rounded-md font-medium text-sm pl-10">
                             <SelectValue placeholder="Select company" />
@@ -183,7 +183,7 @@ export default function InviteUserPage() {
                         </div>
                       ) : (
                         <div className="flex items-center">
-                          <UserPlus className="h-4 w-4 mr-2" />
+                          <UserPlus className="h-5 w-5 mr-2" />
                           Send Invitation
                         </div>
                       )}
@@ -207,7 +207,7 @@ export default function InviteUserPage() {
                   
                   <div className="space-y-4">
                     <div className="flex gap-3">
-                      <Crown className="h-4 w-4 text-amber-500 shrink-0" />
+                      <Crown className="h-5 w-5 text-amber-500 shrink-0" />
                       <div>
                         <p className="text-[10px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-tight">Administrator</p>
                         <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase leading-relaxed mt-0.5">Full platform control and global analytics</p>
@@ -215,7 +215,7 @@ export default function InviteUserPage() {
                     </div>
                     
                     <div className="flex gap-3">
-                      <GraduationCap className="h-4 w-4 text-blue-500 shrink-0" />
+                      <GraduationCap className="h-5 w-5 text-blue-500 shrink-0" />
                       <div>
                         <p className="text-[10px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-tight">Employer</p>
                         <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase leading-relaxed mt-0.5">Company-level management and HR metrics</p>
@@ -223,7 +223,7 @@ export default function InviteUserPage() {
                     </div>
 
                     <div className="flex gap-3">
-                      <Users className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <Users className="h-5 w-5 text-emerald-500 shrink-0" />
                       <div>
                         <p className="text-[10px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-tight">User / Manager</p>
                         <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase leading-relaxed mt-0.5">Standard hub access and team wellness tracking</p>
@@ -235,7 +235,7 @@ export default function InviteUserPage() {
             </Card>
 
             <div className="p-6 bg-blue-50/30 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/20 rounded-lg flex gap-3">
-              <Info className="h-4 w-4 text-blue-500 shrink-0" />
+              <Info className="h-5 w-5 text-blue-500 shrink-0" />
               <p className="text-[10px] font-bold text-blue-700/70 dark:text-blue-400/70 uppercase leading-loose">
                 Invitations are valid for 72 hours. Users must complete registration within this window.
               </p>

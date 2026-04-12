@@ -357,7 +357,7 @@ export default function NewReportPage() {
         {/* Header */}
         <div className="mb-8">
           <Link href="/employee/dashboard" className="inline-flex items-center text-xs font-bold text-emerald-600 hover:text-emerald-700 uppercase tracking-widest mb-4 group">
-            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to Dashboard
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">New Wellness Report</h1>
@@ -445,7 +445,7 @@ export default function NewReportPage() {
                       </div>
                     ) : (
                       <div className="flex items-center">
-                        <Save className="h-4 w-4 mr-2" />
+                        <Save className="h-5 w-5 mr-2" />
                         Finalize & Submit
                       </div>
                     )}

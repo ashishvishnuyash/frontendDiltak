@@ -55,7 +55,7 @@ export default function AdminSettings() {
             onClick={handleSave}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${saved ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20'}`}
           >
-            {saved ? <CheckCircle className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {saved ? <CheckCircle className="h-5 w-5" /> : <Save className="h-5 w-5" />}
             {saved ? 'Changes Saved' : 'Update Configuration'}
           </button>
         </div>
@@ -79,7 +79,7 @@ export default function AdminSettings() {
                       : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 flex-shrink-0 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                  <Icon className={`h-5 w-5 flex-shrink-0 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
                   {s}
                 </button>
               );
@@ -98,7 +98,7 @@ export default function AdminSettings() {
             {active === 'General' && (
               <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 space-y-6 shadow-sm">
                 <div className="flex items-center gap-2 border-b border-border pb-4 mb-2">
-                  <Settings className="h-4 w-4 text-indigo-500" />
+                  <Settings className="h-5 w-5 text-indigo-500" />
                   <h2 className="text-sm font-black text-foreground tracking-tight uppercase">System Information</h2>
                 </div>
                 
@@ -143,7 +143,7 @@ export default function AdminSettings() {
                   >
                     <motion.span 
                       animate={{ x: maintenanceMode ? 24 : 4 }}
-                      className="inline-block h-4 w-4 rounded-full bg-white shadow-md" 
+                      className="inline-block h-5 w-5 rounded-full bg-white shadow-md" 
                     />
                   </button>
                 </div>
@@ -153,7 +153,7 @@ export default function AdminSettings() {
             {active === 'Notifications' && (
               <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 space-y-6 shadow-sm">
                 <div className="flex items-center gap-2 border-b border-border pb-4 mb-2">
-                  <Bell className="h-4 w-4 text-indigo-500" />
+                  <Bell className="h-5 w-5 text-indigo-500" />
                   <h2 className="text-sm font-black text-foreground tracking-tight uppercase">Platform Alerts</h2>
                 </div>
                 <div className="space-y-4">
@@ -174,7 +174,7 @@ export default function AdminSettings() {
                       >
                         <motion.span 
                           animate={{ x: s.state ? 24 : 4 }}
-                          className="inline-block h-4 w-4 rounded-full bg-white shadow-md" 
+                          className="inline-block h-5 w-5 rounded-full bg-white shadow-md" 
                         />
                       </button>
                     </div>
@@ -186,7 +186,7 @@ export default function AdminSettings() {
             {active === 'Appearance' && (
               <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 space-y-6 shadow-sm">
                 <div className="flex items-center gap-2 border-b border-border pb-4 mb-2">
-                  <Palette className="h-4 w-4 text-indigo-500" />
+                  <Palette className="h-5 w-5 text-indigo-500" />
                   <h2 className="text-sm font-black text-foreground tracking-tight uppercase">UI Customization</h2>
                 </div>
                 
@@ -223,7 +223,7 @@ export default function AdminSettings() {
                       >
                         {accentColor === c.name && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                            <CheckCircle className="h-4 w-4 text-white" />
+                            <CheckCircle className="h-5 w-5 text-white" />
                           </div>
                         )}
                       </button>

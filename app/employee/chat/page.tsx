@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { AvatarController, useTTSLipSync } from "@/components/avatar";
 import AvatarSettings, { useAvatarSettings } from "@/components/avatar/AvatarSettings";
+import AzureAvatar, { type AzureAvatarHandle } from "@/components/avatar/AzureAvatar";
+import AzureAvatarSelector from "@/components/avatar/AzureAvatarSelector";
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import VoiceCallUI from "@/components/voice-call/VoiceCallUI";
 
@@ -45,7 +47,7 @@ import {
   Heart,
   Plus,
 } from "lucide-react";
-import { useUser } from "@/hooks/use-user";
+import { useAuth } from '@/contexts/auth-context';
 import { toast } from "sonner";
 import type { ChatMessage } from "@/types/index";
 import ReactMarkdown from "react-markdown";
@@ -252,7 +254,7 @@ const calculateRiskLevel = (
 };
 
 export default function EmployeeChatPage() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -280,16 +282,27 @@ export default function EmployeeChatPage() {
   useEffect(() => {
     isVoiceModeRef.current = isVoiceMode;
   }, [isVoiceMode]);
-  
+
   useEffect(() => {
     audioEnabledRef.current = audioEnabled;
   }, [audioEnabled]);
+
+  useEffect(() => {
+    isAvatarModeRef.current = isAvatarMode;
+  }, [isAvatarMode]);
   const [showVoiceInstructions, setShowVoiceInstructions] = useState(false);
 
   // Avatar state
   const [currentAvatarEmotion, setCurrentAvatarEmotion] = useState<string>("");
   const [avatarLoaded, setAvatarLoaded] = useState(false);
   const [avatarLoadError, setAvatarLoadError] = useState(false);
+
+  // Azure Avatar state
+  const azureAvatarRef = useRef<AzureAvatarHandle>(null);
+  const [selectedAvatarCharacter, setSelectedAvatarCharacter] = useState("lisa");
+  const [azureAvatarConnected, setAzureAvatarConnected] = useState(false);
+  const [azureAvatarSpeaking, setAzureAvatarSpeaking] = useState(false);
+  const isAvatarModeRef = useRef(isAvatarMode);
 
   // Avatar Settings
   const { config: avatarConfig, updateConfig: updateAvatarConfig, isOpen: isSettingsOpen, toggleSettings } = useAvatarSettings();
@@ -471,173 +484,122 @@ export default function EmployeeChatPage() {
     }, 100);
   };
 
-  // Enhanced TTS with ElevenLabs API (male teen voice)
-  const speakText = async (text: string) => {
-    console.log('🗣️ speakText called', { text: text.substring(0, 50) + '...', audioEnabled, audioEnabledRef: audioEnabledRef.current });
-    
-    // Use ref to check audioEnabled (avoid stale closure)
-    if (!audioEnabledRef.current) {
-      console.log('⚠️ Audio disabled, not speaking');
-      return;
-    }
-    
-    // Stop any current speech
+  // Stop whatever audio is currently playing (ElevenLabs, browser TTS, or lip-sync hook)
+  const stopCurrentAudio = () => {
     stopTTS();
-    
-    // Stop any playing audio
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
       audioPlayerRef.current.currentTime = 0;
       audioPlayerRef.current = null;
     }
-    
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+  };
+
+  // TTS: fetch audio from ElevenLabs, play immediately, then auto-listen
+  const speakText = async (text: string) => {
+    if (!audioEnabledRef.current) return;
+
+    // Stop anything already playing
+    stopCurrentAudio();
+
     setCurrentTTSText(text);
     setIsSpeaking(true);
-    console.log('🎵 Requesting TTS from ElevenLabs...');
-    
+
+    // Auto-listen after speech ends (shared by both ElevenLabs and fallback)
+    const scheduleAutoListen = () => {
+      if (!isVoiceModeRef.current || !audioEnabledRef.current) return;
+      if (autoListenTimerRef.current) clearTimeout(autoListenTimerRef.current);
+      autoListenTimerRef.current = setTimeout(() => {
+        if (isVoiceModeRef.current && !isRecording) {
+          startRecording().catch(() => {});
+        }
+      }, 400);
+    };
+
+    // --- Azure Avatar TTS: when avatar mode is on and connected, let Azure handle speech + lip sync ---
+    if (isAvatarModeRef.current && azureAvatarRef.current?.isConnected()) {
+      try {
+        await azureAvatarRef.current.speak(text);
+        setIsSpeaking(false);
+        scheduleAutoListen();
+        return;
+      } catch (err) {
+        console.error('Azure Avatar speak failed, falling back to normal TTS:', err);
+        // Fall through to normal TTS
+      }
+    }
+
+    // Browser built-in TTS fallback (no API key needed)
+    const speakWithBrowser = () => {
+      if (typeof window === 'undefined' || !window.speechSynthesis) {
+        setIsSpeaking(false);
+        scheduleAutoListen();
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      // Pick a natural-sounding voice if available
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang.startsWith('en') && !v.localService) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+      if (preferred) utterance.voice = preferred;
+      utterance.onend = () => { setIsSpeaking(false); scheduleAutoListen(); };
+      utterance.onerror = () => { setIsSpeaking(false); scheduleAutoListen(); };
+      window.speechSynthesis.speak(utterance);
+    };
+
+    let audioUrl: string | null = null;
+
     try {
-      // Call ElevenLabs API for text-to-speech
+      // Skip emotion pre-processing (addEmotion: false) for lower latency
       const response = await fetch('/api/text-to-speech', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, addEmotion: false }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to generate speech' }));
-        console.error('❌ ElevenLabs API error:', errorData);
-        throw new Error(errorData.error || 'Failed to generate speech');
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson?.error || `TTS HTTP ${response.status}`);
       }
 
-      // Get audio blob from response
       const audioBlob = await response.blob();
-      console.log('✅ Audio blob received from ElevenLabs', { size: audioBlob.size, type: audioBlob.type });
-      const audioUrl = URL.createObjectURL(audioBlob);
+      if (!audioBlob.size) throw new Error('Empty audio response');
 
-      // Create audio element with proper settings
-      const audio = new Audio();
-      audio.preload = 'auto'; // Ensure full buffering
+      audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
       audioPlayerRef.current = audio;
-      
-      console.log('⏳ Loading audio for playback...');
-
-      // Wait for the audio to be fully loaded before playing
-      await new Promise<void>((resolve, reject) => {
-        const handleCanPlayThrough = () => {
-          console.log('✅ Audio fully buffered and ready to play');
-          audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-          audio.removeEventListener('error', handleError);
-          resolve();
-        };
-        
-        const handleError = (error: Event) => {
-          console.error('❌ Error loading audio:', error);
-          audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-          audio.removeEventListener('error', handleError);
-          reject(new Error('Failed to load audio'));
-        };
-        
-        audio.addEventListener('canplaythrough', handleCanPlayThrough);
-        audio.addEventListener('error', handleError);
-        
-        // Set the source after adding event listeners
-        audio.src = audioUrl;
-        audio.load(); // Explicitly start loading
-        
-        // Timeout fallback - if audio doesn't load within 10 seconds, try playing anyway
-        setTimeout(() => {
-          if (audio.readyState >= 3) { // HAVE_FUTURE_DATA or better
-            handleCanPlayThrough();
-          } else if (audio.readyState >= 2) { // HAVE_CURRENT_DATA - might work
-            console.warn('⚠️ Audio may not be fully buffered, attempting playback anyway');
-            handleCanPlayThrough();
-          }
-        }, 10000);
-      });
 
       audio.onended = () => {
         setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
         audioPlayerRef.current = null;
-        
-        // Auto-start listening after AI finishes speaking (only in voice mode)
-        // Use refs to get the latest state values (not stale closure values)
-        const currentVoiceMode = isVoiceModeRef.current;
-        const currentAudioEnabled = audioEnabledRef.current;
-        console.log('🎵 Audio playback ended, checking if should start listening...', { 
-          isVoiceMode: currentVoiceMode, 
-          audioEnabled: currentAudioEnabled, 
-          isRecording 
-        });
-        
-        if (currentVoiceMode && currentAudioEnabled && !isRecording) {
-          // Wait 500ms before auto-starting to listen
-          autoListenTimerRef.current = setTimeout(() => {
-            // Double-check state before starting (use refs again for latest values)
-            if (!isRecording && !isSpeaking && isVoiceModeRef.current) {
-              console.log('🎤 Auto-starting listening after AI finished speaking');
-              startRecording().catch(err => {
-                console.error('❌ Error starting recording:', err);
-                toast.error('Failed to start listening. Please check microphone permissions.');
-              });
-            } else {
-              console.log('⚠️ Skipping auto-listen - state check failed', { 
-                isRecording, 
-                isSpeaking, 
-                isVoiceMode: isVoiceModeRef.current 
-              });
-            }
-          }, 500);
-        } else {
-          console.log('⚠️ Not starting auto-listen', { 
-            isVoiceMode: currentVoiceMode, 
-            audioEnabled: currentAudioEnabled, 
-            isRecording 
-          });
-        }
+        scheduleAutoListen();
       };
 
-      audio.onerror = (error) => {
-        console.error('Audio playback error:', error);
+      audio.onerror = () => {
         setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
         audioPlayerRef.current = null;
-        toast.error('Failed to play audio');
+        scheduleAutoListen();
       };
 
-      // Handle stalled/waiting events to detect buffering issues
-      audio.onstalled = () => {
-        console.warn('⚠️ Audio playback stalled - network issue or buffering');
-      };
-      
-      audio.onwaiting = () => {
-        console.warn('⚠️ Audio waiting for more data...');
-      };
-
-      // Play audio - should be ready now since we waited for canplaythrough
-      console.log('▶️ Starting audio playback...');
-      try {
-        await audio.play();
-        console.log('✅ Audio playback started successfully');
-      } catch (playError) {
-        console.error('❌ Error playing audio:', playError);
-        setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
-        audioPlayerRef.current = null;
-        throw playError;
-      }
-
-      // If in avatar mode, also trigger lip sync (optional - you may want to sync with audio timing)
-      if (isAvatarMode) {
-        // Note: Lip sync timing may need adjustment for ElevenLabs audio
-        // For now, we'll just use the text for visual feedback
-      }
-    } catch (error) {
-      console.error('ElevenLabs TTS Error:', error);
+      // Play immediately — no canplaythrough wait needed
+      await audio.play();
+    } catch (error: any) {
+      console.error('ElevenLabs TTS failed, falling back to browser TTS:', error?.message);
       setIsSpeaking(false);
-      toast.error('Failed to generate speech. Please check your ElevenLabs API key.');
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioPlayerRef.current = null;
+
+      // Fallback: use browser's built-in speech synthesis
+      setIsSpeaking(true);
+      speakWithBrowser();
     }
   };
 
@@ -703,39 +665,15 @@ export default function EmployeeChatPage() {
     setAudioEnabled(true);
     setShowVoiceInstructions(false); // Hide instructions for autonomous mode
     
-    // Show a welcome message from AI in voice mode, then auto-start listening
+    // Greet the user and start voice loop
     if (sessionId) {
       const voiceWelcome = "I'm here to listen. Please share whatever is on your mind.";
       await addMessageToDb(voiceWelcome, "ai", sessionId);
-      
-      // Speak the welcome message, then auto-start listening after it finishes
-      if (audioEnabled) {
-        // Wait a bit then speak, and the onended handler will auto-start listening
-        setTimeout(() => {
-          speakText(voiceWelcome);
-        }, 500);
-        
-        // FALLBACK: Start listening after 5 seconds even if welcome message doesn't finish
-        // This ensures listening starts even if TTS fails or takes too long
-        setTimeout(() => {
-          if (!isRecording && isVoiceMode) {
-            console.log('🎤 Fallback: Starting listening after timeout');
-            startRecording();
-          }
-        }, 5000);
-      } else {
-        // If audio is disabled, start listening immediately
-        setTimeout(() => {
-          console.log('🎤 Starting listening immediately (audio disabled)');
-          startRecording();
-        }, 1000);
-      }
+      // speakText → onended → startRecording automatically (the loop)
+      speakText(voiceWelcome);
     } else {
-      // If no session, start listening immediately
-      setTimeout(() => {
-        console.log('🎤 Starting listening immediately (no session)');
-        startRecording();
-      }, 1000);
+      // No session yet — start listening immediately
+      setTimeout(() => startRecording().catch(() => {}), 600);
     }
     
     toast.success("🎙️ Voice call started! I'm listening...", {
@@ -750,18 +688,8 @@ export default function EmployeeChatPage() {
     setCallDuration(0);
 
     setIsRecording(false);
-    setIsSpeaking(false);
     setProcessingAudio(false);
-
-    // Stop any ongoing speech
-    stopTTS();
-    
-    // Stop any playing audio
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.pause();
-      audioPlayerRef.current.currentTime = 0;
-      audioPlayerRef.current = null;
-    }
+    stopCurrentAudio();
     
     // Clear all timers
     if (autoListenTimerRef.current) {
@@ -1066,7 +994,7 @@ export default function EmployeeChatPage() {
         setLastAIMessage(result.data.content);
 
         // Set avatar emotion — use Uma's emotion detection if available, otherwise keyword fallback
-        if (isAvatarMode) {
+        if (isAvatarModeRef.current) {
           if (result.data.avatarEmotion) {
             setCurrentAvatarEmotion(result.data.avatarEmotion);
           } else {
@@ -1091,14 +1019,15 @@ export default function EmployeeChatPage() {
         const currentVoiceMode = isVoiceModeRef.current;
         const currentAudioEnabled = audioEnabledRef.current;
         
-        console.log('🤖 AI response received, checking if should speak...', { 
-          isVoiceMode: currentVoiceMode, 
-          isAvatarMode, 
-          audioEnabled: currentAudioEnabled, 
-          contentLength: result.data.content.length 
+        const currentAvatarMode = isAvatarModeRef.current;
+        console.log('🤖 AI response received, checking if should speak...', {
+          isVoiceMode: currentVoiceMode,
+          isAvatarMode: currentAvatarMode,
+          audioEnabled: currentAudioEnabled,
+          contentLength: result.data.content.length
         });
-        
-        if ((currentVoiceMode || isAvatarMode) && currentAudioEnabled) {
+
+        if ((currentVoiceMode || currentAvatarMode) && currentAudioEnabled) {
           console.log('🗣️ Calling speakText with AI response...');
           speakText(result.data.content).catch(err => {
             console.error('❌ Error in speakText:', err);
@@ -1137,40 +1066,34 @@ export default function EmployeeChatPage() {
     setLoading(true);
 
     try {
-      // Calculate conversation metrics
-      const sessionDuration = callDuration || 
+      const sessionDuration = callDuration ||
         Math.floor((Date.now() - (callStartTime?.getTime() || Date.now())) / 1000);
-      
+
       const messageCount = messages.length;
       const userMessages = messages.filter(m => m.sender === 'user');
       const aiMessages = messages.filter(m => m.sender === 'ai');
-      
-      // Extract conversation content for analysis
-      const conversationContent = messages.map(m => 
+
+      const conversationContent = messages.map(m =>
         `${m.sender === 'user' ? 'User' : 'AI'}: ${m.content}`
       ).join('\n');
 
-      const response = await fetch("/api/chat", {
+      const token = auth.currentUser
+        ? await auth.currentUser.getIdToken()
+        : localStorage.getItem('access_token');
+
+      // Build analyze-compatible messages
+      const analyzeMessages = messages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.content,
+      }));
+
+      const response = await fetch("/api/chat_wrapper/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages,
-          endSession: true,
-          sessionType: isVoiceMode ? "voice" : "text",
-          sessionDuration,
-          conversationAnalysis: true,
-          conversationMetrics: {
-            totalMessages: messageCount,
-            userMessages: userMessages.length,
-            aiMessages: aiMessages.length,
-            sessionDuration,
-            hasAttachments: messages.some(m => m.content.includes('📎')),
-            voiceMode: isVoiceMode,
-            avatarMode: isAvatarMode
-          },
-          userId: user?.id,
-          companyId: user?.company_id,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ user_id: user.id, messages: analyzeMessages }),
       });
 
       if (!response.ok) {
@@ -1179,53 +1102,48 @@ export default function EmployeeChatPage() {
 
       const result = await response.json();
 
-      if (result.type === "report") {
-        const report = result.data as WellnessReport;
-        const sessionDuration = callDuration ||
-          Math.floor(
-            (Date.now() - (callStartTime?.getTime() || Date.now())) / 1000
-          );
+      // result is a ReportResponse: { meta, mental_health, physical_health, overall }
+      if (result.overall && result.mental_health) {
+        const mh = result.mental_health;
+        const ph = result.physical_health;
+        const ov = result.overall;
+        const mhM = mh.metrics || {};
+        const phM = ph.metrics || {};
 
-        // Create comprehensive conversation data
-        const conversationData = {
-          sessionId,
-          employeeId: user.id,
-          companyId: user.company_id || "default",
-          sessionType: isVoiceMode ? "voice" : "text",
-          sessionDuration,
-          messageCount,
-          userMessageCount: userMessages.length,
-          aiMessageCount: aiMessages.length,
-          conversationContent,
-          hasAttachments: messages.some(m => m.content.includes('📎')),
-          avatarMode: isAvatarMode,
-          voiceMode: isVoiceMode,
-          startTime: callStartTime?.toISOString() || new Date().toISOString(),
-          endTime: new Date().toISOString(),
-          messages: messages.map(m => ({
-            sender: m.sender,
-            content: m.content,
-            timestamp: m.timestamp
-          }))
+        // Map ReportResponse → WellnessReport for the existing display/risk logic
+        const report: WellnessReport = {
+          mood: mhM.emotional_tone?.score ?? mh.score,
+          stress_score: mhM.stress_anxiety?.score ?? 5,
+          anxious_level: mhM.stress_anxiety?.score ?? 5,
+          work_satisfaction: mhM.motivation_engagement?.score ?? mh.score,
+          work_life_balance: mhM.work_life_balance?.score ?? mh.score,
+          energy_level: phM.activity?.score ?? ph.score,
+          confident_level: mhM.self_esteem?.score ?? mh.score,
+          sleep_quality: phM.lifestyle?.score ?? ph.score,
+          complete_report: ov.full_report || ov.summary,
+          session_type: isVoiceMode ? "voice" : "text",
+          session_duration: sessionDuration,
+          key_insights: ov.key_insights || [],
+          recommendations: ov.recommendations || [],
         };
 
-        // Update the chat session with comprehensive data
+        // Update chat session
         const sessionDocRef = doc(db, "chat_sessions", sessionId);
         await updateDoc(sessionDocRef, {
-          report: report,
+          report,
           status: "completed",
           completed_at: serverTimestamp(),
           session_type: isVoiceMode ? "voice" : "text",
           duration: sessionDuration,
-          conversationData: conversationData,
-          messageCount: messageCount,
-          analysisComplete: true
+          messageCount,
+          analysisComplete: true,
         });
 
-        // Save comprehensive mental health report
+        // Save full ReportResponse to Firestore for the report detail page
         const mentalHealthReport = {
           employee_id: user.id,
           company_id: user.company_id || "default",
+          // flat legacy fields for backward-compat queries
           stress_level: Math.max(1, Math.min(10, Math.round(report.stress_score))),
           mood_rating: Math.max(1, Math.min(10, Math.round(report.mood))),
           energy_level: Math.max(1, Math.min(10, Math.round(report.energy_level))),
@@ -1234,28 +1152,17 @@ export default function EmployeeChatPage() {
           anxiety_level: Math.max(1, Math.min(10, Math.round(report.anxious_level))),
           confidence_level: Math.max(1, Math.min(10, Math.round(report.confident_level))),
           sleep_quality: Math.max(1, Math.min(10, Math.round(report.sleep_quality))),
-          overall_wellness: Math.max(
-            1,
-            Math.min(
-              10,
-              Math.round(
-                (report.mood +
-                  report.energy_level +
-                  report.work_satisfaction +
-                  report.work_life_balance +
-                  report.confident_level +
-                  report.sleep_quality +
-                  (11 - report.stress_score) +
-                  (11 - report.anxious_level)) /
-                8
-              )
-            )
-          ),
-          comments: `Comprehensive AI-generated report from ${isVoiceMode ? "voice" : "text"} conversation session`,
-          ai_analysis: report.complete_report || "Comprehensive conversation analysis completed",
-          sentiment_score: Math.max(0, Math.min(1, report.mood / 10)),
-          emotion_tags: Array.isArray(report.key_insights) ? report.key_insights : [],
-          risk_level: calculateRiskLevel(report),
+          overall_wellness: Math.max(1, Math.min(10, Math.round(ov.score))),
+          ai_analysis: ov.full_report || ov.summary,
+          sentiment_score: Math.max(0, Math.min(1, ov.score / 10)),
+          emotion_tags: ov.key_insights || [],
+          risk_level: ov.priority || calculateRiskLevel(report),
+          // rich analysis blocks
+          mental_health: mh,
+          physical_health: ph,
+          overall: ov,
+          meta: result.meta,
+          // session context
           session_type: isVoiceMode ? "voice" : "text",
           session_duration: sessionDuration,
           conversation_metrics: {
@@ -1264,30 +1171,39 @@ export default function EmployeeChatPage() {
             aiMessages: aiMessages.length,
             hasAttachments: messages.some(m => m.content.includes('📎')),
             avatarMode: isAvatarMode,
-            voiceMode: isVoiceMode
+            voiceMode: isVoiceMode,
           },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
 
         try {
-          await addDoc(
-            collection(db, "mental_health_reports"),
-            mentalHealthReport
-          );
+          await addDoc(collection(db, "mental_health_reports"), mentalHealthReport);
           console.log("Comprehensive mental health report saved successfully");
         } catch (saveError) {
           console.error("Error saving mental health report:", saveError);
           toast.error("Report generated but failed to save. Please contact support.");
         }
 
-        // Save conversation data separately for detailed analysis
+        // Save conversation data for audit trail
         try {
-          await addDoc(
-            collection(db, "conversation_analyses"),
-            conversationData
-          );
-          console.log("Conversation analysis data saved successfully");
+          await addDoc(collection(db, "conversation_analyses"), {
+            sessionId,
+            employeeId: user.id,
+            companyId: user.company_id || "default",
+            sessionType: isVoiceMode ? "voice" : "text",
+            sessionDuration,
+            messageCount,
+            userMessageCount: userMessages.length,
+            aiMessageCount: aiMessages.length,
+            conversationContent,
+            hasAttachments: messages.some(m => m.content.includes('📎')),
+            avatarMode: isAvatarMode,
+            voiceMode: isVoiceMode,
+            startTime: callStartTime?.toISOString() || new Date().toISOString(),
+            endTime: new Date().toISOString(),
+            messages: messages.map(m => ({ sender: m.sender, content: m.content, timestamp: m.timestamp })),
+          });
         } catch (conversationError) {
           console.error("Error saving conversation analysis:", conversationError);
         }
@@ -1296,7 +1212,6 @@ export default function EmployeeChatPage() {
         setSessionEnded(true);
         toast.success("Comprehensive wellness report generated and saved successfully!");
 
-        // Update gamification streak and points
         await updateGamificationStreak(sessionDuration, messageCount);
       } else {
         throw new Error("AI did not return a valid report format.");
@@ -1382,17 +1297,9 @@ export default function EmployeeChatPage() {
       return;
     }
     
-    // TALK TO INTERRUPT: Stop any ongoing AI speech when user starts speaking
-    if (isSpeaking || isTTSPlaying) {
-      stopTTS();
-      // Stop any playing audio
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-        audioPlayerRef.current.currentTime = 0;
-        audioPlayerRef.current = null;
-      }
-      setIsSpeaking(false);
-      console.log('🔇 AI speech interrupted by user');
+    // TALK TO INTERRUPT: stop AI audio immediately when user starts speaking
+    if (isSpeaking || isTTSPlaying || audioPlayerRef.current) {
+      stopCurrentAudio();
     }
     
     // Clear any existing auto-listen timer
@@ -1467,16 +1374,7 @@ export default function EmployeeChatPage() {
   };
 
   const toggleSpeaking = () => {
-    if (isSpeaking) {
-      stopTTS();
-      // Stop any playing audio
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-        audioPlayerRef.current.currentTime = 0;
-        audioPlayerRef.current = null;
-      }
-      setIsSpeaking(false);
-    }
+    stopCurrentAudio();
   };
 
   if (userLoading) {
@@ -1507,9 +1405,13 @@ export default function EmployeeChatPage() {
       />
 
       {/* Full Screen Chat Container */}
-      <div className="flex flex-col flex-1 relative px-6 py-4 bg-[#eef7f5] dark:bg-gray-950" style={{ overflow: 'hidden' }}>
-        {/* Centered chat card */}
-        <div className="flex flex-col flex-1 min-h-0 relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden mx-auto w-full" style={{ maxWidth: 760, height: '100%' }}>
+      <div className={`flex flex-1 relative bg-[#eef7f5] dark:bg-gray-950 ${isAvatarMode ? 'flex-col lg:flex-row p-0 lg:p-0' : 'flex-col px-6 py-4'}`} style={{ overflow: 'hidden' }}>
+        {/* Chat card — full width in avatar mode, centered otherwise */}
+        <div className={`flex flex-col min-h-0 relative bg-white dark:bg-gray-900 overflow-hidden ${
+          isAvatarMode
+            ? 'flex-1 lg:w-1/2 rounded-none lg:border-r border-gray-200 dark:border-gray-700'
+            : 'flex-1 rounded-2xl border border-gray-200 dark:border-gray-800 mx-auto w-full'
+        }`} style={isAvatarMode ? { height: '100%' } : { maxWidth: 760, height: '100%' }}>
           {/* Chat Section */}
           <div className="flex flex-col w-full min-h-0" style={{ height: '100%' }}>
 
@@ -1536,12 +1438,9 @@ export default function EmployeeChatPage() {
                     disabled={loading || messages.length === 0}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
                   >
-                    {/* <span className="text-red-400">♡</span> */}
-                                            <Heart className="h-5 w-5 text-red-400" />
-
+                    <Heart className="h-3.5 w-3.5 text-red-400" />
                     New Wellness Check
-                    {/* <span className="text-gray-400 font-bold">+</span> */}
-                    <Plus className=" h-5 w-5 text-gray-400 font-bold" />
+                    <Plus className="h-3.5 w-3.5 text-gray-400" />
                   </button>
                 )}
                 {!sessionEnded && (
@@ -1632,7 +1531,11 @@ export default function EmployeeChatPage() {
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.15 }}
-                        className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2 shadow-sm border border-gray-100 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-200 leading-relaxed"
+                        className={`rounded-2xl px-3.5 py-2.5 shadow-sm text-xs leading-relaxed ${
+                          message.sender === "user"
+                            ? "bg-emerald-500 text-white rounded-br-sm"
+                            : "bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-bl-sm"
+                        }`}
                       >
                         {message.sender === "ai" ? (
                           <div>{renderMessageContent(message.content)}</div>
@@ -1902,9 +1805,6 @@ export default function EmployeeChatPage() {
               </div>
             </div>
 
-          </div>{/* end chat section */}
-        </div>{/* end chat card */}
-
         {/* FAB buttons — outside the card, bottom-right of the page area */}
         <div className="absolute bottom-6 right-6 flex gap-2 z-20">
           <button
@@ -1926,7 +1826,7 @@ export default function EmployeeChatPage() {
           </button>
         </div>
 
-      </div>{/* end page container */}
+      </div>{/* end chat section */}
 
       {/* Options Dropdown Panel */}
       {showOptionsPanel && (
@@ -1937,33 +1837,33 @@ export default function EmployeeChatPage() {
                   onClick={() => setShowOptionsPanel(false)}
                 />
 
-                {/* Dropdown — anchored above the input area */}
+                {/* Dropdown — anchored near the menu icon (top-right of chat card) */}
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.97 }}
                   transition={{ duration: 0.15 }}
-                  className="fixed bottom-24 left-1/2 -translate-x-1/2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                  className="fixed top-[72px] right-8 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden"
                 >
                   {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">Options</span>
+                  <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 dark:border-gray-800">
+                    <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Options</span>
                     <button
                       onClick={() => setShowOptionsPanel(false)}
-                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
 
-                  <div className="py-1.5">
+                  <div className="py-1">
                     {/* Files */}
                     <button
                       onClick={() => { openFileDialog(); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <Paperclip className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Add photos &amp; files</span>
@@ -1979,9 +1879,9 @@ export default function EmployeeChatPage() {
                         setShowOptionsPanel(false);
                       }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <ImageIcon className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Add images</span>
@@ -1994,9 +1894,9 @@ export default function EmployeeChatPage() {
                         setShowOptionsPanel(false);
                       }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded-md flex items-center justify-center flex-shrink-0">
                         <Search className="h-3.5 w-3.5 text-white" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2005,20 +1905,20 @@ export default function EmployeeChatPage() {
                       </div>
                     </button>
 
-                    <div className="mx-4 my-1.5 border-t border-gray-100 dark:border-gray-800" />
+                    <div className="mx-3 my-1 border-t border-gray-100 dark:border-gray-800" />
 
                     {/* Section label */}
-                    <div className="px-4 py-1.5">
-                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Avatar &amp; Voice</span>
+                    <div className="px-3 py-1">
+                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Avatar &amp; Voice</span>
                     </div>
 
                     {/* Avatar toggle */}
                     <button
                       onClick={() => { setIsAvatarMode(!isAvatarMode); toast.success(isAvatarMode ? 'Avatar disabled' : 'Avatar enabled'); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <UserCircle className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2031,9 +1931,9 @@ export default function EmployeeChatPage() {
                     <button
                       onClick={() => { toggleSettings(); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <Settings className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Avatar settings</span>
@@ -2043,9 +1943,9 @@ export default function EmployeeChatPage() {
                     <button
                       onClick={() => { isRecording ? stopRecording() : startRecording(); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <Mic className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2058,9 +1958,9 @@ export default function EmployeeChatPage() {
                     <button
                       onClick={() => { speakText('Hello! This is a test of the text-to-speech system.'); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded || isSpeaking}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
                         <Volume2 className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2069,15 +1969,15 @@ export default function EmployeeChatPage() {
                       </div>
                     </button>
 
-                    <div className="mx-4 my-1.5 border-t border-gray-100 dark:border-gray-800" />
+                    <div className="mx-3 my-1 border-t border-gray-100 dark:border-gray-800" />
 
                     {/* End conversation */}
                     <button
                       onClick={() => { setShowOptionsPanel(false); setShowEndConfirmation(true); }}
                       disabled={loading || sessionEnded || messages.length === 0}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50"
                     >
-                      <div className="w-7 h-7 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-red-100 dark:bg-red-900/20 rounded-md flex items-center justify-center flex-shrink-0">
                         <PhoneOff className="h-3.5 w-3.5 text-red-500" />
                       </div>
                       <div className="flex-1 text-left">
@@ -2099,146 +1999,74 @@ export default function EmployeeChatPage() {
               onChange={handleFileSelect}
               className="hidden"
             />
+
+        </div>{/* end chat card */}
+
           {isAvatarMode && (
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 30 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="fixed inset-0 lg:relative lg:w-1/2 bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-200 dark:from-indigo-900/40 dark:via-purple-900/40 dark:to-pink-900/40 lg:bg-gradient-to-b lg:from-blue-50 lg:to-gray-50 lg:dark:from-blue-900/20 lg:dark:to-gray-800/20 lg:border-l border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full z-0 lg:z-auto pointer-events-none"
+            transition={{ duration: 0.5 }}
+            className="hidden lg:flex lg:w-1/2 bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 overflow-hidden flex-col"
+            style={{ height: '100%' }}
           >
-              {/* Mobile Avatar Background Indicator */}
-              <div className="lg:hidden absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm border-b border-white/20 px-4 py-2 z-30 pointer-events-none">
-                <div className="flex items-center justify-center space-x-2 text-white/90">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs font-medium">3D Avatar Background</span>
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-
-              {/* Avatar Header - Hidden on mobile, visible on desktop */}
-              <div className="hidden lg:block border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 px-4 py-3 relative z-20">
+              {/* Avatar Header */}
+              <div className="border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 px-4 py-3 relative z-20 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center">
                       <UserCircle className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">3D Avatar + Lip Sync</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">AI Avatar</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className="text-xs">
-                      {currentAvatarEmotion || 'IDLE'}
-                    </Badge>
-                    {(isTTSPlaying || isRecording) && (
+                  <div className="flex items-center space-x-3">
+                    {/* Avatar Character Selector */}
+                    <AzureAvatarSelector
+                      selectedId={selectedAvatarCharacter}
+                      onSelect={setSelectedAvatarCharacter}
+                      disabled={azureAvatarSpeaking}
+                      compact
+                    />
+                    {azureAvatarSpeaking && (
                       <Badge variant="secondary" className="text-xs">
-                        {isTTSPlaying ? '🎤 TTS' : '🎙️ Mic'}
+                        Speaking
                       </Badge>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* 3D Avatar Display */}
-              <div className="flex-1 relative avatar-split-screen bg-gradient-to-br from-purple-200/30 to-blue-200/30 lg:bg-transparent z-10"
-                   style={{
-                     backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)'
-                   }}>
-                {!avatarLoadError ? (
-                  <AvatarController
-                    emotion={currentAvatarEmotion || 'IDLE'}
-                    speaking={isSpeaking || isRecording}
-                    scale={avatarConfig.scale}
-                    interactive={avatarConfig.interactive}
-                    showEnvironment={avatarConfig.showEnvironment}
-                    enableFloating={avatarConfig.enableFloating}
-                    quality={avatarConfig.quality}
-                    lipSyncSource={
-                      isRecording ? 'microphone' : 
-                      isTTSPlaying ? 'text' : 
-                      isVoiceMode ? 'microphone' : 'text'
-                    }
-                    speechText={currentTTSText || lastAIMessage}
-                    onLoad={() => {
-                      setAvatarLoaded(true);
-                      console.log('Avatar loaded successfully');
-                    }}
-                    onError={(error) => {
-                      setAvatarLoadError(true);
-                      console.error('Avatar loading error:', error);
-                      toast.error('Failed to load 3D avatar');
-                    }}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center p-4">
-                      <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <X className="h-8 w-8 text-red-600 dark:text-red-400" />
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Avatar failed to load</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setAvatarLoadError(false);
-                          setAvatarLoaded(false);
-                        }}
-                      >
-                        Retry
-                      </Button>
-                    </div>
-                  </div>
-                )}
+              {/* Azure Avatar Video Display */}
+              <div className="flex-1 relative z-10">
+                <AzureAvatar
+                  ref={azureAvatarRef}
+                  characterId={selectedAvatarCharacter}
+                  onSpeakingChange={(speaking) => {
+                    setAzureAvatarSpeaking(speaking);
+                    setIsSpeaking(speaking);
+                  }}
+                  onConnected={() => {
+                    setAzureAvatarConnected(true);
+                    setAvatarLoaded(true);
+                    console.log('Azure Avatar connected');
+                  }}
+                  onDisconnected={() => {
+                    setAzureAvatarConnected(false);
+                    console.log('Azure Avatar disconnected');
+                  }}
+                  onError={(err) => {
+                    console.error('Azure Avatar error:', err);
+                    toast.error('Avatar connection issue: ' + err);
+                  }}
+                  className="h-full"
+                />
 
-                {/* Avatar Loading Indicator */}
-                {!avatarLoaded && !avatarLoadError && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl p-6 text-center pointer-events-none">
-                    <Loader2 className="h-12 w-12 animate-spin text-purple-600 mx-auto mb-3" />
-                    <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Loading 3D Avatar...</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">This may take a few moments</p>
-                  </div>
-                )}
-
-                {/* Avatar Status Indicator - Repositioned for mobile */}
-                {(isSpeaking || isRecording) && (
-                  <div className="absolute top-4 right-4 lg:top-4 lg:right-4 bg-black/80 text-white px-2 py-1 lg:px-3 lg:py-2 rounded-lg text-xs lg:text-sm flex items-center space-x-1 lg:space-x-2 backdrop-blur-sm z-10 pointer-events-none">
-                    {isRecording && (
-                      <>
-                        <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-red-500 rounded-full animate-pulse"></div>
-                        <span className="hidden lg:inline">🎤 Recording</span>
-                        <span className="lg:hidden">🎤</span>
-                      </>
-                    )}
-                    {isSpeaking && !isRecording && (
-                      <>
-                        <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="hidden lg:inline">💬 Speaking</span>
-                        <span className="lg:hidden">💬</span>
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* Avatar Info Panel - Hidden on mobile, visible on desktop */}
-                <div className="hidden lg:block absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs text-gray-600 max-w-xs">
-                  <div className="font-medium text-gray-800 mb-1">🎭 3D Avatar Active</div>
-                  <div className="space-y-1">
-                    <div>• Emotion: {currentAvatarEmotion || 'IDLE'}</div>
-                    <div>• Speaking: {isSpeaking ? "🟢 Active" : "⚪ Inactive"}</div>
-                    <div>• Mode: {isVoiceMode ? "Voice Chat" : "Text Chat"}</div>
-                  </div>
-                </div>
-
-                {/* Mobile Avatar Indicator - Only visible on mobile */}
-                <div className="lg:hidden absolute bottom-4 left-4 bg-purple-600/80 text-white px-3 py-2 rounded-xl text-xs backdrop-blur-sm z-10 shadow-lg pointer-events-none">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <UserCircle className="h-5 w-5" />
-                    <span className="font-medium">Avatar: {currentAvatarEmotion || 'IDLE'}</span>
-                  </div>
-                </div>
               </div>
           </motion.div>
         )}
+
+      </div>{/* end Full Screen Chat Container */}
 
       {/* Floating Voice Call Action Button - Only show when not in voice mode */}
       {/* {!sessionEnded && !isVoiceMode && messages.length > 0 && (
@@ -2402,14 +2230,21 @@ export default function EmployeeChatPage() {
       </div>
     )}
 
-      {/* Avatar Settings Panel */}
-      {isAvatarMode && (
-        <AvatarSettings
-          config={avatarConfig}
-          onConfigChange={updateAvatarConfig}
-          isOpen={isSettingsOpen}
-          onToggle={toggleSettings}
-        />
+      {/* Avatar Character Picker (full panel — desktop only, triggered from settings button) */}
+      {isAvatarMode && isSettingsOpen && (
+        <div className="fixed bottom-4 right-4 z-50 w-80">
+          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Choose Avatar</span>
+              <button onClick={toggleSettings} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none">&times;</button>
+            </div>
+            <AzureAvatarSelector
+              selectedId={selectedAvatarCharacter}
+              onSelect={(id) => { setSelectedAvatarCharacter(id); toggleSettings(); }}
+              disabled={azureAvatarSpeaking}
+            />
+          </div>
+        </div>
       )}
 
       {/* Greeting Dialog — matches image */}

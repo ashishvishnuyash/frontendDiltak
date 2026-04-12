@@ -210,6 +210,15 @@ export interface DashboardStats {
   weekly_reports: number;
   participation_rate: number;
   last_updated: string;
+  // Enhanced Dashboard Fields
+  wellness_index?: EmployerWellnessIndex;
+  burnout_trend?: EmployerBurnoutTrend;
+  engagement_signals?: EmployerEngagementSignals;
+  workload_friction?: EmployerWorkloadFriction;
+  productivity_proxy?: EmployerProductivityProxy;
+  early_warnings?: EmployerEarlyWarnings;
+  suggested_actions?: EmployerSuggestedActions;
+  department_comparison?: any;
 }
 
 export interface WellnessTrend {
@@ -334,3 +343,87 @@ export interface HierarchyAnalytics {
     employee_count: number;
   }[];
 }
+
+/* ─── ENHANCED EMPLOYER DASHBOARD TYPES ─── */
+
+export interface EmployerWellnessIndex {
+  company_id: string;
+  team_size_band: string;
+  wellness_index: number;
+  stress_score: number;
+  engagement_score: number;
+  check_in_participation_pct: number;
+  period_days: number;
+  trend_vs_prior_period: number;
+  data_quality: 'high' | 'medium' | 'low';
+  computed_at: string;
+}
+
+export interface EmployerBurnoutTrend {
+  company_id: string;
+  period_weeks: number;
+  buckets: {
+    label: string;
+    percentage: number;
+    trend: 'improving' | 'stable' | 'declining';
+  }[];
+  weekly_distribution: any[]; // Changed to any[] to handle dynamic week keys like additionalProp1
+  alert_level: string;
+  computed_at: string;
+}
+
+export interface EmployerEngagementSignals {
+  company_id: string;
+  dau_pct: number;
+  wau_pct: number;
+  check_in_completion_pct: number;
+  avg_session_depth_score: number;
+  period_days: number;
+  computed_at: string;
+}
+
+export interface EmployerWorkloadFriction {
+  company_id: string;
+  late_night_activity_pct: number;
+  sentiment_shift_events: number;
+  overload_pattern_score: number;
+  risk_level: 'none' | 'low' | 'medium' | 'high';
+  period_days: number;
+  computed_at: string;
+}
+
+export interface EmployerProductivityProxy {
+  company_id: string;
+  engagement_trend: number[];
+  period_label: string[];
+  correlation_note: string;
+  data_quality: string;
+  computed_at: string;
+}
+
+export interface EmployerEarlyWarnings {
+  company_id: string;
+  alerts: {
+    signal: string;
+    description: string;
+    confidence: 'high' | 'medium' | 'low';
+    period: string;
+    attribution: 'none' | 'aggregated';
+  }[];
+  overall_risk: string;
+  computed_at: string;
+}
+
+export interface EmployerSuggestedActions {
+  company_id: string;
+  actions: {
+    trigger: string;
+    category: string;
+    action: string;
+    expected_impact: string;
+    playbook_steps: string[];
+    priority: string;
+  }[];
+  generated_at: string;
+}
+

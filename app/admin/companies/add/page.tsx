@@ -66,7 +66,7 @@ export default function AddCompanyPage() {
         {/* Header */}
         <div className="mb-8">
           <Link href="/admin/companies" className="inline-flex items-center text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 uppercase tracking-widest mb-4 group">
-            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to Companies
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Register New Company</h1>
@@ -97,7 +97,7 @@ export default function AddCompanyPage() {
                     <div className="space-y-1.5 md:col-span-2">
                       <Label htmlFor="name" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Company Name *</Label>
                       <div className="relative">
-                        <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 opacity-50" />
+                        <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 opacity-50" />
                         <Input
                           id="name"
                           name="name"
@@ -142,7 +142,7 @@ export default function AddCompanyPage() {
                     <div className="space-y-1.5">
                       <Label htmlFor="website" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Website URL</Label>
                       <div className="relative">
-                        <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 opacity-50" />
+                        <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 opacity-50" />
                         <Input
                           id="website"
                           name="website"
@@ -179,7 +179,7 @@ export default function AddCompanyPage() {
                         <div className="space-y-1.5">
                             <Label htmlFor="contactEmail" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Business Email *</Label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 opacity-50" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 opacity-50" />
                                 <Input
                                     id="contactEmail"
                                     name="contactEmail"
@@ -196,7 +196,7 @@ export default function AddCompanyPage() {
                         <div className="space-y-1.5">
                             <Label htmlFor="contactPhone" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Contact Phone</Label>
                             <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 opacity-50" />
+                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 opacity-50" />
                                 <Input
                                     id="contactPhone"
                                     name="contactPhone"
@@ -211,7 +211,7 @@ export default function AddCompanyPage() {
                         <div className="space-y-1.5 md:col-span-2">
                             <Label htmlFor="address" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Headquarters Address</Label>
                             <div className="relative">
-                                <MapPin className="absolute left-3 top-3 text-gray-400 h-4 w-4 opacity-50" />
+                                <MapPin className="absolute left-3 top-3 text-gray-400 h-5 w-5 opacity-50" />
                                 <Input
                                     id="address"
                                     name="address"
@@ -241,7 +241,7 @@ export default function AddCompanyPage() {
                         </div>
                       ) : (
                         <div className="flex items-center">
-                          <Save className="h-4 w-4 mr-2" />
+                          <Save className="h-5 w-5 mr-2" />
                           Register Company
                         </div>
                       )}
@@ -277,7 +277,7 @@ export default function AddCompanyPage() {
             </Card>
 
             <div className="p-6 bg-amber-50/30 dark:bg-amber-900/10 border border-amber-100/50 dark:border-amber-900/20 rounded-lg flex gap-3">
-              <Info className="h-4 w-4 text-amber-500 shrink-0" />
+              <Info className="h-5 w-5 text-amber-500 shrink-0" />
               <p className="text-[10px] font-bold text-amber-700/70 dark:text-amber-500/70 uppercase leading-loose">
                 Once registered, the company employer will receive a magic link to complete their profile setup.
               </p>

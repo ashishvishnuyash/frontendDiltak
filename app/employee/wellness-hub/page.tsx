@@ -1,12 +1,12 @@
 'use client';
 
-import { useUser } from '@/hooks/use-user';
+import { useAuth } from '@/contexts/auth-context';
 import { withAuth } from '@/components/auth/with-auth';
 import WellnessHub from '@/components/wellness-hub/WellnessHub';
 import { PageLoader } from '@/components/loader';
 
 function EmployeeWellnessHubPage() {
-  const { user, loading } = useUser();
+  const { user, loading } = useAuth();
 
   if (loading) return <PageLoader message="Loading wellness hub..." />;
   if (!user) return null;

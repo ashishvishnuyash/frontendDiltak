@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import ToogleBtn from '../newcomponents/ToogleBtn';
 
 const priorities = ['Low', 'Medium', 'High', 'Critical'];
 const categories = ['Mental Health', 'Harassment', 'Workplace Safety', 'Work-Life Balance', 'Performance', 'Other'];
@@ -20,17 +21,8 @@ interface CreateSupportModalProps {
   onClose: () => void;
 }
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'}`}
-    >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
-    </button>
-  );
-}
+
+
 
 export default function CreateSupportModal({ supportType, onSubmit, onClose }: CreateSupportModalProps) {
   const [priority, setPriority] = useState('');
@@ -68,7 +60,7 @@ export default function CreateSupportModal({ supportType, onSubmit, onClose }: C
             onClick={onClose}
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0 ml-4"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -89,7 +81,7 @@ export default function CreateSupportModal({ supportType, onSubmit, onClose }: C
                   {priorities.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
                 <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                  <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -109,7 +101,7 @@ export default function CreateSupportModal({ supportType, onSubmit, onClose }: C
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                  <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -148,11 +140,11 @@ export default function CreateSupportModal({ supportType, onSubmit, onClose }: C
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-between py-2.5 px-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Post Anonymously</span>
-              <Toggle checked={anonymous} onChange={() => setAnonymous(v => !v)} />
+              <ToogleBtn checked={anonymous} onChange={() => setAnonymous(v => !v)} />
             </div>
             <div className="flex items-center justify-between py-2.5 px-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Mark Confidentiality</span>
-              <Toggle checked={confidential} onChange={() => setConfidential(v => !v)} />
+              <ToogleBtn checked={confidential} onChange={() => setConfidential(v => !v)} />
             </div>
           </div>
 

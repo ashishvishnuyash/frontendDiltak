@@ -9,3 +9,8 @@ export { LipSyncAnalyzer, VISEME_BLENDSHAPE_MAP } from './LipSyncAnalyzer';
 export type { VisemeData, AudioAnalysisResult } from './LipSyncAnalyzer';
 export type { LipSyncState } from './LipSyncController';
 export type { AvatarSettingsConfig } from './AvatarSettings';
+
+// Azure TTS Avatar
+export { default as AzureAvatar, AVATAR_CHARACTERS } from './AzureAvatar';
+export type { AzureAvatarHandle, AvatarCharacter } from './AzureAvatar';
+export { default as AzureAvatarSelector } from './AzureAvatarSelector';

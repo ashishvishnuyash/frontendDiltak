@@ -18,6 +18,7 @@ import { collection, doc, addDoc, setDoc, getDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
+import { Separator } from '@radix-ui/react-select';
 
 const industries = [
   'Technology', 'Healthcare', 'Finance', 'Education', 'Manufacturing',
@@ -189,7 +190,7 @@ export default function EmployerRegisterPage() {
 
         {/* Notice */}
         <div className="flex items-start space-x-3 bg-secondary/30 border border-border rounded-lg p-4 mb-8">
-          <Shield className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+          <Shield className="h-5 w-5 text-emerald-500 mt-0.5 shrink-0" />
           <p className="text-[11px] font-medium text-muted-foreground leading-relaxed uppercase tracking-tight">
             Exclusive registration for employers and business owners.
           </p>
@@ -284,7 +285,7 @@ export default function EmployerRegisterPage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="businessEmail" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Business Email *</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-50" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5 opacity-50" />
                     <Input id="businessEmail" type="email" placeholder="you@company.com" value={formData.businessEmail} onChange={(e) => handleInputChange('businessEmail', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm pl-10" required />
                   </div>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight ml-1 opacity-60">Company email domains only</p>
@@ -294,14 +295,14 @@ export default function EmployerRegisterPage() {
                   <div className="space-y-1.5">
                     <Label htmlFor="phone" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Phone Number</Label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-50" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5 opacity-50" />
                       <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm pl-10" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="address" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Business Address</Label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-50" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5 opacity-50" />
                       <Input id="address" placeholder="123 Business St, City" value={formData.address} onChange={(e) => handleInputChange('address', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm pl-10" />
                     </div>
                   </div>
@@ -323,7 +324,7 @@ export default function EmployerRegisterPage() {
                     <div className="relative">
                       <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm focus:ring-red-500/20 focus:border-red-500" required />
                       <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
                   </div>
@@ -333,7 +334,7 @@ export default function EmployerRegisterPage() {
                     <div className="relative">
                       <Input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} placeholder="••••••••" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} className="h-10 bg-transparent border-border rounded-md font-medium text-sm focus:ring-red-500/20 focus:border-red-500" required />
                       <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
                   </div>
@@ -354,13 +355,13 @@ export default function EmployerRegisterPage() {
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                       Creating...
                     </div>
                   ) : (
                     <div className="flex items-center justify-center">
                       Finalize Registration
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <ArrowRight className="ml-2 h-5 w-5" />
                     </div>
                   )}
                 </Button>
@@ -381,4 +382,5 @@ export default function EmployerRegisterPage() {
       </div>
     </div>
   );
+}
 }

@@ -1,7 +1,23 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 
-const UMA_API_URL = process.env.UMA_API_URL || 'http://74.162.66.197';
+
+/**
+ * Maps backend burnout distribution keys to what the chart expects.
+ * Backend returns: {week, low_pct, medium_pct, high_pct}
+ * Chart expects:   {week, low, medium, high}
+ */
+function normalizeBurnoutDistribution(dist: any[]): any[] {
+  if (!Array.isArray(dist)) return [];
+  return dist.map(item => ({
+    week: item.week ?? '',
+    low: item.low_pct ?? item.low ?? 0,
+    medium: item.medium_pct ?? item.medium ?? 0,
+    high: item.high_pct ?? item.high ?? 0,
+  }));
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,56 +33,62 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Authorization header is required' }, { status: 401 });
     }
 
-    const headers = {
-      'Authorization': authHeader,
-      'Content-Type': 'application/json',
+    const config = {
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      }
     };
 
-    // Parallel fetch from all endpoints
-    const [
-      companyStatsRes,
-      wellnessIndexRes,
-      burnoutTrendRes,
-      engagementSignalsRes,
-      earlyWarningsRes,
-      deptComparisonRes,
-    ] = await Promise.all([
-      fetch(`${UMA_API_URL}/api/employer/company/stats`, { headers }),
-      fetch(`${UMA_API_URL}/api/employer/wellness-index?company_id=${companyId}`, { headers }),
-      fetch(`${UMA_API_URL}/api/employer/burnout-trend?company_id=${companyId}&weeks=8`, { headers }),
-      fetch(`${UMA_API_URL}/api/employer/engagement-signals?company_id=${companyId}&period_days=30`, { headers }),
-      fetch(`${UMA_API_URL}/api/employer/early-warnings?company_id=${companyId}&period_days=14`, { headers }),
-      fetch(`${UMA_API_URL}/api/employer/org/department-comparison?company_id=${companyId}&period_days=30`, { headers }),
-    ]);
+    const safe = (p: Promise<any>) => p.catch(e => e.response || null);
+    const ok = (res: any) => res?.status === 200 ? res.data : null;
 
-    // Handle responses properly so one failure doesn't crash everything if it's gracefully degradable,
-    // though for our dashboard, we mostly want all.
-    const rawData = await Promise.all([
-      companyStatsRes.ok ? companyStatsRes.json() : null,
-      wellnessIndexRes.ok ? wellnessIndexRes.json() : null,
-      burnoutTrendRes.ok ? burnoutTrendRes.json() : null,
-      engagementSignalsRes.ok ? engagementSignalsRes.json() : null,
-      earlyWarningsRes.ok ? earlyWarningsRes.json() : null,
-      deptComparisonRes.ok ? deptComparisonRes.json() : null,
-    ]);
+    // Sequential calls — each call populates backend caches that the
+    // next call benefits from, avoiding Firestore quota exhaustion.
+    // On localhost this adds ~1-2s total but prevents 429 errors.
+    const wellnessIndexRes      = await safe(axios.get(`${ServerAddress}/employer/wellness-index?company_id=${companyId}&period_days=14`, config));
+    const burnoutTrendRes       = await safe(axios.get(`${ServerAddress}/employer/burnout-trend?company_id=${companyId}&weeks=4`, config));
+    const engagementSignalsRes  = await safe(axios.get(`${ServerAddress}/employer/engagement-signals?company_id=${companyId}&period_days=14`, config));
+    const workloadFrictionRes   = await safe(axios.get(`${ServerAddress}/employer/workload-friction?company_id=${companyId}&period_days=14`, config));
+    const productivityProxyRes  = await safe(axios.get(`${ServerAddress}/employer/productivity-proxy?company_id=${companyId}&weeks=4`, config));
+    const earlyWarningsRes      = await safe(axios.get(`${ServerAddress}/employer/early-warnings?company_id=${companyId}&period_days=14`, config));
+    const suggestedActionsRes   = await safe(axios.get(`${ServerAddress}/employer/suggested-actions?company_id=${companyId}`, config));
+    const deptComparisonRes     = await safe(axios.get(`${ServerAddress}/employer/org/department-comparison?company_id=${companyId}&period_days=14&mask_labels=false`, config));
+    const orgWellnessTrendRes   = await safe(axios.get(`${ServerAddress}/employer/org/wellness-trend?company_id=${companyId}&weeks=12`, config));
+    const roiImpactRes          = await safe(axios.get(`${ServerAddress}/employer/org/roi-impact?company_id=${companyId}&weeks=8`, config));
+    const programEffectivenessRes = await safe(axios.get(`${ServerAddress}/employer/org/program-effectiveness?company_id=${companyId}`, config));
 
-    const [
-      companyStats,
-      wellnessIndex,
-      burnoutTrend,
-      engagementSignals,
-      earlyWarnings,
-      deptComparison,
-    ] = rawData;
+    const wellnessIndex = ok(wellnessIndexRes);
+    const burnoutTrend = ok(burnoutTrendRes);
+    const engagementSignals = ok(engagementSignalsRes);
+    const workloadFriction = ok(workloadFrictionRes);
+    const productivityProxy = ok(productivityProxyRes);
+    const earlyWarnings = ok(earlyWarningsRes);
+    const suggestedActions = ok(suggestedActionsRes);
+    const departmentComparison = ok(deptComparisonRes);
+    const orgWellnessTrend = ok(orgWellnessTrendRes);
+    const roiImpact = ok(roiImpactRes);
+    const programEffectiveness = ok(programEffectivenessRes);
 
-    // Compile into unified stats object
+    // Normalize specific data structures the UI expects
+    if (burnoutTrend && burnoutTrend.weekly_distribution) {
+      burnoutTrend.weekly_distribution = normalizeBurnoutDistribution(burnoutTrend.weekly_distribution);
+    }
+
+    // Compile into unified stats object matching DashboardStats interface
     return NextResponse.json({
-      company_stats: companyStats,
       wellness_index: wellnessIndex,
       burnout_trend: burnoutTrend,
       engagement_signals: engagementSignals,
+      workload_friction: workloadFriction,
+      productivity_proxy: productivityProxy,
       early_warnings: earlyWarnings,
-      department_comparison: deptComparison,
+      suggested_actions: suggestedActions,
+      department_comparison: departmentComparison,
+      org_wellness_trend: orgWellnessTrend,
+      roi_impact: roiImpact,
+      program_effectiveness: programEffectiveness,
+      last_updated: new Date().toISOString(),
     });
 
   } catch (error: any) {

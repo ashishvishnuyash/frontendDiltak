@@ -90,7 +90,7 @@ export default function GamificationHub({ userRole, userId }: GamificationHubPro
           return (
             <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 flex items-center gap-2">
               <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center flex-shrink-0`}>
-                <Icon className={`h-4 w-4 ${s.color}`} />
+                <Icon className={`h-5 w-5 ${s.color}`} />
               </div>
               <div>
                 <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{s.value}</p>
@@ -199,7 +199,7 @@ export default function GamificationHub({ userRole, userId }: GamificationHubPro
       {activeTab === 'leaderboard' && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-yellow-500" />
+            <Trophy className="h-5 w-5 text-yellow-500" />
             <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Weekly Leaderboard</h2>
           </div>
           <div className="divide-y divide-gray-50 dark:divide-gray-800">
