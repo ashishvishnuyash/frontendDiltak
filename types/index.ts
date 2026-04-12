@@ -3,6 +3,8 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  firstName?: string;
+  lastName?: string;
   role: 'employee' | 'hr' | 'admin' | 'employer' | 'manager';
   company_id?: string;
   department?: string;

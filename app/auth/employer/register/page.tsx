@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Building, Mail, User as UserIcon, Phone, MapPin, Eye, EyeOff, Shield, ArrowLeft, Loader2, ArrowRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { auth, db } from '@/lib/firebase';
@@ -151,6 +152,8 @@ export default function EmployerRegisterPage() {
     } finally {
       setLoading(false);
     }
+  };
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Header */}
