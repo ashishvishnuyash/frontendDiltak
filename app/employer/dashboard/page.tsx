@@ -120,7 +120,7 @@ function EmployerDashboardPage() {
 
       setStats({
         total_employees: backendStats.company_stats?.totalEmployees || 0,
-        total_managers: Object.values(backendStats.company_stats?.roleBreakdown || {}).reduce((a: any, b: any) => a + b, 0),
+        total_managers: Object.values(backendStats.company_stats?.roleBreakdown || {}).reduce((a: any, b: any) => a + b, 0) as number,
         active_sessions: backendStats.company_stats?.activeEmployees || 0,
         completed_reports: 0,
         average_wellness_score: backendStats.wellness_index?.wellness_index ? Math.round(backendStats.wellness_index.wellness_index / 10) : 0,
@@ -208,7 +208,7 @@ function EmployerDashboardPage() {
           </Button>
 
           <Button
-            onClick={() => ComprehensiveReportExportService.exportToPDF(stats, user)}
+            onClick={() => ComprehensiveReportExportService.exportToPDF(stats as any, user)}
             variant="outline"
             size="sm"
             className="rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-600 dark:text-gray-300 h-10 px-4"
