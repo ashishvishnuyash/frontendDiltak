@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { AvatarController, useTTSLipSync } from "@/components/avatar";
 import AvatarSettings, { useAvatarSettings } from "@/components/avatar/AvatarSettings";
+import AzureAvatar, { type AzureAvatarHandle } from "@/components/avatar/AzureAvatar";
+import AzureAvatarSelector from "@/components/avatar/AzureAvatarSelector";
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import VoiceCallUI from "@/components/voice-call/VoiceCallUI";
 
@@ -280,16 +282,27 @@ export default function EmployeeChatPage() {
   useEffect(() => {
     isVoiceModeRef.current = isVoiceMode;
   }, [isVoiceMode]);
-  
+
   useEffect(() => {
     audioEnabledRef.current = audioEnabled;
   }, [audioEnabled]);
+
+  useEffect(() => {
+    isAvatarModeRef.current = isAvatarMode;
+  }, [isAvatarMode]);
   const [showVoiceInstructions, setShowVoiceInstructions] = useState(false);
 
   // Avatar state
   const [currentAvatarEmotion, setCurrentAvatarEmotion] = useState<string>("");
   const [avatarLoaded, setAvatarLoaded] = useState(false);
   const [avatarLoadError, setAvatarLoadError] = useState(false);
+
+  // Azure Avatar state
+  const azureAvatarRef = useRef<AzureAvatarHandle>(null);
+  const [selectedAvatarCharacter, setSelectedAvatarCharacter] = useState("lisa");
+  const [azureAvatarConnected, setAzureAvatarConnected] = useState(false);
+  const [azureAvatarSpeaking, setAzureAvatarSpeaking] = useState(false);
+  const isAvatarModeRef = useRef(isAvatarMode);
 
   // Avatar Settings
   const { config: avatarConfig, updateConfig: updateAvatarConfig, isOpen: isSettingsOpen, toggleSettings } = useAvatarSettings();
@@ -505,6 +518,19 @@ export default function EmployeeChatPage() {
         }
       }, 400);
     };
+
+    // --- Azure Avatar TTS: when avatar mode is on and connected, let Azure handle speech + lip sync ---
+    if (isAvatarModeRef.current && azureAvatarRef.current?.isConnected()) {
+      try {
+        await azureAvatarRef.current.speak(text);
+        setIsSpeaking(false);
+        scheduleAutoListen();
+        return;
+      } catch (err) {
+        console.error('Azure Avatar speak failed, falling back to normal TTS:', err);
+        // Fall through to normal TTS
+      }
+    }
 
     // Browser built-in TTS fallback (no API key needed)
     const speakWithBrowser = () => {
@@ -968,7 +994,7 @@ export default function EmployeeChatPage() {
         setLastAIMessage(result.data.content);
 
         // Set avatar emotion — use Uma's emotion detection if available, otherwise keyword fallback
-        if (isAvatarMode) {
+        if (isAvatarModeRef.current) {
           if (result.data.avatarEmotion) {
             setCurrentAvatarEmotion(result.data.avatarEmotion);
           } else {
@@ -993,14 +1019,15 @@ export default function EmployeeChatPage() {
         const currentVoiceMode = isVoiceModeRef.current;
         const currentAudioEnabled = audioEnabledRef.current;
         
-        console.log('🤖 AI response received, checking if should speak...', { 
-          isVoiceMode: currentVoiceMode, 
-          isAvatarMode, 
-          audioEnabled: currentAudioEnabled, 
-          contentLength: result.data.content.length 
+        const currentAvatarMode = isAvatarModeRef.current;
+        console.log('🤖 AI response received, checking if should speak...', {
+          isVoiceMode: currentVoiceMode,
+          isAvatarMode: currentAvatarMode,
+          audioEnabled: currentAudioEnabled,
+          contentLength: result.data.content.length
         });
-        
-        if ((currentVoiceMode || isAvatarMode) && currentAudioEnabled) {
+
+        if ((currentVoiceMode || currentAvatarMode) && currentAudioEnabled) {
           console.log('🗣️ Calling speakText with AI response...');
           speakText(result.data.content).catch(err => {
             console.error('❌ Error in speakText:', err);
@@ -1378,9 +1405,13 @@ export default function EmployeeChatPage() {
       />
 
       {/* Full Screen Chat Container */}
-      <div className="flex flex-col flex-1 relative px-6 py-4 bg-[#eef7f5] dark:bg-gray-950" style={{ overflow: 'hidden' }}>
-        {/* Centered chat card */}
-        <div className="flex flex-col flex-1 min-h-0 relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden mx-auto w-full" style={{ maxWidth: 760, height: '100%' }}>
+      <div className={`flex flex-1 relative bg-[#eef7f5] dark:bg-gray-950 ${isAvatarMode ? 'flex-col lg:flex-row p-0 lg:p-0' : 'flex-col px-6 py-4'}`} style={{ overflow: 'hidden' }}>
+        {/* Chat card — full width in avatar mode, centered otherwise */}
+        <div className={`flex flex-col min-h-0 relative bg-white dark:bg-gray-900 overflow-hidden ${
+          isAvatarMode
+            ? 'flex-1 lg:w-1/2 rounded-none lg:border-r border-gray-200 dark:border-gray-700'
+            : 'flex-1 rounded-2xl border border-gray-200 dark:border-gray-800 mx-auto w-full'
+        }`} style={isAvatarMode ? { height: '100%' } : { maxWidth: 760, height: '100%' }}>
           {/* Chat Section */}
           <div className="flex flex-col w-full min-h-0" style={{ height: '100%' }}>
 
@@ -1774,9 +1805,6 @@ export default function EmployeeChatPage() {
               </div>
             </div>
 
-          </div>{/* end chat section */}
-        </div>{/* end chat card */}
-
         {/* FAB buttons — outside the card, bottom-right of the page area */}
         <div className="absolute bottom-6 right-6 flex gap-2 z-20">
           <button
@@ -1798,7 +1826,7 @@ export default function EmployeeChatPage() {
           </button>
         </div>
 
-      </div>{/* end page container */}
+      </div>{/* end chat section */}
 
       {/* Options Dropdown Panel */}
       {showOptionsPanel && (
@@ -1971,146 +1999,74 @@ export default function EmployeeChatPage() {
               onChange={handleFileSelect}
               className="hidden"
             />
+
+        </div>{/* end chat card */}
+
           {isAvatarMode && (
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 30 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="fixed inset-0 lg:relative lg:w-1/2 bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-200 dark:from-indigo-900/40 dark:via-purple-900/40 dark:to-pink-900/40 lg:bg-gradient-to-b lg:from-blue-50 lg:to-gray-50 lg:dark:from-blue-900/20 lg:dark:to-gray-800/20 lg:border-l border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full z-0 lg:z-auto pointer-events-none"
+            transition={{ duration: 0.5 }}
+            className="hidden lg:flex lg:w-1/2 bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 overflow-hidden flex-col"
+            style={{ height: '100%' }}
           >
-              {/* Mobile Avatar Background Indicator */}
-              <div className="lg:hidden absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm border-b border-white/20 px-4 py-2 z-30 pointer-events-none">
-                <div className="flex items-center justify-center space-x-2 text-white/90">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs font-medium">3D Avatar Background</span>
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-
-              {/* Avatar Header - Hidden on mobile, visible on desktop */}
-              <div className="hidden lg:block border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 px-4 py-3 relative z-20">
+              {/* Avatar Header */}
+              <div className="border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 px-4 py-3 relative z-20 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center">
                       <UserCircle className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">3D Avatar + Lip Sync</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">AI Avatar</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className="text-xs">
-                      {currentAvatarEmotion || 'IDLE'}
-                    </Badge>
-                    {(isTTSPlaying || isRecording) && (
+                  <div className="flex items-center space-x-3">
+                    {/* Avatar Character Selector */}
+                    <AzureAvatarSelector
+                      selectedId={selectedAvatarCharacter}
+                      onSelect={setSelectedAvatarCharacter}
+                      disabled={azureAvatarSpeaking}
+                      compact
+                    />
+                    {azureAvatarSpeaking && (
                       <Badge variant="secondary" className="text-xs">
-                        {isTTSPlaying ? '🎤 TTS' : '🎙️ Mic'}
+                        Speaking
                       </Badge>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* 3D Avatar Display */}
-              <div className="flex-1 relative avatar-split-screen bg-gradient-to-br from-purple-200/30 to-blue-200/30 lg:bg-transparent z-10"
-                   style={{
-                     backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)'
-                   }}>
-                {!avatarLoadError ? (
-                  <AvatarController
-                    emotion={currentAvatarEmotion || 'IDLE'}
-                    speaking={isSpeaking || isRecording}
-                    scale={avatarConfig.scale}
-                    interactive={avatarConfig.interactive}
-                    showEnvironment={avatarConfig.showEnvironment}
-                    enableFloating={avatarConfig.enableFloating}
-                    quality={avatarConfig.quality}
-                    lipSyncSource={
-                      isRecording ? 'microphone' : 
-                      isTTSPlaying ? 'text' : 
-                      isVoiceMode ? 'microphone' : 'text'
-                    }
-                    speechText={currentTTSText || lastAIMessage}
-                    onLoad={() => {
-                      setAvatarLoaded(true);
-                      console.log('Avatar loaded successfully');
-                    }}
-                    onError={(error) => {
-                      setAvatarLoadError(true);
-                      console.error('Avatar loading error:', error);
-                      toast.error('Failed to load 3D avatar');
-                    }}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center p-4">
-                      <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <X className="h-8 w-8 text-red-600 dark:text-red-400" />
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Avatar failed to load</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setAvatarLoadError(false);
-                          setAvatarLoaded(false);
-                        }}
-                      >
-                        Retry
-                      </Button>
-                    </div>
-                  </div>
-                )}
+              {/* Azure Avatar Video Display */}
+              <div className="flex-1 relative z-10">
+                <AzureAvatar
+                  ref={azureAvatarRef}
+                  characterId={selectedAvatarCharacter}
+                  onSpeakingChange={(speaking) => {
+                    setAzureAvatarSpeaking(speaking);
+                    setIsSpeaking(speaking);
+                  }}
+                  onConnected={() => {
+                    setAzureAvatarConnected(true);
+                    setAvatarLoaded(true);
+                    console.log('Azure Avatar connected');
+                  }}
+                  onDisconnected={() => {
+                    setAzureAvatarConnected(false);
+                    console.log('Azure Avatar disconnected');
+                  }}
+                  onError={(err) => {
+                    console.error('Azure Avatar error:', err);
+                    toast.error('Avatar connection issue: ' + err);
+                  }}
+                  className="h-full"
+                />
 
-                {/* Avatar Loading Indicator */}
-                {!avatarLoaded && !avatarLoadError && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl p-6 text-center pointer-events-none">
-                    <Loader2 className="h-12 w-12 animate-spin text-purple-600 mx-auto mb-3" />
-                    <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Loading 3D Avatar...</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">This may take a few moments</p>
-                  </div>
-                )}
-
-                {/* Avatar Status Indicator - Repositioned for mobile */}
-                {(isSpeaking || isRecording) && (
-                  <div className="absolute top-4 right-4 lg:top-4 lg:right-4 bg-black/80 text-white px-2 py-1 lg:px-3 lg:py-2 rounded-lg text-xs lg:text-sm flex items-center space-x-1 lg:space-x-2 backdrop-blur-sm z-10 pointer-events-none">
-                    {isRecording && (
-                      <>
-                        <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-red-500 rounded-full animate-pulse"></div>
-                        <span className="hidden lg:inline">🎤 Recording</span>
-                        <span className="lg:hidden">🎤</span>
-                      </>
-                    )}
-                    {isSpeaking && !isRecording && (
-                      <>
-                        <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="hidden lg:inline">💬 Speaking</span>
-                        <span className="lg:hidden">💬</span>
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* Avatar Info Panel - Hidden on mobile, visible on desktop */}
-                <div className="hidden lg:block absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs text-gray-600 max-w-xs">
-                  <div className="font-medium text-gray-800 mb-1">🎭 3D Avatar Active</div>
-                  <div className="space-y-1">
-                    <div>• Emotion: {currentAvatarEmotion || 'IDLE'}</div>
-                    <div>• Speaking: {isSpeaking ? "🟢 Active" : "⚪ Inactive"}</div>
-                    <div>• Mode: {isVoiceMode ? "Voice Chat" : "Text Chat"}</div>
-                  </div>
-                </div>
-
-                {/* Mobile Avatar Indicator - Only visible on mobile */}
-                <div className="lg:hidden absolute bottom-4 left-4 bg-purple-600/80 text-white px-3 py-2 rounded-xl text-xs backdrop-blur-sm z-10 shadow-lg pointer-events-none">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <UserCircle className="h-5 w-5" />
-                    <span className="font-medium">Avatar: {currentAvatarEmotion || 'IDLE'}</span>
-                  </div>
-                </div>
               </div>
           </motion.div>
         )}
+
+      </div>{/* end Full Screen Chat Container */}
 
       {/* Floating Voice Call Action Button - Only show when not in voice mode */}
       {/* {!sessionEnded && !isVoiceMode && messages.length > 0 && (
@@ -2274,14 +2230,21 @@ export default function EmployeeChatPage() {
       </div>
     )}
 
-      {/* Avatar Settings Panel */}
-      {isAvatarMode && (
-        <AvatarSettings
-          config={avatarConfig}
-          onConfigChange={updateAvatarConfig}
-          isOpen={isSettingsOpen}
-          onToggle={toggleSettings}
-        />
+      {/* Avatar Character Picker (full panel — desktop only, triggered from settings button) */}
+      {isAvatarMode && isSettingsOpen && (
+        <div className="fixed bottom-4 right-4 z-50 w-80">
+          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Choose Avatar</span>
+              <button onClick={toggleSettings} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none">&times;</button>
+            </div>
+            <AzureAvatarSelector
+              selectedId={selectedAvatarCharacter}
+              onSelect={(id) => { setSelectedAvatarCharacter(id); toggleSettings(); }}
+              disabled={azureAvatarSpeaking}
+            />
+          </div>
+        </div>
       )}
 
       {/* Greeting Dialog — matches image */}

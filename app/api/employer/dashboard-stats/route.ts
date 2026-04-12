@@ -5,23 +5,18 @@ import ServerAddress from '@/constent/ServerAddress';
 
 
 /**
- * Normalizes the burnout distribution which often comes as a list of single-key objects
- * e.g. [{"2024-W14": {low, med, high}}] -> [{week: "2024-W14", low, med, high}]
+ * Maps backend burnout distribution keys to what the chart expects.
+ * Backend returns: {week, low_pct, medium_pct, high_pct}
+ * Chart expects:   {week, low, medium, high}
  */
 function normalizeBurnoutDistribution(dist: any[]): any[] {
   if (!Array.isArray(dist)) return [];
-  return dist.map(item => {
-    const keys = Object.keys(item);
-    if (keys.length === 0) return item;
-    const week = keys[0];
-    const data = item[week];
-    return {
-      week,
-      low: data.low || 0,
-      medium: data.medium || 0,
-      high: data.high || 0
-    };
-  });
+  return dist.map(item => ({
+    week: item.week ?? '',
+    low: item.low_pct ?? item.low ?? 0,
+    medium: item.medium_pct ?? item.medium ?? 0,
+    high: item.high_pct ?? item.high ?? 0,
+  }));
 }
 
 export async function GET(request: NextRequest) {
@@ -45,32 +40,35 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    // Parallel fetch from all endpoints using axios
-    const [
-      wellnessIndexRes,
-      burnoutTrendRes,
-      engagementSignalsRes,
-      workloadFrictionRes,
-      productivityProxyRes,
-      earlyWarningsRes,
-      suggestedActionsRes,
-    ] = await axios.all([
-      axios.get(`${ServerAddress}/employer/wellness-index?company_id=${companyId}`, config).catch(e => e.response || null),
-      axios.get(`${ServerAddress}/employer/burnout-trend?company_id=${companyId}&weeks=12`, config).catch(e => e.response || null),
-      axios.get(`${ServerAddress}/employer/engagement-signals?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
-      axios.get(`${ServerAddress}/employer/workload-friction?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
-      axios.get(`${ServerAddress}/employer/productivity-proxy?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
-      axios.get(`${ServerAddress}/employer/early-warnings?company_id=${companyId}&period_days=14`, config).catch(e => e.response || null),
-      axios.get(`${ServerAddress}/employer/suggested-actions?company_id=${companyId}`, config).catch(e => e.response || null),
-    ]);
+    const safe = (p: Promise<any>) => p.catch(e => e.response || null);
+    const ok = (res: any) => res?.status === 200 ? res.data : null;
 
-    const wellnessIndex = wellnessIndexRes?.status === 200 ? wellnessIndexRes.data : null;
-    const burnoutTrend = burnoutTrendRes?.status === 200 ? burnoutTrendRes.data : null;
-    const engagementSignals = engagementSignalsRes?.status === 200 ? engagementSignalsRes.data : null;
-    const workloadFriction = workloadFrictionRes?.status === 200 ? workloadFrictionRes.data : null;
-    const productivityProxy = productivityProxyRes?.status === 200 ? productivityProxyRes.data : null;
-    const earlyWarnings = earlyWarningsRes?.status === 200 ? earlyWarningsRes.data : null;
-    const suggestedActions = suggestedActionsRes?.status === 200 ? suggestedActionsRes.data : null;
+    // Sequential calls — each call populates backend caches that the
+    // next call benefits from, avoiding Firestore quota exhaustion.
+    // On localhost this adds ~1-2s total but prevents 429 errors.
+    const wellnessIndexRes      = await safe(axios.get(`${ServerAddress}/employer/wellness-index?company_id=${companyId}&period_days=14`, config));
+    const burnoutTrendRes       = await safe(axios.get(`${ServerAddress}/employer/burnout-trend?company_id=${companyId}&weeks=4`, config));
+    const engagementSignalsRes  = await safe(axios.get(`${ServerAddress}/employer/engagement-signals?company_id=${companyId}&period_days=14`, config));
+    const workloadFrictionRes   = await safe(axios.get(`${ServerAddress}/employer/workload-friction?company_id=${companyId}&period_days=14`, config));
+    const productivityProxyRes  = await safe(axios.get(`${ServerAddress}/employer/productivity-proxy?company_id=${companyId}&weeks=4`, config));
+    const earlyWarningsRes      = await safe(axios.get(`${ServerAddress}/employer/early-warnings?company_id=${companyId}&period_days=14`, config));
+    const suggestedActionsRes   = await safe(axios.get(`${ServerAddress}/employer/suggested-actions?company_id=${companyId}`, config));
+    const deptComparisonRes     = await safe(axios.get(`${ServerAddress}/employer/org/department-comparison?company_id=${companyId}&period_days=14&mask_labels=false`, config));
+    const orgWellnessTrendRes   = await safe(axios.get(`${ServerAddress}/employer/org/wellness-trend?company_id=${companyId}&weeks=12`, config));
+    const roiImpactRes          = await safe(axios.get(`${ServerAddress}/employer/org/roi-impact?company_id=${companyId}&weeks=8`, config));
+    const programEffectivenessRes = await safe(axios.get(`${ServerAddress}/employer/org/program-effectiveness?company_id=${companyId}`, config));
+
+    const wellnessIndex = ok(wellnessIndexRes);
+    const burnoutTrend = ok(burnoutTrendRes);
+    const engagementSignals = ok(engagementSignalsRes);
+    const workloadFriction = ok(workloadFrictionRes);
+    const productivityProxy = ok(productivityProxyRes);
+    const earlyWarnings = ok(earlyWarningsRes);
+    const suggestedActions = ok(suggestedActionsRes);
+    const departmentComparison = ok(deptComparisonRes);
+    const orgWellnessTrend = ok(orgWellnessTrendRes);
+    const roiImpact = ok(roiImpactRes);
+    const programEffectiveness = ok(programEffectivenessRes);
 
     // Normalize specific data structures the UI expects
     if (burnoutTrend && burnoutTrend.weekly_distribution) {
@@ -86,6 +84,10 @@ export async function GET(request: NextRequest) {
       productivity_proxy: productivityProxy,
       early_warnings: earlyWarnings,
       suggested_actions: suggestedActions,
+      department_comparison: departmentComparison,
+      org_wellness_trend: orgWellnessTrend,
+      roi_impact: roiImpact,
+      program_effectiveness: programEffectiveness,
       last_updated: new Date().toISOString(),
     });
 

@@ -7,8 +7,23 @@ import { Building2, Info, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DeptData { label: string; realName?: string; score: number; suppressed?: boolean; }
+
+interface DepartmentMetric {
+  label: string;
+  wellness_index: number;
+  burnout_risk: string;
+  engagement_pct: number;
+  size_band: string;
+  suppressed?: boolean;
+}
+
 interface DepartmentComparisonProps {
-  departmentData?: Record<string, { avg_wellness?: number; count?: number; avgWellness?: number }>;
+  departmentData?: {
+    departments: DepartmentMetric[];
+    hotspot_label?: string;
+    label_masking: boolean;
+    period_days: number;
+  };
   loading?: boolean;
 }
 
@@ -37,20 +52,31 @@ export const DepartmentComparison: React.FC<DepartmentComparisonProps> = ({ depa
   if (loading) return <div className="h-[360px] bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm animate-pulse" />;
 
   let depts: DeptData[] = [];
-  if (departmentData && Object.keys(departmentData).length > 0) {
-    depts = Object.entries(departmentData).map(([name, stats], i) => {
-      const count = stats.count ?? 0;
-      const score = Math.round((stats.avg_wellness ?? stats.avgWellness ?? 0) * 10);
-      return { label: ANON_LABELS[i] ?? `Dept ${String.fromCharCode(65 + i)}`, realName: name, score: Math.min(100, score), suppressed: count > 0 && count < K_THRESHOLD };
-    });
-  } else {
-    depts = [
-      { label: 'Dept A', realName: 'Engineering', score: 78 },
-      { label: 'Dept B', realName: 'Marketing', score: 62 },
-      { label: 'Dept C', realName: 'Sales', score: 55 },
-      { label: 'Dept D', realName: 'Product', score: 81 },
-      { label: 'Dept E', realName: 'HR', score: 74 },
-    ];
+  if (departmentData?.departments?.length) {
+    depts = departmentData.departments.map((dept, i) => ({
+      label: ANON_LABELS[i] ?? `Dept ${String.fromCharCode(65 + i)}`,
+      realName: dept.label,
+      score: Math.round(dept.wellness_index),
+      suppressed: dept.suppressed ?? false,
+    }));
+  }
+
+  if (depts.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05 }}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Building2 className="h-5 w-5 text-emerald-500" />
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Department Comparison</h2>
+          </div>
+          <div className="flex flex-col items-center py-12 gap-2">
+            <Building2 className="h-10 w-10 text-gray-200 dark:text-gray-700" />
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No department data available</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Department-level analytics require department assignments and sufficient check-in data.</p>
+          </div>
+        </div>
+      </motion.div>
+    );
   }
 
   const getBarColor = (score: number) => score >= 70 ? '#10B981' : score >= 40 ? '#F59E0B' : '#EF4444';

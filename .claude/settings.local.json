@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
-      "Bash(python -c \"from routers.employer_dashboard import router; print\\('import OK'\\)\")"
+      "Bash(python -c \"from routers.employer_dashboard import router; print\\('import OK'\\)\")",
+      "Bash(npx next:*)",
+      "Bash(npm install:*)",
+      "Bash(curl -s http://localhost:3000/api/azure/avatar-token)",
+      "Bash(curl -s --max-time 10 http://localhost:3000/api/azure/avatar-token)"
     ]
   }
 }

@@ -6,10 +6,37 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import { Sparkles, Info, ShieldAlert } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-interface ProgramEffectivenessProps { wellnessIndex?: number; burnoutAlertLevel?: string; loading?: boolean; }
+interface InterventionCohort {
+  label: string;
+  before_index: number;
+  after_index: number;
+  delta: number;
+  size_band: string;
+  suppressed?: boolean;
+}
 
-function buildBeforeAfter(wellnessIndex?: number, alertLevel?: string) {
-  const base = wellnessIndex ?? 62;
+interface ProgramEffectivenessProps {
+  programData?: { cohorts: InterventionCohort[]; overall_lift?: number; recommendation: string; };
+  wellnessIndex?: number;
+  burnoutAlertLevel?: string;
+  loading?: boolean;
+}
+
+function buildBeforeAfter(programData?: ProgramEffectivenessProps['programData'], wellnessIndex?: number, alertLevel?: string) {
+  // Use real cohort data if available
+  if (programData?.cohorts?.length) {
+    return programData.cohorts
+      .filter(c => !c.suppressed)
+      .map(c => ({
+        metric: c.label,
+        before: Math.round(c.before_index),
+        after: Math.round(c.after_index),
+        delta: Math.round(c.delta),
+      }));
+  }
+  // Fallback: derive from wellness index if no program data
+  if (wellnessIndex == null) return [];
+  const base = wellnessIndex;
   const stressBase = alertLevel === 'high' ? 72 : alertLevel === 'medium' ? 55 : 38;
   return [
     { metric: 'Wellness', before: Math.max(30, base - 12), after: base, delta: 12 },
@@ -37,10 +64,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export const ProgramEffectiveness: React.FC<ProgramEffectivenessProps> = ({ wellnessIndex, burnoutAlertLevel, loading }) => {
+export const ProgramEffectiveness: React.FC<ProgramEffectivenessProps> = ({ programData, wellnessIndex, burnoutAlertLevel, loading }) => {
   if (loading) return <div className="h-[340px] bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm animate-pulse" />;
 
-  const data = buildBeforeAfter(wellnessIndex, burnoutAlertLevel);
+  const data = buildBeforeAfter(programData, wellnessIndex, burnoutAlertLevel);
+
+  if (data.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-5 w-5 text-amber-500" />
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Program Effectiveness</h2>
+          </div>
+          <div className="flex flex-col items-center py-12 gap-2">
+            <Sparkles className="h-10 w-10 text-gray-200 dark:text-gray-700" />
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Not enough data yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Before/after analysis requires wellness index data from check-ins.</p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>

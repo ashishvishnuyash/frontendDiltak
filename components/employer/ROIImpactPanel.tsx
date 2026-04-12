@@ -6,8 +6,16 @@ import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip as Recha
 import { TrendingUp, Info, Sparkles } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+interface ROICorrelationPoint {
+  period: string;
+  wellbeing_index: number;
+  proxy_metric: string;
+  proxy_value: number;
+  correlation_direction: string;
+}
+
 interface ROIImpactPanelProps {
-  productivityData?: { engagement_trend: number[]; period_label: string[]; correlation_note: string; data_quality: string; };
+  roiData?: { correlations: ROICorrelationPoint[]; summary: string; data_quality: string; };
   wellnessIndex?: number;
   loading?: boolean;
 }
@@ -30,32 +38,40 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-function buildROIData(productivityData?: ROIImpactPanelProps['productivityData'], wellnessIndex?: number) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  if (productivityData?.engagement_trend?.length) {
-    return productivityData.engagement_trend.map((val, i) => ({
-      month: productivityData.period_label?.[i] ?? months[i % 12],
-      wellness: Math.round(val),
-      engagement: Math.round(val * 0.9 + Math.random() * 5),
-      absenteeism: Math.round(Math.max(2, 18 - val * 0.12 + Math.random() * 3)),
-      diltak_active: i >= 3,
-    }));
-  }
-  const base = wellnessIndex ?? 65;
-  return months.map((m, i) => ({
-    month: m,
-    wellness: Math.round(base - 8 + (i / 11) * 16 + (Math.random() - 0.5) * 6),
-    engagement: Math.round(55 + (i / 11) * 20 + (Math.random() - 0.5) * 5),
-    absenteeism: Math.round(Math.max(2, 14 - (i / 11) * 8 + (Math.random() - 0.5) * 2)),
-    diltak_active: i >= 2,
+function buildROIData(roiData?: ROIImpactPanelProps['roiData']) {
+  if (!roiData?.correlations?.length) return [];
+  return roiData.correlations.map((pt) => ({
+    month: pt.period,
+    wellness: Math.round(pt.wellbeing_index),
+    engagement: Math.round(pt.proxy_value),
+    absenteeism: Math.round(Math.max(2, 18 - pt.wellbeing_index * 0.12)),
+    diltak_active: true,
   }));
 }
 
-export const ROIImpactPanel: React.FC<ROIImpactPanelProps> = ({ productivityData, wellnessIndex, loading }) => {
+export const ROIImpactPanel: React.FC<ROIImpactPanelProps> = ({ roiData, wellnessIndex, loading }) => {
   if (loading) return <div className="h-[360px] bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm animate-pulse" />;
 
-  const chartData = buildROIData(productivityData, wellnessIndex);
+  const chartData = buildROIData(roiData);
   const activationMonth = chartData.find(d => d.diltak_active)?.month;
+
+  if (chartData.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="h-5 w-5 text-blue-500" />
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">ROI / Impact Correlation</h2>
+          </div>
+          <div className="flex flex-col items-center py-12 gap-2">
+            <TrendingUp className="h-10 w-10 text-gray-200 dark:text-gray-700" />
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Not enough data yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">ROI correlation requires multiple weeks of engagement data.</p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
@@ -74,7 +90,7 @@ export const ROIImpactPanel: React.FC<ROIImpactPanelProps> = ({ productivityData
             </TooltipProvider>
           </h2>
           <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-            <Sparkles className="h-3 w-3" />{productivityData?.data_quality ?? 'medium'} quality
+            <Sparkles className="h-3 w-3" />{roiData?.data_quality ?? 'medium'} quality
           </span>
         </div>
 

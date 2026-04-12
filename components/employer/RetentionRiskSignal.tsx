@@ -30,20 +30,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 function buildRetentionData(burnoutData?: RetentionRiskSignalProps['burnoutData']) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  if (burnoutData?.weekly_distribution?.length) {
-    return months.map((m, i) => {
-      const weekIdx = Math.floor((i / 12) * burnoutData.weekly_distribution!.length);
-      const week = burnoutData.weekly_distribution![weekIdx] ?? {};
-      const high = week.high ?? Math.random() * 15 + 5;
-      const medium = week.medium ?? Math.random() * 25 + 15;
-      const low = 100 - high - medium;
-      return { month: m, low: Math.round(low), medium: Math.round(medium), high: Math.round(high) };
-    });
-  }
-  return months.map((m, i) => {
-    const base = i / 11;
-    return { month: m, low: Math.round(65 - base * 10 + Math.random() * 8), medium: Math.round(25 + base * 5 + Math.random() * 5), high: Math.round(10 + base * 5 + Math.random() * 4) };
+  if (!burnoutData?.weekly_distribution?.length) return [];
+  return burnoutData.weekly_distribution.map((week: any) => {
+    const high = week.high ?? week.high_pct ?? 0;
+    const medium = week.medium ?? week.medium_pct ?? 0;
+    const low = week.low ?? week.low_pct ?? Math.max(0, 100 - high - medium);
+    return { month: week.week ?? '', low: Math.round(low), medium: Math.round(medium), high: Math.round(high) };
   });
 }
 
@@ -52,6 +44,24 @@ export const RetentionRiskSignal: React.FC<RetentionRiskSignalProps> = ({ burnou
 
   const chartData = buildRetentionData(burnoutData);
   const alertLevel = burnoutData?.alert_level ?? 'low';
+
+  if (chartData.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <UserMinus className="h-5 w-5 text-purple-500" />
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Retention Risk Signal</h2>
+          </div>
+          <div className="flex flex-col items-center py-12 gap-2">
+            <UserMinus className="h-10 w-10 text-gray-200 dark:text-gray-700" />
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Not enough data yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Retention risk modelling requires burnout trend data over multiple weeks.</p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
   const alertBadge: Record<string, string> = {
     high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     medium: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',

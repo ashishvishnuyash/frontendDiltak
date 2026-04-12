@@ -106,11 +106,17 @@ export const WellnessIndexHero: React.FC<WellnessIndexHeroProps> = ({ data, load
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {getTrendIcon(data.trend_vs_prior_period)}
-              <span className="text-xs font-semibold" style={{ color: data.trend_vs_prior_period >= 0 ? '#10B981' : '#EF4444' }}>
-                {data.trend_vs_prior_period >= 0 ? '+' : ''}{data.trend_vs_prior_period}%
-              </span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">vs prior</span>
+              {data.trend_vs_prior_period != null ? (
+                <>
+                  {getTrendIcon(data.trend_vs_prior_period)}
+                  <span className="text-xs font-semibold" style={{ color: data.trend_vs_prior_period >= 0 ? '#10B981' : '#EF4444' }}>
+                    {data.trend_vs_prior_period >= 0 ? '+' : ''}{data.trend_vs_prior_period}%
+                  </span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">vs prior</span>
+                </>
+              ) : (
+                <span className="text-xs text-gray-400 dark:text-gray-500">&mdash; vs prior</span>
+              )}
             </div>
           </div>
 

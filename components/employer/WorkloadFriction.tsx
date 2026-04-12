@@ -18,7 +18,7 @@ export const WorkloadFriction: React.FC<WorkloadFrictionProps> = ({ data, loadin
     low: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     none: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   };
-  const overloadPct = data.overload_pattern_score;
+  const overloadPct = Math.round(data.overload_pattern_score * 10);
   const overloadColor = overloadPct > 60 ? '#EF4444' : overloadPct > 35 ? '#F59E0B' : '#10B981';
 
   return (

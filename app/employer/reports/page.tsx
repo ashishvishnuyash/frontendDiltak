@@ -139,7 +139,7 @@ function EmployerReportsPage() {
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         const employeeName = report.employee
-          ? `${report.employee.firstName || report.employee.first_name} ${report.employee.lastName || report.employee.last_name}`.toLowerCase()
+          ? `${(report.employee as any).firstName || report.employee.first_name} ${(report.employee as any).lastName || report.employee.last_name}`.toLowerCase()
           : '';
         if (!employeeName.includes(searchLower) && !report.employee?.email?.toLowerCase().includes(searchLower)) return false;
       }
@@ -302,11 +302,11 @@ function EmployerReportsPage() {
                     <div className="lg:w-72 p-6 border-b lg:border-b-0 lg:border-r border-gray-50 dark:border-gray-800/50 bg-gray-50/30 dark:bg-gray-800/20">
                       <div className="flex items-center gap-4 mb-4">
                         <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold text-lg border border-emerald-200/50 dark:border-emerald-800/30">
-                          {(report.employee?.firstName?.[0] || report.employee?.first_name?.[0] || 'E')}
+                          {((report.employee as any)?.firstName?.[0] || report.employee?.first_name?.[0] || 'E')}
                         </div>
                         <div className="min-w-0">
                           <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 truncate">
-                            {report.employee ? `${report.employee.firstName || report.employee.first_name} ${report.employee.lastName || report.employee.last_name}` : 'Unknown Employee'}
+                            {report.employee ? `${(report.employee as any).firstName || report.employee.first_name} ${(report.employee as any).lastName || report.employee.last_name}` : 'Unknown Employee'}
                           </h3>
                           <p className="text-[11px] text-gray-500 truncate">{report.employee?.department || 'Unassigned'}</p>
                         </div>

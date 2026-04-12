@@ -22,8 +22,11 @@ import {
   Star,
   Sparkles,
   ZapIcon,
-  BarChart2
+  BarChart2,
+  FileText,
+  Shield
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/hooks/use-user';
 import {
   LineChart,

@@ -25,12 +25,14 @@ import {
   Star,
   Home,
   User,
+  Dumbbell,
 } from 'lucide-react';
 import type { NavItem } from './Sidebar';
 
 export const employeeNavItems: NavItem[] = [
   { path: '/employee/dashboard',       label: 'Wellness Dashboard', icon: LayoutDashboard, exact: true },
-  { path: '/employee/chat',            label: 'AI Chat',            icon: MessageSquare },
+  { path: '/employee/chat',            label: 'Saathi- Mental Wellness', icon: MessageSquare },
+  { path: '/employee/physical-health', label: 'Umang- Physical Wellness',icon: Dumbbell },
   { path: '/employee/reports',         label: 'My Reports',         icon: FileText },
   { path: '/employee/recommendations', label: 'Recommendations',    icon: Sparkles },
   { path: '/employee/community',       label: 'Community',          icon: Users },

@@ -6,8 +6,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { TrendingUp, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+interface OrgTrendPoint {
+  week: string;
+  wellness_index: number;
+  sample_size_band: string;
+}
+
 interface OrgWellnessTrendProps {
-  data?: { engagement_trend: number[]; period_label: string[]; correlation_note: string; data_quality: string; computed_at: string; };
+  orgTrendData?: { trend: OrgTrendPoint[]; direction: string; overall_index: number; period_weeks: number; };
   wellnessIndex?: number;
   loading?: boolean;
 }
@@ -26,17 +32,32 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export const OrgWellnessTrend: React.FC<OrgWellnessTrendProps> = ({ data, wellnessIndex, loading }) => {
+export const OrgWellnessTrend: React.FC<OrgWellnessTrendProps> = ({ orgTrendData, wellnessIndex, loading }) => {
   const [range, setRange] = useState<'4w' | '8w' | '12w'>('12w');
 
   if (loading) return <div className="h-[360px] bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm animate-pulse" />;
 
   let chartData: { week: string; score: number }[] = [];
-  if (data?.engagement_trend?.length) {
-    chartData = data.engagement_trend.map((val, i) => ({ week: data.period_label[i] || `W${i + 1}`, score: Math.round(val) }));
-  } else {
-    const base = wellnessIndex ?? 65;
-    chartData = Array.from({ length: 12 }, (_, i) => ({ week: `W${i + 1}`, score: Math.max(10, Math.min(100, Math.round(base + (Math.random() - 0.5) * 14))) }));
+  if (orgTrendData?.trend?.length) {
+    chartData = orgTrendData.trend.map(pt => ({ week: pt.week, score: Math.round(pt.wellness_index) }));
+  }
+
+  if (chartData.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="h-5 w-5 text-emerald-500" />
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Org Wellness Trend</h2>
+          </div>
+          <div className="flex flex-col items-center py-12 gap-2">
+            <TrendingUp className="h-10 w-10 text-gray-200 dark:text-gray-700" />
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Not enough data yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Trend data requires at least 2 weeks of engagement activity.</p>
+          </div>
+        </div>
+      </motion.div>
+    );
   }
 
   const sliceMap = { '4w': -4, '8w': -8, '12w': -12 };
