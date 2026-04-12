@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Users, Search, Plus, Eye, Edit, Trash2, CheckCircle, XCircle, Download, Shield, Building2, Link } from 'lucide-react';
+import { Users, Search, Plus, Eye, Edit, Trash2, CheckCircle, XCircle, Download, Shield, Building2 } from 'lucide-react';
 
 const users = [
   { id: '1', name: 'Sarah Johnson',  email: 'sarah@acme.com',       company: 'Acme Corp',       role: 'employee', wellness: 8.4, status: 'active',   lastSeen: '2 min ago' },
