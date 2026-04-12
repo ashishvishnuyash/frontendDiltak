@@ -758,7 +758,7 @@ const dummyWorkloadFrictionData = {
         transition={{ duration: 0.4, delay: 0.25 }}
       >
         <OrgWellnessTrend
-          data={data.productivity_proxy ?? undefined}
+          orgTrendData={data.productivity_proxy as any}
           wellnessIndex={data.wellness_index?.wellness_index}
         />
         <DepartmentComparison />
@@ -773,7 +773,7 @@ const dummyWorkloadFrictionData = {
       >
         <RetentionRiskSignal burnoutData={data.burnout_trend ?? undefined} />
         <ROIImpactPanel
-          productivityData={data.productivity_proxy ?? undefined}
+          roiData={data.productivity_proxy as any}
           wellnessIndex={data.wellness_index?.wellness_index}
         />
       </motion.div>

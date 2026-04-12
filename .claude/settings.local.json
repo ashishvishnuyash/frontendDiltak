@@ -6,7 +6,8 @@
       "Bash(npx next:*)",
       "Bash(npm install:*)",
       "Bash(curl -s http://localhost:3000/api/azure/avatar-token)",
-      "Bash(curl -s --max-time 10 http://localhost:3000/api/azure/avatar-token)"
+      "Bash(curl -s --max-time 10 http://localhost:3000/api/azure/avatar-token)",
+      "Bash(npm run:*)"
     ]
   }
 }

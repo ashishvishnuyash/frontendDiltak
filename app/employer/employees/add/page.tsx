@@ -49,7 +49,7 @@ export default function NewEmployeePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const employeeId = searchParams.get('id');
-        const user = localStorage.getItem('user_profile');
+  const user = JSON.parse(localStorage.getItem('user_profile') || '{}');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

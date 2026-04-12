@@ -722,8 +722,8 @@ const dummyWorkloadFrictionData = {
           <WellnessIndexHero data={data.wellness_index ?? undefined} />
         </div>
         <div>
-          {/* <EarlyWarnings data={data.early_warnings ?? undefined} /> */}
-          <EarlyWarnings data={dummyEarlyWarningsData ?? undefined} />
+          <EarlyWarnings data={data.early_warnings ?? undefined} />
+          {/* <EarlyWarnings data={dummyEarlyWarningsData ?? undefined} /> */}
         </div>
       </motion.div>
 
@@ -734,10 +734,10 @@ const dummyWorkloadFrictionData = {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.15 }}
       >
-        {/* <BurnoutTrendChart data={data.burnout_trend ?? undefined} /> */}
-        <BurnoutTrendChart data={dummyBurnoutTrendDataHigh ?? undefined} />
-        {/* <WorkloadFriction data={data.workload_friction ?? undefined} /> */}
-        <WorkloadFriction data={dummyWorkloadFrictionData ?? undefined} />
+        <BurnoutTrendChart data={data.burnout_trend ?? undefined} />
+        {/* <BurnoutTrendChart data={dummyBurnoutTrendDataHigh ?? undefined} /> */}
+        <WorkloadFriction data={data.workload_friction ?? undefined} />
+        {/* <WorkloadFriction data={dummyWorkloadFrictionData ?? undefined} /> */}
       </motion.div>
 
       {/* ── ROW 4: Engagement Signals ── */}
@@ -758,7 +758,7 @@ const dummyWorkloadFrictionData = {
         transition={{ duration: 0.4, delay: 0.25 }}
       >
         <OrgWellnessTrend
-          data={data.productivity_proxy ?? undefined}
+          // data={data.productivity_proxy ?? undefined}  
           wellnessIndex={data.wellness_index?.wellness_index}
         />
         <DepartmentComparison />
@@ -773,7 +773,7 @@ const dummyWorkloadFrictionData = {
       >
         <RetentionRiskSignal burnoutData={data.burnout_trend ?? undefined} />
         <ROIImpactPanel
-          productivityData={data.productivity_proxy ?? undefined}
+          // productivityData={data.productivity_proxy ?? undefined}
           wellnessIndex={data.wellness_index?.wellness_index}
         />
       </motion.div>

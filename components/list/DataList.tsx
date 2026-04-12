@@ -802,6 +802,8 @@ export interface DataListProps<T> {
   onImportSuccess?: (rows: Record<string, any>[]) => void;
   /** Transform API response to extract data array */
   transformResponse?: (response: any) => T[];
+  /** Column definitions for import template */
+  template_columns?: ColumnDef<T>[];
 }
 
 // ─── Sort icon ────────────────────────────────────────────────────────────────
@@ -1552,7 +1554,7 @@ export function DataList<T extends Record<string, any>>({
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         // columns={columns}
-        columns={template_columns}
+        columns={template_columns ?? columns}
         create_api={create_api}
         onImportSuccess={handleImportSuccess}
       />
