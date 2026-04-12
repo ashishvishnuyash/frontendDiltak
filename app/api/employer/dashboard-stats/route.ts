@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 
-const UMA_API_URL = process.env.UMA_API_URL;
 
 /**
  * Normalizes the burnout distribution which often comes as a list of single-key objects
@@ -55,13 +55,13 @@ export async function GET(request: NextRequest) {
       earlyWarningsRes,
       suggestedActionsRes,
     ] = await axios.all([
-      axios.get(`${UMA_API_URL}/api/employer/wellness-index?company_id=${companyId}`, config).catch(e => e.response || null),
-      axios.get(`${UMA_API_URL}/api/employer/burnout-trend?company_id=${companyId}&weeks=12`, config).catch(e => e.response || null),
-      axios.get(`${UMA_API_URL}/api/employer/engagement-signals?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
-      axios.get(`${UMA_API_URL}/api/employer/workload-friction?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
-      axios.get(`${UMA_API_URL}/api/employer/productivity-proxy?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
-      axios.get(`${UMA_API_URL}/api/employer/early-warnings?company_id=${companyId}&period_days=14`, config).catch(e => e.response || null),
-      axios.get(`${UMA_API_URL}/api/employer/suggested-actions?company_id=${companyId}`, config).catch(e => e.response || null),
+      axios.get(`${ServerAddress}/employer/wellness-index?company_id=${companyId}`, config).catch(e => e.response || null),
+      axios.get(`${ServerAddress}/employer/burnout-trend?company_id=${companyId}&weeks=12`, config).catch(e => e.response || null),
+      axios.get(`${ServerAddress}/employer/engagement-signals?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
+      axios.get(`${ServerAddress}/employer/workload-friction?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
+      axios.get(`${ServerAddress}/employer/productivity-proxy?company_id=${companyId}&period_days=30`, config).catch(e => e.response || null),
+      axios.get(`${ServerAddress}/employer/early-warnings?company_id=${companyId}&period_days=14`, config).catch(e => e.response || null),
+      axios.get(`${ServerAddress}/employer/suggested-actions?company_id=${companyId}`, config).catch(e => e.response || null),
     ]);
 
     const wellnessIndex = wellnessIndexRes?.status === 200 ? wellnessIndexRes.data : null;

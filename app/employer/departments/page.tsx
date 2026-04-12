@@ -22,6 +22,7 @@ import {
   doc, query, where, onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Department {
   id: string;
@@ -184,6 +185,9 @@ function DepartmentsPage() {
 
   if (userLoading || loading) return <BrandLoader />;
 
+
+    const router = useRouter();
+
   return (
     <div className="px-4 sm:px-6 lg:px-6 py-6 max-w-[1400px] mx-auto space-y-6">
       {/* ─── Header ─── */}
@@ -222,7 +226,10 @@ function DepartmentsPage() {
           </Button>
           
           <Button
-            onClick={openAdd}
+            // onClick={openAdd}
+            onClick={() => {
+               router.push('/employer/departments/add');
+            }}
             size="sm"
             className="gap-2 bg-emerald-500 hover:bg-emerald-600"
           >
