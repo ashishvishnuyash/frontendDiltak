@@ -62,7 +62,7 @@ export function DesktopTopBar({
       }
       await signOut(auth);
       toast.success('Signed out successfully');
-      router.push('/');
+      router.push('/auth/login');
     } catch {
       toast.error('Failed to sign out');
     }
@@ -318,7 +318,7 @@ function Navbar({ user, items = [], onNavigate, className }: NavbarProps) {
       }
       await signOut(auth);
       toast.success('Signed out successfully');
-      router.push('/');
+      router.push('/auth/login');
     } catch {
       toast.error('Failed to sign out');
     }

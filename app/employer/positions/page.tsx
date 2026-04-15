@@ -22,6 +22,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { CustomButton } from '@/components/button/CustomButton';
 
 interface Department {
   id: string;
@@ -201,7 +202,7 @@ function PositionPage() {
               <Building2 className="h-5 w-5 text-emerald-500" />
             </div>
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-              Organization 
+              Organization
             </span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -211,7 +212,7 @@ function PositionPage() {
             Organize your company into Position and assign team leads.
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -220,22 +221,20 @@ function PositionPage() {
             disabled={isRefreshing}
             className="gap-2"
           >
-            <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
-          
-          <Button
-            // onClick={openAdd}
 
-            onClick={() => {
-                  router.push('/employer/positions/add');
-            }}
-            size="sm"
-            className="gap-2 bg-emerald-500 hover:bg-emerald-600"
+          <CustomButton
+            variant="primary"
+            size="md"
+            icon={<Plus className="h-5 w-5" />}
+            onClick={() => router.push("/employer/positions/add")}
           >
-            <Plus className="h-5 w-5" />
             Add Positions
-          </Button>
+          </CustomButton>
         </div>
       </motion.div>
 
@@ -289,7 +288,7 @@ function PositionPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
         <Input
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search Position by name, description, or team lead..."
           className="pl-9 h-10 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl text-sm"
         />
@@ -309,18 +308,16 @@ function PositionPage() {
             </div>
             <div className="text-center">
               <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                {search ? 'No Position match your search' : 'No Position yet'}
+                {search ? "No Position match your search" : "No Position yet"}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                {search ? 'Try adjusting your search terms' : 'Get started by creating your first department'}
+                {search
+                  ? "Try adjusting your search terms"
+                  : "Get started by creating your first department"}
               </p>
             </div>
             {!search && (
-              <Button
-                onClick={openAdd}
-                size="sm"
-                className="mt-2 gap-2"
-              >
+              <Button onClick={openAdd} size="sm" className="mt-2 gap-2">
                 <Plus className="h-5 w-5" />
                 Create Department
               </Button>
@@ -331,9 +328,16 @@ function PositionPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-                  {['Department', 'Description', 'Team Lead', 'Employees', 'Created', ''].map((h, i) => (
-                    <th 
-                      key={h} 
+                  {[
+                    "Department",
+                    "Description",
+                    "Team Lead",
+                    "Employees",
+                    "Created",
+                    "",
+                  ].map((h, i) => (
+                    <th
+                      key={h}
                       className={`px-6 py-3.5 text-left text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap`}
                     >
                       {h}
@@ -368,7 +372,9 @@ function PositionPage() {
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-600 dark:text-gray-300 max-w-[280px] line-clamp-2">
                         {dept.description || (
-                          <span className="text-gray-300 dark:text-gray-600 italic">No description provided</span>
+                          <span className="text-gray-300 dark:text-gray-600 italic">
+                            No description provided
+                          </span>
                         )}
                       </p>
                     </td>
@@ -383,7 +389,9 @@ function PositionPage() {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-300 dark:text-gray-600 italic">Unassigned</span>
+                        <span className="text-xs text-gray-300 dark:text-gray-600 italic">
+                          Unassigned
+                        </span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -400,10 +408,15 @@ function PositionPage() {
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5 text-gray-400" />
                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {dept.created_at?.toDate?.() 
-                            ? new Date(dept.created_at.toDate()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                            : '—'
-                          }
+                          {dept.created_at?.toDate?.()
+                            ? new Date(
+                                dept.created_at.toDate(),
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "—"}
                         </span>
                       </div>
                     </td>
@@ -450,15 +463,15 @@ function PositionPage() {
           <>
             <motion.div
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeForm}
             />
             <motion.div
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
-              initial={{ opacity: 0, scale: 0.95 }} 
-              animate={{ opacity: 1, scale: 1 }} 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
@@ -467,17 +480,16 @@ function PositionPage() {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-emerald-50/50 to-transparent dark:from-emerald-950/20">
                   <div>
                     <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">
-                      {editing ? 'Edit Department' : 'Create Department'}
+                      {editing ? "Edit Department" : "Create Department"}
                     </h2>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      {editing 
-                        ? 'Update department information and settings' 
-                        : 'Add a new department to your organization structure'
-                      }
+                      {editing
+                        ? "Update department information and settings"
+                        : "Add a new department to your organization structure"}
                     </p>
                   </div>
-                  <button 
-                    onClick={closeForm} 
+                  <button
+                    onClick={closeForm}
                     className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
                   >
                     <X className="h-5 w-5" />
@@ -494,12 +506,18 @@ function PositionPage() {
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <Input
                         value={form.name}
-                        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, name: e.target.value }))
+                        }
                         placeholder="e.g. Engineering, Marketing, Sales"
-                        className={`pl-9 h-10 rounded-xl ${errors.name ? 'border-red-400 focus:border-red-400' : 'border-gray-200 dark:border-gray-700'}`}
+                        className={`pl-9 h-10 rounded-xl ${errors.name ? "border-red-400 focus:border-red-400" : "border-gray-200 dark:border-gray-700"}`}
                       />
                     </div>
-                    {errors.name && <p className="text-[10px] font-semibold text-red-500">{errors.name}</p>}
+                    {errors.name && (
+                      <p className="text-[10px] font-semibold text-red-500">
+                        {errors.name}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -508,7 +526,9 @@ function PositionPage() {
                     </Label>
                     <textarea
                       value={form.description}
-                      onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, description: e.target.value }))
+                      }
                       placeholder="Brief description of this department's function and responsibilities..."
                       rows={3}
                       className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400 resize-none transition-all"
@@ -523,7 +543,9 @@ function PositionPage() {
                       <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <Input
                         value={form.head}
-                        onChange={e => setForm(f => ({ ...f, head: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, head: e.target.value }))
+                        }
                         placeholder="e.g. Jane Smith"
                         className="pl-9 h-10 rounded-xl border-gray-200 dark:border-gray-700"
                       />
@@ -549,8 +571,10 @@ function PositionPage() {
                       disabled={submitting}
                       className="gap-2 bg-emerald-500 hover:bg-emerald-600"
                     >
-                      {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
-                      {editing ? 'Save Changes' : 'Create Department'}
+                      {submitting && (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      )}
+                      {editing ? "Save Changes" : "Create Department"}
                     </Button>
                   </div>
                 </form>

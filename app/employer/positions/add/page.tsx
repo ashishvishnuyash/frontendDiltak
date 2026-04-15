@@ -366,7 +366,7 @@ function AddPositionPage() {
                     type="checkbox"
                     checked={form.remoteAllowed}
                     onChange={(e) => setForm(f => ({ ...f, remoteAllowed: e.target.checked }))}
-                    className="h-4 w-4 rounded border-border bg-transparent focus:ring-indigo-500 focus:ring-1"
+                    className="h-5 w-5 rounded border-border bg-transparent focus:ring-indigo-500 focus:ring-1"
                   />
                 </div>
               </div>

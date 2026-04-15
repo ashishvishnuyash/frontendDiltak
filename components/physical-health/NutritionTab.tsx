@@ -183,7 +183,7 @@ export default function NutritionTab() {
                 <div
                   className={`w-8 h-8 rounded-xl ${m.bg} flex items-center justify-center flex-shrink-0 mt-0.5`}
                 >
-                  <m.icon className={`h-4 w-4 ${m.color}`} />
+                  <m.icon className={`h-5 w-5 ${m.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

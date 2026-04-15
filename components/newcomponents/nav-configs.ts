@@ -70,7 +70,7 @@ export const employerNavItems: NavItem[] = [
 export const adminNavItems: NavItem[] = [
   { path: '/admin/dashboard',    label: 'Dashboard',    icon: LayoutDashboard, exact: true },
   { path: '/admin/companies',    label: 'Companies',    icon: Building2 },
-  { path: '/admin/users',        label: 'Users',        icon: Users },
+  // { path: '/admin/users',        label: 'Users',        icon: Users },
   { path: '/admin/analytics',    label: 'Analytics',    icon: BarChart3 },
   { path: '/admin/reports',      label: 'Reports',      icon: FileText },
   { path: '/admin/activity',     label: 'Activity',     icon: Activity },

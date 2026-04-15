@@ -180,7 +180,7 @@ export default function ChatPopup() {
             <div className="bg-blue-500 px-4 py-3 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <Activity className="h-4 w-4 text-white" />
+                  <Activity className="h-5 w-5 text-white" />
                 </div>
                 <div>
                   <span className="text-sm font-semibold text-white">
@@ -336,7 +336,7 @@ export default function ChatPopup() {
                 disabled={loading}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 transition-colors"
               >
-                <Paperclip className="h-4 w-4" />
+                <Paperclip className="h-5 w-5" />
               </button>
               <div className="flex-1 flex items-center bg-gray-50 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 focus-within:border-blue-400 transition-colors">
                 <input

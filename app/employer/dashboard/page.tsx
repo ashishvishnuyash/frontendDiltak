@@ -157,12 +157,12 @@ function getTrendIcon(trend: string) {
   switch (trend?.toLowerCase()) {
     case 'up':
     case 'improving':
-      return <TrendingUp className="h-4 w-4 text-emerald-500" />;
+      return <TrendingUp className="h-5 w-5 text-emerald-500" />;
     case 'down':
     case 'declining':
-      return <TrendingDown className="h-4 w-4 text-red-500" />;
+      return <TrendingDown className="h-5 w-5 text-red-500" />;
     default:
-      return <Minus className="h-4 w-4 text-gray-400" />;
+      return <Minus className="h-5 w-5 text-gray-400" />;
   }
 }
 
@@ -378,7 +378,7 @@ function RetentionRiskChart({ data }: { data: RetentionRiskResponse | null }) {
           </p>
         </div>
         <div className="flex items-center gap-1">
-          <Info className="h-4 w-4 text-gray-400" />
+          <Info className="h-5 w-5 text-gray-400" />
           <span className="text-[10px] text-gray-500">{data.period_days} days</span>
         </div>
       </div>
@@ -819,7 +819,7 @@ function OrgHRAnalyticsPage() {
         transition={{ duration: 0.4, delay: 0.02 }}
       >
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-800">
-          <BarChart3 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          <BarChart3 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
           <span className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider">
             Employer — Org & HR Analytics
           </span>

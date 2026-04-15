@@ -23,6 +23,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { CustomButton } from '@/components/button/CustomButton';
 
 interface Department {
   id: string;
@@ -225,17 +226,16 @@ function DepartmentsPage() {
             Refresh
           </Button>
           
-          <Button
-            // onClick={openAdd}
-            onClick={() => {
-               router.push('/employer/departments/add');
-            }}
-            size="sm"
-            className="gap-2 bg-emerald-500 hover:bg-emerald-600"
-          >
-            <Plus className="h-5 w-5" />
+
+
+              <CustomButton
+                      variant="primary"
+                      size="md"
+                      icon={<Plus className="h-5 w-5" />}
+                      onClick={() => router.push("/employer/departments/add")}
+                    >
             Add Department
-          </Button>
+                    </CustomButton>
         </div>
       </motion.div>
 

@@ -64,7 +64,7 @@ const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(
         {...props}
       >
         {loading && (
-          <Loader2 className={cn('animate-spin', size === 'xs' ? 'h-3 w-3' : 'h-4 w-4')} />
+          <Loader2 className={cn('animate-spin', size === 'xs' ? 'h-3 w-3' : 'h-5 w-5')} />
         )}
         {!loading && icon && iconPosition === 'left' && icon}
         {children && <span className={cn(loading && 'ml-2')}>{children}</span>}

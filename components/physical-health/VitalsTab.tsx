@@ -118,7 +118,7 @@ export default function VitalsTab() {
               <div
                 className={`w-8 h-8 rounded-xl ${v.iconBg} flex items-center justify-center`}
               >
-                <v.icon className="h-4 w-4 text-white" />
+                <v.icon className="h-5 w-5 text-white" />
               </div>
             </div>
             <div className="flex items-baseline gap-1">
@@ -212,7 +212,7 @@ export default function VitalsTab() {
                 <div
                   className={`w-9 h-9 rounded-xl ${tip.bg} flex items-center justify-center flex-shrink-0`}
                 >
-                  <tip.icon className={`h-4 w-4 ${tip.color}`} />
+                  <tip.icon className={`h-5 w-5 ${tip.color}`} />
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">
