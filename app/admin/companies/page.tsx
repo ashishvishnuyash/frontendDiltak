@@ -26,19 +26,26 @@ import ServerAddress from '@/constent/ServerAddress';
 
 interface Company {
   id: string;
-  name: string;
+  uid: string;
+  companyName: string;
   industry: string;
+  companySize: string;
   employees: number;
   plan: 'Starter' | 'Pro' | 'Enterprise';
   wellness: number;
   risk: 'low' | 'medium' | 'high';
   status: 'active' | 'inactive';
+  isActive: boolean;
   joined: string;
   email?: string;
   phone?: string;
   address?: string;
+  firstName?: string;
+  lastName?: string;
+  website?: string;
   created_at?: string;
   updated_at?: string;
+  createdBy?: string;
 }
 
 // ─── Risk & Plan Styles ───────────────────────────────────────────────────────
@@ -101,7 +108,7 @@ function DeleteConfirmModal({
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Are you sure you want to delete{' '}
             <span className="font-semibold text-gray-900 dark:text-gray-100">
-              {company.name}
+              {company.companyName}
             </span>
             ? This action cannot be undone.
           </p>
@@ -164,8 +171,8 @@ function StatusChangeModal({
   const isDeactivate = action === 'deactivate';
   const title = isDeactivate ? 'Deactivate Company' : 'Activate Company';
   const message = isDeactivate
-    ? `Are you sure you want to deactivate ${company.name}? The company will not be able to access the system.`
-    : `Are you sure you want to activate ${company.name}? The company will regain access to the system.`;
+    ? `Are you sure you want to deactivate ${company.companyName}? The company will not be able to access the system.`
+    : `Are you sure you want to activate ${company.companyName}? The company will regain access to the system.`;
   const confirmText = isDeactivate ? 'Deactivate' : 'Activate';
   const confirmColor = isDeactivate
     ? 'bg-amber-500 hover:bg-amber-600'
@@ -271,13 +278,13 @@ export default function AdminCompanies() {
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.delete(
-        `${ServerAddress}/admin/employers/${deleteTarget.id}`,
+        `${ServerAddress}/admin/employers/${deleteTarget.uid}`,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
       );
 
-      if (response.data.success) {
+      if (response.data.success || response.status === 200) {
         toast.success(response.data.message || 'Company deleted successfully');
         setRefreshKey((prev) => prev + 1);
         setDeleteTarget(null);
@@ -304,10 +311,10 @@ export default function AdminCompanies() {
     try {
       const token = localStorage.getItem('access_token');
       const endpoint = action === 'activate'
-        ? `${ServerAddress}/admin/employers/${company.id}/activate`
-        : `${ServerAddress}/admin/employers/${company.id}/deactivate`;
+        ? `${ServerAddress}/admin/employers/${company.uid}/activate`
+        : `${ServerAddress}/admin/employers/${company.uid}/deactivate`;
 
-      const response = await axios.post(
+      const response = await axios.patch(
         endpoint,
         {},
         {
@@ -315,7 +322,7 @@ export default function AdminCompanies() {
         }
       );
 
-      if (response.data.success) {
+      if (response.data.success || response.status === 200) {
         toast.success(response.data.message || `Company ${action}d successfully`);
         setRefreshKey((prev) => prev + 1);
         setStatusTarget(null);
@@ -346,38 +353,9 @@ export default function AdminCompanies() {
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
               {row.companyName}
             </p>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500">
-              ID: {row.id}
-            </p>
-          </div>
-        </div>
-      ),
-    },
-      {
-      key: 'firstName',
-      title: 'First Name',
-      sortable: true,
-      render: (_, row) => (
-        <div className="flex items-center gap-3">
-         
-          <div>
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-              {row.firstName}
-            </p>
-            
-          </div>
-        </div>
-      ),
-    },  {
-      key: 'lastName',
-      title: 'Last Name',
-      sortable: true,
-      render: (_, row) => (
-        <div className="flex items-center gap-3">
-          <div>
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-              {row.lastName}
-            </p>
+            {/* <p className="text-[11px] text-gray-400 dark:text-gray-500">
+              ID: {row.uid || row.id}
+            </p> */}
           </div>
         </div>
       ),
@@ -401,13 +379,64 @@ export default function AdminCompanies() {
       ),
     },
     {
+      key: 'companySize',
+      title: 'Company Size',
+      sortable: true,
+      render: (val) => (
+        <div className="flex items-center gap-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              {val || '—'}
+            </p>
+          </div>
+        </div>
+      ),
+    }, 
+    {
+      key: 'website',
+      title: 'Website',
+      sortable: true,
+      render: (val) => (
+        <div className="flex items-center gap-3">
+          <div>
+            {val ? (
+              <a 
+                href={val} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                {val}
+              </a>
+            ) : (
+              <p className="text-sm text-gray-400">—</p>
+            )}
+          </div>
+        </div>
+      ),
+    }, 
+    {
+      key: 'firstName',
+      title: 'Contact Person',
+      sortable: true,
+      render: (val, row) => (
+        <div className="flex items-center gap-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              {row.firstName} {row.lastName}
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
       key: 'email',
       title: 'Email',
       sortable: true,
       render: (val) => (
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            {val?.email}
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {val || '—'}
           </span>
         </div>
       ),
@@ -418,8 +447,8 @@ export default function AdminCompanies() {
       sortable: true,
       render: (val) => (
         <div className="flex items-center gap-1.5">
-           <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            {val?.phone}
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {val || '—'}
           </span>
         </div>
       ),
@@ -437,56 +466,6 @@ export default function AdminCompanies() {
         </div>
       ),
     },
-    // {
-    //   key: 'plan',
-    //   title: 'Plan',
-    //   sortable: true,
-    //   filterable: true,
-    //   filterOptions: [
-    //     { label: 'Starter', value: 'Starter' },
-    //     { label: 'Pro', value: 'Pro' },
-    //     { label: 'Enterprise', value: 'Enterprise' },
-    //   ],
-    //   render: (val) => (
-    //     <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${planCls[val as keyof typeof planCls]}`}>
-    //       {val}
-    //     </span>
-    //   ),
-    // },
-    // {
-    //   key: 'wellness',
-    //   title: 'Wellness',
-    //   sortable: true,
-    //   render: (val) => (
-    //     <div className="flex items-center gap-3">
-    //       <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-    //         <div
-    //           className="h-full bg-emerald-500 rounded-full"
-    //           style={{ width: `${((val || 0) / 10) * 100}%` }}
-    //         />
-    //       </div>
-    //       <span className="text-sm font-bold text-gray-700 dark:text-gray-300 tabular-nums">
-    //         {val || 0}
-    //       </span>
-    //     </div>
-    //   ),
-    // },
-    // {
-    //   key: 'risk',
-    //   title: 'Risk',
-    //   sortable: true,
-    //   filterable: true,
-    //   filterOptions: [
-    //     { label: 'Low', value: 'low' },
-    //     { label: 'Medium', value: 'medium' },
-    //     { label: 'High', value: 'high' },
-    //   ],
-    //   render: (val) => (
-    //     <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${riskCls[val as keyof typeof riskCls]}`}>
-    //       {val}
-    //     </span>
-    //   ),
-    // },
     {
       key: 'status',
       title: 'Status',
@@ -497,14 +476,10 @@ export default function AdminCompanies() {
         { label: 'Inactive', value: 'inactive' },
       ],
       render: (_, row) => {
-        const isActive = row.status === 'active';
+        const isActive = row.isActive;
         return (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusChange(row, isActive ? 'deactivate' : 'activate');
-            }}
-            className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-all hover:opacity-80 ${
+          <div
+            className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${
               isActive ? 'text-emerald-600' : 'text-gray-400'
             }`}
           >
@@ -516,13 +491,13 @@ export default function AdminCompanies() {
               }`}
             />
             {isActive ? 'Active' : 'Inactive'}
-          </button>
+          </div>
         );
       },
     },
     {
-      key: 'joined',
-      title: 'Joined',
+      key: 'createdAt',
+      title: 'Created At',
       sortable: true,
       render: (val) => (
         <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
@@ -535,40 +510,74 @@ export default function AdminCompanies() {
       ),
     },
     {
-      key: 'actions',
-      title: '',
-      width: '100px',
-      render: (_, row) => (
-        <div className="flex items-center gap-1">
-          <Link
-            href={`/admin/companies/${row.id}`}
-            className="p-2 rounded-xl text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all inline-flex items-center justify-center"
-          >
-            <Eye className="h-5 w-5" />
-          </Link>
-          <Link
-            href={`/admin/companies/edit/${row.id}`}
-            className="p-2 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all inline-flex items-center justify-center"
-          >
-            <Edit className="h-5 w-5" />
-          </Link>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteClick(row);
-            }}
-            className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all inline-flex items-center justify-center"
-          >
-            <Trash2 className="h-5 w-5" />
-          </button>
-        </div>
+      key: 'createdBy',
+      title: 'Created By',
+      sortable: true,
+      render: (val) => (
+        <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+          {val || '—'}
+        </span>
       ),
+    },
+    {
+      key: 'uid',
+      title: 'Actions',
+      width: '100px',
+      render: (_, row) => {
+        const isActive = row.isActive !== undefined ? row.isActive : row.status === 'active';
+        
+        return (
+          <div className="flex items-center gap-1">
+            <Link
+              href={`/admin/companies/${row.uid || row.id}`}
+              className="p-2 rounded-xl text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all inline-flex items-center justify-center"
+            >
+              <Eye className="h-5 w-5" />
+            </Link>
+            <Link
+              href={`/admin/companies/add?id=${row.uid}`}
+              className="p-2 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all inline-flex items-center justify-center"
+            >
+              <Edit className="h-5 w-5" />
+            </Link>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStatusChange(row, isActive ? "deactivate" : "activate");
+              }}
+              className={`p-2 rounded-xl transition-all inline-flex items-center justify-center border border-transparent ${
+                isActive
+                  ? "text-amber-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:border-amber-100 dark:hover:border-amber-900/30"
+                  : "text-emerald-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 hover:border-emerald-100 dark:hover:border-emerald-900/30"
+              }`}
+              aria-label={isActive ? "Deactivate company" : "Activate company"}
+            >
+              {isActive ? (
+                <PowerOff className="h-5 w-5" />
+              ) : (
+                <Power className="h-5 w-5" />
+              )}
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(row);
+              }}
+              className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all inline-flex items-center justify-center"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
   // Summary stats calculation
   const totalCompanies = companies.length;
-  const activeCompanies = companies.filter(c => c.status === 'active').length;
+  const activeCompanies = companies.filter(c => c.isActive === true).length;
   const highRiskCompanies = companies.filter(c => c.risk === 'high').length;
   const enterpriseCompanies = companies.filter(c => c.plan === 'Enterprise').length;
 
@@ -650,22 +659,21 @@ export default function AdminCompanies() {
             dataPath="employers"
             onDataLoaded={(data) => setCompanies(data)}
             columns={columns}
-            rowKey={(row) => row.id}
+            rowKey={(row) => row.uid || row.id}
             searchPlaceholder="Search companies by name, industry or location..."
             defaultPageSize={10}
             emptyMessage="No companies found. Start by adding your first organization."
             onExport={() => {
               const csv = [
-                ['Name', 'Industry', 'Employees', 'Plan', 'Wellness', 'Risk', 'Status', 'Joined'],
+                ['Company Name', 'Industry', 'Company Size', 'Email', 'Phone', 'Status', 'Created At'],
                 ...companies.map((c) => [
-                  c.name,
+                  c.companyName,
                   c.industry,
-                  c.employees,
-                  c.plan,
-                  c.wellness,
-                  c.risk,
-                  c.status,
-                  c.joined,
+                  c.companySize,
+                  c.email,
+                  c.phone,
+                  c.isActive ? 'Active' : 'Inactive',
+                  c.created_at ? new Date(c.created_at).toLocaleDateString() : '',
                 ]),
               ]
                 .map((r) => r.join(','))

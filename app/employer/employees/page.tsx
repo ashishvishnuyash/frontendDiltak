@@ -16,6 +16,7 @@ import {
   Power,
   PowerOff,
   Plus,
+  Edit,
 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { withAuth } from "@/components/auth/with-auth";
@@ -459,7 +460,7 @@ function EmployeesPage() {
               href={`/employer/employees/add?id=${row.uid}`}
               className="p-2 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all inline-flex items-center justify-center border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900/30"
             >
-              <Eye className="h-5 w-5" />
+                          <Edit className="h-5 w-5" />
             </Link>
             <button
               onClick={(e) => {

@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Menu, X, LogOut, Bell, Settings, Sun, Moon, MenuIcon, LayoutDashboard, HelpCircle } from 'lucide-react';
+import { Menu, X, LogOut, Bell, Settings, Sun, Moon, MenuIcon, LayoutDashboard, HelpCircle, User } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useTheme } from '@/contexts/theme-context';
 import { cn } from '@/lib/utils';
@@ -186,7 +186,16 @@ export function DesktopTopBar({
               {/* Menu items */}
               <div className="py-2">
                 <Link
-                  href="/settings"
+                  href={`/${user?.role || 'admin'}/profile`}
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <User className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <span className="font-medium">My Profile</span>
+                </Link>
+
+                <Link
+                  href={`/${user?.role || 'admin'}/settings`}
                   onClick={() => setProfileOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >

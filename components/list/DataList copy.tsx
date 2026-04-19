@@ -1923,9 +1923,9 @@ function ImportModal<T extends Record<string, any>>({
                 className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isDownloadingTemplate ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <FileDown className="h-4 w-4" />
+                  <FileDown className="h-5 w-5" />
                 )}
                 Download
               </button>

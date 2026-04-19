@@ -1,25 +1,35 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Building2, Users, FileText, Activity, TrendingUp, TrendingDown,
   ArrowRight, ShieldCheck, AlertTriangle, CheckCircle, Clock,
-  BarChart3, Zap,
+  BarChart3, Zap, Loader2
 } from 'lucide-react';
 import {
   LineChart, Line, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 
-// ── mock data ──────────────────────────────────────────────────────────────────
+// ── types ──────────────────────────────────────────────────────────────────────
 
-const stats = [
-  { label: 'Total Companies',  value: '48',    delta: '+3 this month',  up: true,  icon: Building2,   color: 'text-blue-500',   bg: 'bg-blue-50 dark:bg-blue-900/20' },
-  { label: 'Total Users',      value: '3,241', delta: '+127 this week', up: true,  icon: Users,       color: 'text-emerald-500',bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-  { label: 'Reports Today',    value: '284',   delta: '+12% vs yesterday', up: true, icon: FileText,  color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
-  { label: 'Active Sessions',  value: '91',    delta: '-4 from peak',   up: false, icon: Activity,    color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
-];
+interface DashboardStats {
+  totalEmployers: number;
+  totalEmployees: number;
+  totalCompanies: number;
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  roleBreakdown: Record<string, number>;
+  recentJoins: number;
+  computedAt: string;
+}
+
+// ── mock data (fallback) ────────────────────────────────────────────────────────
 
 const trendData = [
   { date: 'Mon', users: 210, reports: 45, sessions: 88 },
@@ -52,8 +62,70 @@ const riskCls = { low: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20', 
 // ── component ──────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
+  const [statsData, setStatsData] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await axios.get(`${ServerAddress}/admin/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setStatsData(response.data);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const stats = [
+    { 
+      label: 'Total Companies',  
+      value: statsData?.totalCompanies?.toLocaleString() || '0',    
+      delta: statsData?.recentJoins ? `+${statsData.recentJoins} recently` : 'Stable', 
+      up: true,  
+      icon: Building2,   
+      color: 'text-blue-500',   
+      bg: 'bg-blue-50 dark:bg-blue-900/20' 
+    },
+    { 
+      label: 'Total Users',      
+      value: statsData?.totalUsers?.toLocaleString() || '0', 
+      delta: 'Across all roles', 
+      up: true,  
+      icon: Users,       
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-50 dark:bg-emerald-900/20' 
+    },
+    { 
+      label: 'Active Users',    
+      value: statsData?.activeUsers?.toLocaleString() || '0',   
+      delta: `${statsData?.inactiveUsers || 0} currently inactive`, 
+      up: true, 
+      icon: Activity,  
+      color: 'text-purple-500', 
+      bg: 'bg-purple-50 dark:bg-purple-900/20' 
+    },
+    { 
+      label: 'Total Employees',  
+      value: statsData?.totalEmployees?.toLocaleString() || '0',    
+      delta: 'Direct member reports',   
+      up: false, 
+      icon: ShieldCheck,    
+      color: 'text-orange-500', 
+      bg: 'bg-orange-50 dark:bg-orange-900/20' 
+    },
+  ];
+
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-[1400px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-[1400px] mx-auto opacity-100 transition-opacity duration-300">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -66,13 +138,14 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {loading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full border border-emerald-500/20">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              All systems operational
+              {loading ? 'Fetching live data...' : 'All systems operational'}
             </span>
           </div>
           <div className="h-8 w-px bg-border hidden sm:block mx-1" />
@@ -105,12 +178,14 @@ export default function AdminDashboard() {
                 </div>
                 <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-lg text-[10px] font-bold ${s.up ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' : 'bg-red-50 text-red-500 dark:bg-red-500/10'}`}>
                   {s.up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  {s.up ? '+12%' : '-4%'}
+                  {loading ? '...' : (s.up ? '+12%' : '-4%')}
                 </div>
               </div>
 
               <div>
-                <p className="text-3xl font-black text-foreground tracking-tight">{s.value}</p>
+                <p className="text-3xl font-black text-foreground tracking-tight">
+                  {loading ? '---' : s.value}
+                </p>
                 <div className="flex items-center justify-between mt-1">
                   <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{s.label}</p>
                   <p className="text-[10px] text-muted-foreground/60 italic">{s.delta}</p>
@@ -210,6 +285,27 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Role Breakdown (New Component using roleBreakdown data) */}
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-sm font-bold text-foreground">Role Distribution</h2>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">User accounts by permission level</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {statsData?.roleBreakdown && Object.entries(statsData.roleBreakdown).map(([role, count]) => (
+            <div key={role} className="p-4 rounded-xl bg-secondary/50 border border-border flex flex-col items-center text-center">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter mb-1">{role}</p>
+              <p className="text-xl font-black text-foreground">{count.toLocaleString()}</p>
+            </div>
+          ))}
+          {!statsData?.roleBreakdown && [1,2,3,4].map(i => (
+            <div key={i} className="p-4 rounded-xl bg-secondary/20 border border-border animate-pulse h-20" />
+          ))}
+        </div>
+      </div>
+
       {/* Top companies */}
       <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
@@ -259,9 +355,9 @@ export default function AdminDashboard() {
       {/* Quick links */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { href: '/admin/companies', icon: Building2,   label: 'Companies', sub: '48 active',         bg: 'from-blue-500 to-indigo-600' },
-          { href: '/admin/users',     icon: Users,       label: 'Users',     sub: '3,241 total',       bg: 'from-emerald-500 to-teal-600' },
-          { href: '/admin/reports',   icon: FileText,    label: 'Reports',   sub: '284 today',         bg: 'from-purple-500 to-violet-600' },
+          { href: '/admin/companies', icon: Building2,   label: 'Companies', sub: `${statsData?.totalCompanies || 48} active`, bg: 'from-blue-500 to-indigo-600' },
+          { href: '/admin/users',     icon: Users,       label: 'Users',     sub: `${statsData?.totalUsers || '3,241'} total`, bg: 'from-emerald-500 to-teal-600' },
+          { href: '/admin/reports',   icon: FileText,    label: 'Reports',   sub: 'Historical data', bg: 'from-purple-500 to-violet-600' },
           { href: '/admin/security',  icon: ShieldCheck, label: 'Security',  sub: 'All clear',         bg: 'from-amber-500 to-orange-600' },
         ].map(q => {
           const Icon = q.icon;

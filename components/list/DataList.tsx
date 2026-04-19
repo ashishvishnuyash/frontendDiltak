@@ -492,7 +492,7 @@ function ImportModal<T extends Record<string, any>>({
           return obj;
         });
 
-        setUploadedCount(rows.length);
+        // setUploadedCount(rows.length);
         setStep('success');
         onImportSuccess?.(rows);
         return;
@@ -961,18 +961,18 @@ console.log("response.data.data", response);
       <div className={`flex flex-col ${className}`}>
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-3">
-          <div className="relative flex-1 min-w-0 max-w-xs">
+          <div className="relative w-full sm:flex-1 min-w-0 sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
               placeholder={searchPlaceholder}
-              className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:focus:ring-emerald-600 text-gray-800 dark:text-gray-200 placeholder-gray-400"
+              className="w-full pl-9 pr-3 py-2.5 text-sm bg-gray-50/50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:focus:ring-emerald-600 text-gray-800 dark:text-gray-200 placeholder-gray-400 transition-all font-medium"
             />
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">
             {globalFilterOptions.length > 0 && (
               <div className="relative">
                 <button
@@ -1122,10 +1122,10 @@ console.log("response.data.data", response);
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-3 px-1">
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <span>{(page - 1) * pageSize + 1}–{Math.min(page * pageSize, processed.length)} of {totalCount || processed.length}</span>
-            <span className="text-gray-300 dark:text-gray-600">|</span>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-1">
+          <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 font-medium">
+            <span className="bg-gray-50 dark:bg-gray-800/60 px-2 py-1 rounded-md">{(page - 1) * pageSize + 1}–{Math.min(page * pageSize, processed.length)} of {totalCount || processed.length}</span>
+            <span className="text-gray-200 dark:text-gray-700">|</span>
             <div className="flex items-center gap-1">
               <select
                 value={pageSize}

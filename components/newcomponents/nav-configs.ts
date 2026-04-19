@@ -39,7 +39,7 @@ export const employeeNavItems: NavItem[] = [
   // { path: '/employee/challenges',      label: 'Challenges',         icon: Star },
   { path: '/employee/gamification',    label: 'Gamification',       icon: Trophy },
   { path: '/employee/support',         label: 'Support',            icon: HelpCircle },
-  // { path: '/employee/profile',         label: 'My Profile',         icon: UserCheck },
+  { path: '/employee/profile',         label: 'My Profile',         icon: User },
 ];
 
 export const managerNavItems: NavItem[] = [
@@ -65,6 +65,7 @@ export const employerNavItems: NavItem[] = [
   // { path: '/employer/reports',     label: 'Reports',    icon: FileText },
   // { path: '/employer/analytics',   label: 'Analytics',  icon: BarChart3 },
   // { path: '/employer/wellness-hub',label: 'Wellness',   icon: Heart },
+  { path: '/employer/profile',      label: 'My Profile',      icon: User },
 ];
 
 export const adminNavItems: NavItem[] = [
@@ -76,4 +77,5 @@ export const adminNavItems: NavItem[] = [
   { path: '/admin/activity',     label: 'Activity',     icon: Activity },
   { path: '/admin/security',     label: 'Security',     icon: Lock },
   { path: '/admin/settings',     label: 'Settings',     icon: Settings },
+  { path: '/admin/profile',      label: 'My Profile',      icon: User },
 ];

@@ -2,6 +2,6 @@
 
 import ProfileView from '@/components/profile/ProfileView';
 
-export default function EmployeeProfilePage() {
+export default function EmployerProfilePage() {
   return <ProfileView />;
 }
