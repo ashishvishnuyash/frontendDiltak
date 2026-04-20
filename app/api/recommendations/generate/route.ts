@@ -59,8 +59,7 @@ async function getUserChatHistory(userId: string, companyId: string, days: numbe
     // We'll filter by date in JavaScript instead
     const q = query(
       chatRef,
-      where('user_id', '==', userId),
-      where('company_id', '==', companyId),
+      where('employee_id', '==', userId),
       orderBy('created_at', 'desc'),
       limit(50) // Get more documents to filter by date
     );
@@ -91,8 +90,7 @@ async function getUserChatHistory(userId: string, companyId: string, days: numbe
         const chatRef = collection(db, 'chat_sessions');
         const q = query(
           chatRef,
-          where('user_id', '==', userId),
-          where('company_id', '==', companyId),
+          where('employee_id', '==', userId),
           limit(50)
         );
         

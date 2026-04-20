@@ -8,42 +8,29 @@ import {
   Activity,
   User,
   Loader2,
-  Paperclip,
   FileText,
   MessageCircle,
+  ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import ReactMarkdown from "react-markdown";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
+import { askMedicalQuestion } from "@/lib/physical-health-service";
 
 interface Message {
   id: string;
   content: string;
   sender: "user" | "ai";
   timestamp: string;
+  sources?: string[];
+  disclaimer?: string;
+  confidence?: number;
 }
 
-// ─── Mock responses ──────────────────────────────────────────────────────────
-
-const MOCK_RESPONSES = [
-  "That's great to hear! Regular physical activity is key to maintaining good health. Would you like some personalized workout suggestions based on your goals?",
-  "Staying hydrated is essential for optimal physical performance. Aim for at least 8 glasses of water per day, and more if you're exercising intensely.",
-  "Getting 7–9 hours of quality sleep each night is crucial for muscle recovery and overall physical health. Have you been sleeping well lately?",
-  "A balanced diet rich in proteins, healthy fats, and complex carbohydrates will fuel your workouts and support recovery. Are you looking for nutrition advice?",
-  "Tracking your daily steps is a simple way to stay active. Even a 30-minute walk can make a big difference for your cardiovascular health!",
-  "Strength training 2–3 times per week helps build muscle mass and boost metabolism. Would you like a beginner-friendly routine?",
-  "Stretching and flexibility exercises are often overlooked but are very important for injury prevention and mobility. Do you currently stretch before or after workouts?",
-  "Your body mass index (BMI) and resting heart rate are good starting metrics to track your physical health journey. Shall we discuss your current fitness level?",
-];
-
 const QUICK_REPLIES = [
-  "How do I improve my fitness?",
-  "Tips for better sleep",
-  "Healthy meal ideas",
+  "Summarise my most recent report",
+  "Any flagged values I should know about?",
+  "What should I ask my doctor?",
 ];
-
-// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function ChatPopup() {
   const { user } = useAuth();
@@ -52,14 +39,12 @@ export default function ChatPopup() {
     {
       id: "welcome",
       sender: "ai",
-      content: `Hello${user?.first_name ? ` ${user.first_name}` : ""}! I'm your Physical Health Assistant. How can I help you today?`,
+      content: `Hello${user?.first_name ? ` ${user.first_name}` : ""}! I'm your Medical Docs Assistant. Upload a medical report in the Medical Docs tab and I can answer questions about it.`,
       timestamp: new Date().toISOString(),
     },
   ]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -69,10 +54,10 @@ export default function ChatPopup() {
           m.id === "welcome"
             ? {
                 ...m,
-                content: `Hello ${user.first_name}! I'm your Physical Health Assistant. How can I help you today?`,
+                content: `Hello ${user.first_name}! I'm your Medical Docs Assistant. Upload a medical report in the Medical Docs tab and I can answer questions about it.`,
               }
-            : m
-        )
+            : m,
+        ),
       );
     }
   }, [user?.first_name]);
@@ -81,45 +66,61 @@ export default function ChatPopup() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const getRandomResponse = () =>
-    MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
-
   const sendMessage = async (text?: string) => {
     const content = (text ?? currentMessage).trim();
-    if (!content && attachedFiles.length === 0) return;
-    if (loading) return;
-
-    let fullContent = content;
-    if (attachedFiles.length > 0) {
-      const fileList = attachedFiles.map((f) => `📎 ${f.name}`).join(", ");
-      fullContent = content
-        ? `${content}\n\nAttached files: ${fileList}`
-        : `Attached files: ${fileList}`;
+    if (!content || loading) return;
+    if (content.length < 5) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          sender: "ai",
+          content: "Please ask a more detailed question (at least 5 characters).",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+      return;
     }
 
     const userMsg: Message = {
       id: Date.now().toString(),
       sender: "user",
-      content: fullContent,
+      content,
       timestamp: new Date().toISOString(),
     };
 
     setMessages((prev) => [...prev, userMsg]);
     setCurrentMessage("");
-    setAttachedFiles([]);
     setLoading(true);
 
-    await new Promise((r) => setTimeout(r, 1200 + Math.random() * 800));
-
-    const aiMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      sender: "ai",
-      content: getRandomResponse(),
-      timestamp: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, aiMsg]);
-    setLoading(false);
+    try {
+      const res = await askMedicalQuestion(content);
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: "ai",
+        content: res.answer,
+        sources: res.source_doc_ids,
+        disclaimer: res.disclaimer,
+        confidence: res.confidence,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: "ai",
+          content:
+            err instanceof Error
+              ? `Sorry — ${err.message}`
+              : "Sorry, I couldn't answer that right now.",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -129,27 +130,8 @@ export default function ChatPopup() {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setAttachedFiles((prev) => [...prev, ...files.slice(0, 5)]);
-    if (e.target) e.target.value = "";
-  };
-
-  const removeFile = (index: number) =>
-    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
-
   return (
     <>
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        className="hidden"
-        onChange={handleFileSelect}
-        accept="image/*,.pdf,.doc,.docx,.txt"
-      />
-
       {/* Floating chat button */}
       <AnimatePresence>
         {!isOpen && (
@@ -174,7 +156,7 @@ export default function ChatPopup() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] h-[520px] bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-6 right-6 z-50 w-[380px] h-[560px] bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="bg-blue-500 px-4 py-3 flex items-center justify-between flex-shrink-0">
@@ -184,11 +166,13 @@ export default function ChatPopup() {
                 </div>
                 <div>
                   <span className="text-sm font-semibold text-white">
-                    Health Assistant
+                    Medical Docs Assistant
                   </span>
                   <div className="flex items-center gap-1">
                     <div className="w-1.5 h-1.5 bg-green-300 rounded-full" />
-                    <span className="text-[10px] text-white/70">Online</span>
+                    <span className="text-[10px] text-white/70">
+                      Grounded on your uploads
+                    </span>
                   </div>
                 </div>
               </div>
@@ -218,11 +202,13 @@ export default function ChatPopup() {
                 <div
                   key={message.id}
                   className={`flex ${
-                    message.sender === "user" ? "justify-end" : "justify-start"
+                    message.sender === "user"
+                      ? "justify-end"
+                      : "justify-start"
                   }`}
                 >
                   <div
-                    className={`flex items-end gap-1.5 max-w-[80%] ${
+                    className={`flex items-end gap-1.5 max-w-[85%] ${
                       message.sender === "user" ? "flex-row-reverse" : ""
                     }`}
                   >
@@ -241,7 +227,7 @@ export default function ChatPopup() {
                     </div>
 
                     <div
-                      className={`flex flex-col gap-0.5 ${
+                      className={`flex flex-col gap-1 ${
                         message.sender === "user" ? "items-end" : "items-start"
                       }`}
                     >
@@ -256,10 +242,40 @@ export default function ChatPopup() {
                           <ReactMarkdown>{message.content}</ReactMarkdown>
                         </div>
                       </div>
+
+                      {message.sender === "ai" &&
+                        message.sources &&
+                        message.sources.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {message.sources.map((docId) => (
+                              <span
+                                key={docId}
+                                className="inline-flex items-center gap-1 text-[9px] text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 px-1.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-800/40"
+                                title={docId}
+                              >
+                                <FileText className="h-2 w-2" />
+                                {docId.slice(0, 8)}
+                              </span>
+                            ))}
+                            {message.confidence != null && (
+                              <span className="text-[9px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5">
+                                confidence {Math.round(message.confidence * 100)}%
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                      {message.sender === "ai" && message.disclaimer && (
+                        <div className="inline-flex items-start gap-1 text-[9px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/20 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800/30 max-w-full">
+                          <ShieldAlert className="h-2.5 w-2.5 flex-shrink-0 mt-0.5" />
+                          <span>{message.disclaimer}</span>
+                        </div>
+                      )}
+
                       <span className="text-[9px] text-gray-400 dark:text-gray-500 px-0.5">
                         {new Date(message.timestamp).toLocaleTimeString(
                           "en-US",
-                          { hour: "2-digit", minute: "2-digit" }
+                          { hour: "2-digit", minute: "2-digit" },
                         )}
                       </span>
                     </div>
@@ -277,7 +293,7 @@ export default function ChatPopup() {
                       <div className="flex items-center gap-1.5">
                         <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
                         <span className="text-[10px] text-gray-400">
-                          Thinking...
+                          Searching your documents...
                         </span>
                       </div>
                     </div>
@@ -304,44 +320,12 @@ export default function ChatPopup() {
               </div>
             )}
 
-            {/* Attached files preview */}
-            {attachedFiles.length > 0 && (
-              <div className="px-3 pb-1 bg-gray-50 dark:bg-gray-950">
-                <div className="p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="flex flex-wrap gap-1">
-                    {attachedFiles.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 px-1.5 py-0.5 rounded text-[10px] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
-                      >
-                        <FileText className="h-2.5 w-2.5 flex-shrink-0" />
-                        <span className="truncate max-w-20">{file.name}</span>
-                        <button
-                          onClick={() => removeFile(index)}
-                          className="text-gray-400 hover:text-red-500"
-                        >
-                          <X className="h-2 w-2" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Input row */}
             <div className="bg-white dark:bg-gray-900 px-3 py-3 flex items-center gap-2 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={loading}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 transition-colors"
-              >
-                <Paperclip className="h-5 w-5" />
-              </button>
               <div className="flex-1 flex items-center bg-gray-50 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 focus-within:border-blue-400 transition-colors">
                 <input
                   type="text"
-                  placeholder="Ask about your health..."
+                  placeholder="Ask about your medical docs..."
                   value={currentMessage}
                   onChange={(e) => setCurrentMessage(e.target.value)}
                   onKeyPress={handleKeyPress}

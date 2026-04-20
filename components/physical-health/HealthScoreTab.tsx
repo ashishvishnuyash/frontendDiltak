@@ -1,57 +1,103 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
+import { CalendarCheck, Flame, Loader2, Sparkles, TrendingUp } from "lucide-react";
+import { usePhysicalHealth } from "@/hooks/use-physical-health";
+import type { PhysicalHealthTabId } from "@/app/employee/physical-health/page";
 
-// ─── Static mock data ────────────────────────────────────────────────────────
+interface HealthScoreTabProps {
+  onNavigate?: (tabId: PhysicalHealthTabId) => void;
+}
 
-const DIMENSIONS = [
-  { name: "Cardiovascular", score: 80, color: "bg-red-500" },
-  { name: "Nutrition", score: 65, color: "bg-green-500" },
-  { name: "Sleep quality", score: 68, color: "bg-indigo-500" },
-  { name: "Physical activity", score: 70, color: "bg-blue-500" },
-  { name: "Medication adherence", score: 83, color: "bg-amber-500" },
-  { name: "Weight & BMI", score: 72, color: "bg-purple-500" },
-];
+// Overall score from backend is on 0-10; scale to 0-100 for the ring.
 
-const ACTIONS = [
-  {
-    icon: "🛏️",
-    title: "Consistent bedtime (+4 pts)",
-    description:
-      "Setting a fixed bedtime within a 30-minute window every night — including weekends — is the single highest-impact change you can make right now.",
-  },
-  {
-    icon: "🥬",
-    title: "Add one more vegetable daily (+4 pts)",
-    description:
-      "Your fibre and micronutrient intake is just below target. A single serving of leafy greens at dinner closes most of the gap within a week.",
-  },
-  {
-    icon: "💧",
-    title: "Reach 2.5L of water daily (+3 pts)",
-    description:
-      "You are consistently under your hydration target. Keep a 1L bottle visible at your desk and aim to finish it by 1 PM, then refill.",
-  },
-  {
-    icon: "🐟",
-    title: "Improve Omega-3 adherence (+3 pts)",
-    description:
-      "Link your evening Omega-3 to an existing habit — dinner, teeth brushing, or your evening screen-off time — to lift adherence from 71% to 90%+.",
-  },
-];
+function levelStyle(level: string): string {
+  const l = level.toLowerCase();
+  if (l === "high")
+    return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20";
+  if (l === "medium")
+    return "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20";
+  return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20";
+}
 
-// ─── Component ───────────────────────────────────────────────────────────────
+function scoreStroke(score: number): string {
+  if (score >= 7.5) return "#22c55e";
+  if (score >= 5) return "#f59e0b";
+  return "#ef4444";
+}
 
-export default function HealthScoreTab() {
-  const overallScore = 72;
+function formatDate(iso?: string | null): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+export default function HealthScoreTab({ onNavigate }: HealthScoreTabProps = {}) {
+  const { score, scoreLoading } = usePhysicalHealth();
+
+  if (scoreLoading && !score) {
+    return (
+      <div className="py-20 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (!score) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm text-center">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          No health score yet. Submit a few daily check-ins to see your score.
+        </p>
+      </div>
+    );
+  }
+
+  const overall = score.score;
+  const percent = Math.max(0, Math.min(100, (overall / 10) * 100));
+  const stroke = scoreStroke(overall);
+  const circumference = 2 * Math.PI * 85;
+
+  const needsCheckIn =
+    score.days_since_checkin == null || score.days_since_checkin > 1;
 
   return (
     <div className="space-y-5">
+      {needsCheckIn && (
+        <button
+          type="button"
+          onClick={() => onNavigate?.("check-in")}
+          className="w-full text-left bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl p-4 shadow-sm flex items-center gap-3 hover:bg-amber-100/60 dark:hover:bg-amber-950/30 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+            <CalendarCheck className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              Check in today to keep your score accurate
+            </p>
+            <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mt-0.5">
+              {score.days_since_checkin == null
+                ? "No check-ins yet — take a minute to log today."
+                : `It's been ${score.days_since_checkin} day${score.days_since_checkin === 1 ? "" : "s"} since your last check-in.`}
+            </p>
+          </div>
+          <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+            Check in →
+          </span>
+        </button>
+      )}
+
       {/* Overall Score */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm text-center">
         <div className="relative inline-flex items-center justify-center mb-5">
           <svg className="w-60 h-60" viewBox="0 0 200 200">
-            {/* Background track */}
             <circle
               cx="100"
               cy="100"
@@ -60,98 +106,117 @@ export default function HealthScoreTab() {
               fill="none"
               className="stroke-gray-100 dark:stroke-gray-700"
             />
-            {/* Score arc */}
             <circle
               cx="100"
               cy="100"
               r="85"
-         
               strokeWidth="14"
               fill="none"
-              stroke="#22c55e"
+              stroke={stroke}
               strokeLinecap="round"
-              strokeDasharray={`${2 * Math.PI * 85}`}
-              strokeDashoffset={`${2 * Math.PI * 85 * (1 - overallScore / 100)}`}
+              strokeDasharray={`${circumference}`}
+              strokeDashoffset={`${circumference * (1 - percent / 100)}`}
               transform="rotate(-90 100 100)"
-              style={{ transition: "stroke-dashoffset 1s ease " }}
+              style={{ transition: "stroke-dashoffset 1s ease" }}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-sm font-bold text-gray-800 dark:text-gray-100">
-              {overallScore}
+            <span className="text-4xl font-bold text-gray-800 dark:text-gray-100">
+              {overall.toFixed(1)}
             </span>
             <span className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              / 100
+              / 10
             </span>
           </div>
         </div>
         <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="text-base font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20 px-3 py-1 rounded-full">
-            Good
+          <span
+            className={`text-sm font-semibold px-3 py-1 rounded-full capitalize ${levelStyle(
+              score.level,
+            )}`}
+          >
+            {score.level}
           </span>
+          {score.streak_days > 0 ? (
+            <span className="inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400">
+              <Flame className="h-4 w-4" />
+              {score.streak_days}-day streak
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+              <Flame className="h-4 w-4" />
+              Start your streak — check in today!
+            </span>
+          )}
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-lg mx-auto leading-relaxed">
-          Your overall physical wellness score is composed of 6 dimensions. You
-          are performing well on vitals and exercise, with room to improve on
-          sleep consistency and nutrition variety.
-        </p>
-        <div className="flex items-center justify-center gap-1.5 mt-3">
-          <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-          <span className="text-sm font-medium text-green-600 dark:text-green-400">
-            Up 4 points this month
-          </span>
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center justify-center gap-2">
+          {score.last_checkin_date && (
+            <span>Last check-in: {formatDate(score.last_checkin_date)}</span>
+          )}
+          {score.days_since_checkin != null && (
+            <span>
+              {score.days_since_checkin === 0
+                ? "(today)"
+                : `(${score.days_since_checkin}d ago)`}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Dimension Breakdown */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">
-          Dimension Breakdown
-        </h3>
-        <div className="space-y-3">
-          {DIMENSIONS.map((d) => (
-            <div key={d.name} className="grid grid-cols-[140px_1fr_32px] items-center gap-3">
-              <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {d.name}
-              </span>
-              <div className="w-full h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${d.color} transition-all duration-500`}
-                  style={{ width: `${d.score}%` }}
-                />
-              </div>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 text-right">
-                {d.score}
-              </span>
-            </div>
-          ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Highlights */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              Highlights
+            </h3>
+          </div>
+          {score.highlights.length === 0 ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Keep checking in — highlights will appear once we have enough
+              data.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {score.highlights.map((h, i) => (
+                <li
+                  key={i}
+                  className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed flex gap-2"
+                >
+                  <TrendingUp className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <span>{h}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      </div>
 
-      {/* Top Actions */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
-          Your Top 3 Actions to Improve Score
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {ACTIONS.map((a) => (
-            <div
-              key={a.title}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm"
-            >
-              <div className="flex items-start gap-3">
-                <span className="text-xl">{a.icon}</span>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">
-                    {a.title}
-                  </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    {a.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
+        {/* Concerns */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              Areas to improve
+            </h3>
+          </div>
+          {score.concerns.length === 0 ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Nothing flagged — keep it up.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {score.concerns.map((c, i) => (
+                <li
+                  key={i}
+                  className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed flex gap-2"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0 mt-2" />
+                  <span>{c}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>

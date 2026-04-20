@@ -3,32 +3,37 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Loader2 } from "lucide-react";
-import VitalsTab from "@/components/physical-health/VitalsTab";
 import NutritionTab from "@/components/physical-health/NutritionTab";
 import SleepTab from "@/components/physical-health/SleepTab";
 import ExerciseTab from "@/components/physical-health/ExerciseTab";
-import MedicationTab from "@/components/physical-health/MedicationTab";
 import HealthScoreTab from "@/components/physical-health/HealthScoreTab";
+import CheckInTab from "@/components/physical-health/CheckInTab";
+import TrendsTab from "@/components/physical-health/TrendsTab";
+import MedicalDocsTab from "@/components/physical-health/MedicalDocsTab";
+import ReportsTab from "@/components/physical-health/ReportsTab";
 import ChatPopup from "@/components/physical-health/ChatPopup";
 
 // ─── Tab config ──────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: "vitals", label: "Vitals" },
+  { id: "health-score", label: "Health Score" },
+  { id: "check-in", label: "Daily Check-in" },
+  { id: "trends", label: "Trends" },
   { id: "nutrition", label: "Nutrition" },
   { id: "sleep", label: "Sleep" },
   { id: "exercise", label: "Exercise" },
-  { id: "medication", label: "Medication" },
-  { id: "health-score", label: "Health Score" },
+  { id: "medical-docs", label: "Medical Docs" },
+  { id: "reports", label: "Health Reports" },
 ] as const;
 
-type TabId = (typeof TABS)[number]["id"];
+export type PhysicalHealthTabId = (typeof TABS)[number]["id"];
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function PhysicalHealthPage() {
   const { loading: userLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabId>("vitals");
+  const [activeTab, setActiveTab] =
+    useState<PhysicalHealthTabId>("health-score");
 
   if (userLoading) {
     return (
@@ -40,18 +45,22 @@ export default function PhysicalHealthPage() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case "vitals":
-        return <VitalsTab />;
+      case "health-score":
+        return <HealthScoreTab onNavigate={setActiveTab} />;
+      case "check-in":
+        return <CheckInTab />;
+      case "trends":
+        return <TrendsTab />;
       case "nutrition":
         return <NutritionTab />;
       case "sleep":
         return <SleepTab />;
       case "exercise":
         return <ExerciseTab />;
-      case "medication":
-        return <MedicationTab />;
-      case "health-score":
-        return <HealthScoreTab />;
+      case "medical-docs":
+        return <MedicalDocsTab />;
+      case "reports":
+        return <ReportsTab />;
     }
   };
 
@@ -63,8 +72,8 @@ export default function PhysicalHealthPage() {
           Physical Health Dashboard
         </h1>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Track your vitals, nutrition, sleep, exercise, medication and overall
-          health score
+          Track your daily check-ins, sleep, exercise, nutrition, medical
+          reports and overall health score.
         </p>
       </div>
 
