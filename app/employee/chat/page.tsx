@@ -331,6 +331,8 @@ export default function EmployeeChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [processingAudio, setProcessingAudio] = useState(false);
+  // Inline STT mic (ChatGPT-style) — separate from voice-call mode
+  const [isSttRecording, setIsSttRecording] = useState(false);
 
   // Options panel state
   const [showOptionsPanel, setShowOptionsPanel] = useState(false);
@@ -1772,59 +1774,94 @@ export default function EmployeeChatPage() {
 
               {/* Input row */}
               <div className="flex items-center gap-2">
+                {/* Input pill: paperclip | text | mic */}
                 <div className="flex-1 flex items-center bg-gray-50 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-2 focus-within:border-emerald-400 dark:focus-within:border-emerald-600 transition-colors">
                   {/* Paperclip */}
                   <button
                     onClick={() => setShowOptionsPanel(!showOptionsPanel)}
                     disabled={loading || sessionEnded}
                     className="mr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 transition-colors"
+                    title="Attachments & options"
                   >
                     <Paperclip className="h-5 w-5" />
                   </button>
+
                   <input
                     type="text"
-                    placeholder="Start Conversation"
+                    placeholder={isSttRecording ? "Listening…" : "Start Conversation"}
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     disabled={loading || sessionEnded}
-                    className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400"
+                    className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 min-w-0"
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                   />
+
+                  {/* STT mic button — inside the pill, right side */}
+                  <button
+                    onClick={async () => {
+                      if (isSttRecording) {
+                        // Stop and transcribe
+                        setIsSttRecording(false);
+                        const blob = await audioRecorderRef.current.stopRecording();
+                        if (blob && blob.size > 0) {
+                          const fd = new FormData();
+                          fd.append('audio', new File([blob], 'recording.webm', { type: 'audio/webm' }), 'recording.webm');
+                          try {
+                            const res = await fetch('/api/transcribe', { method: 'POST', body: fd });
+                            const { text } = await res.json();
+                            if (text?.trim()) setCurrentMessage(text.trim());
+                          } catch { toast.error('Transcription failed'); }
+                        }
+                      } else {
+                        // Start plain recording (no voice-mode loop)
+                        const ok = await audioRecorderRef.current.startRecording();
+                        if (ok) setIsSttRecording(true);
+                        else toast.error('Microphone access denied');
+                      }
+                    }}
+                    disabled={loading || sessionEnded}
+                    title={isSttRecording ? 'Stop recording' : 'Speak to type'}
+                    className={`ml-2 flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm ${
+                      isSttRecording
+                        ? 'bg-red-500 shadow-[0_0_0_5px_rgba(239,68,68,0.25)] animate-pulse'
+                        : 'bg-emerald-500 hover:bg-emerald-600'
+                    }`}
+                  >
+                    {isSttRecording ? (
+                      <Square className="h-4 w-4 text-white" fill="white" />
+                    ) : (
+                      <Mic className="h-5 w-5 text-white" strokeWidth={2.5} />
+                    )}
+                  </button>
                 </div>
-                {/* Send arrow */}
+
+                {/* Send button */}
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={loading || sessionEnded || !currentMessage.trim()}
-                  className="w-9 h-9 rounded-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 flex items-center justify-center transition-colors flex-shrink-0 shadow-sm"
+                  className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 flex items-center justify-center transition-all flex-shrink-0 shadow-md"
+                  title="Send message"
                 >
-                  <Send className="h-5 w-5 text-white" />
+                  <Send className="h-5 w-5 text-white" strokeWidth={2.5} />
+                </button>
+
+                {/* Voice Call button */}
+                <button
+                  onClick={isVoiceMode ? endCall : startCall}
+                  disabled={loading || sessionEnded}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 transition-all shadow-md ${
+                    isVoiceMode ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'
+                  } disabled:opacity-40`}
+                  title={isVoiceMode ? 'End call' : 'Voice call'}
+                >
+                  <Phone className="h-5 w-5 text-white" strokeWidth={2.5} />
                 </button>
               </div>
             </div>
 
-        {/* FAB buttons — outside the card, bottom-right of the page area */}
-        <div className="absolute bottom-6 right-6 flex gap-2 z-20">
-          <button
-            onClick={() => setShowOptionsPanel(!showOptionsPanel)}
-            className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 shadow-lg flex items-center justify-center transition-colors"
-            title="Chat options"
-          >
-            <Bot className="text-white" style={{ width: 20, height: 20 }} />
-          </button>
-          <button
-            onClick={isVoiceMode ? endCall : startCall}
-            disabled={loading || sessionEnded}
-            className={`w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition-colors ${
-              isVoiceMode ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'
-            }`}
-            title={isVoiceMode ? "End call" : "Voice call"}
-          >
-            <Phone className="text-white" style={{ width: 20, height: 20 }} />
-          </button>
-        </div>
 
       </div>{/* end chat section */}
 

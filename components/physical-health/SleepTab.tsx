@@ -1,55 +1,15 @@
 "use client";
 
-import { Smartphone, Thermometer, Coffee, Sun } from "lucide-react";
+import { useState } from "react";
+import { Coffee, Loader2, Smartphone, Sun, Thermometer } from "lucide-react";
+import { usePhysicalHealth } from "@/hooks/use-physical-health";
+import type { TrendPeriod } from "@/types/physical-health";
 
-// ─── Static mock data ────────────────────────────────────────────────────────
-
-const SLEEP_STATS = [
-  {
-    label: "Last night",
-    value: "6.8",
-    unit: "hrs",
-    status: "Near target",
-    statusColor: "text-yellow-600 dark:text-yellow-400",
-  },
-  {
-    label: "Deep sleep",
-    value: "1.4",
-    unit: "hrs",
-    status: "Good",
-    statusColor: "text-green-600 dark:text-green-400",
-  },
-  {
-    label: "Sleep score",
-    value: "74",
-    unit: "/100",
-    status: "Fair",
-    statusColor: "text-yellow-600 dark:text-yellow-400",
-  },
-  {
-    label: "7-day average",
-    value: "6.4",
-    unit: "hrs",
-    status: "Slightly low",
-    statusColor: "text-yellow-600 dark:text-yellow-400",
-  },
-];
-
-const WEEK_PATTERN = [
-  { day: "Mo", hours: 6.2, color: "bg-yellow-500" },
-  { day: "Tu", hours: 5.8, color: "bg-red-500" },
-  { day: "We", hours: 6.4, color: "bg-yellow-500" },
-  { day: "Th", hours: 6.5, color: "bg-yellow-500" },
-  { day: "Fr", hours: 5.7, color: "bg-red-500" },
-  { day: "Sa", hours: 7.8, color: "bg-green-500" },
-  { day: "Su", hours: 6.9, color: "bg-green-500" },
-];
-
-const STAGE_BREAKDOWN = [
-  { stage: "Awake", hours: "0.3 hrs", percent: 4, color: "bg-red-400" },
-  { stage: "Light sleep", hours: "3.1 hrs", percent: 46, color: "bg-blue-400" },
-  { stage: "Deep sleep", hours: "1.4 hrs", percent: 21, color: "bg-indigo-500" },
-  { stage: "REM sleep", hours: "2.0 hrs", percent: 29, color: "bg-purple-500" },
+const PERIODS: { value: TrendPeriod; label: string }[] = [
+  { value: "7d", label: "7D" },
+  { value: "14d", label: "14D" },
+  { value: "30d", label: "30D" },
+  { value: "90d", label: "90D" },
 ];
 
 const IMPROVEMENT_TIPS = [
@@ -87,124 +47,216 @@ const IMPROVEMENT_TIPS = [
   },
 ];
 
-// ─── Component ───────────────────────────────────────────────────────────────
+function hoursColor(h: number): string {
+  if (h >= 7) return "bg-green-500";
+  if (h >= 6) return "bg-yellow-500";
+  return "bg-red-500";
+}
+
+function hoursStatus(h: number | null | undefined): string {
+  if (h == null) return "No data";
+  if (h >= 7) return "On target";
+  if (h >= 6) return "Slightly low";
+  return "Low";
+}
+
+function statusColor(h: number | null | undefined): string {
+  if (h == null) return "text-gray-400";
+  if (h >= 7) return "text-green-600 dark:text-green-400";
+  if (h >= 6) return "text-yellow-600 dark:text-yellow-400";
+  return "text-red-600 dark:text-red-400";
+}
+
+function formatDay(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { weekday: "short" });
+  } catch {
+    return iso.slice(5, 10);
+  }
+}
 
 export default function SleepTab() {
+  const [period, setPeriod] = useState<TrendPeriod>("30d");
+  const { trends, trendsLoading, refreshTrends } = usePhysicalHealth({ period });
+
+  const onSelectPeriod = (p: TrendPeriod) => {
+    setPeriod(p);
+    refreshTrends(p);
+  };
+
   const maxHours = 9;
+  const points = trends?.data_points ?? [];
+  const sleepPoints = points.filter((p) => p.sleep_hours != null);
+  const latest = sleepPoints[sleepPoints.length - 1];
+  const avgHours = trends?.averages.sleep_hours ?? null;
+  const avgQuality = trends?.averages.sleep_quality ?? null;
+
+  const stats = [
+    {
+      label: "Last logged",
+      value: latest?.sleep_hours != null ? latest.sleep_hours.toFixed(1) : "—",
+      unit: "hrs",
+      status: hoursStatus(latest?.sleep_hours ?? null),
+      statusColor: statusColor(latest?.sleep_hours ?? null),
+    },
+    {
+      label: "Avg sleep hours",
+      value: avgHours != null ? avgHours.toFixed(1) : "—",
+      unit: "hrs",
+      status: hoursStatus(avgHours),
+      statusColor: statusColor(avgHours),
+    },
+    {
+      label: "Avg sleep quality",
+      value: avgQuality != null ? avgQuality.toFixed(1) : "—",
+      unit: "/10",
+      status:
+        avgQuality == null
+          ? "No data"
+          : avgQuality >= 7
+            ? "Good"
+            : avgQuality >= 5
+              ? "Fair"
+              : "Low",
+      statusColor:
+        avgQuality == null
+          ? "text-gray-400"
+          : avgQuality >= 7
+            ? "text-green-600 dark:text-green-400"
+            : avgQuality >= 5
+              ? "text-yellow-600 dark:text-yellow-400"
+              : "text-red-600 dark:text-red-400",
+    },
+    {
+      label: "Check-ins logged",
+      value: String(trends?.total_checkins ?? 0),
+      unit: "",
+      status: `over ${period}`,
+      statusColor: "text-gray-500 dark:text-gray-400",
+    },
+  ];
+
+  // Week view — last 7 points with sleep_hours
+  const weekPoints = sleepPoints.slice(-7);
 
   return (
     <div className="space-y-5">
-      {/* Stats cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {SLEEP_STATS.map((s) => (
-          <div
-            key={s.label}
-            className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm"
-          >
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {s.label}
-            </span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                {s.value}
-              </span>
-              <span className="text-sm text-gray-400 dark:text-gray-500">
-                {s.unit}
-              </span>
-            </div>
-            <span className={`text-xs ${s.statusColor}`}>{s.status}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Weekly pattern */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">
-            Sleep Pattern This Week
-          </h3>
-          <div className="flex items-end justify-between gap-2 h-32">
-            {WEEK_PATTERN.map((d) => (
-              <div
-                key={d.day}
-                className="flex flex-col items-center flex-1 gap-1"
-              >
-                <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                  {d.hours}h
-                </span>
-                <div className="w-full flex flex-col justify-end h-24">
-                  <div
-                    className={`w-full rounded-t-md ${d.color}`}
-                    style={{ height: `${(d.hours / maxHours) * 100}%` }}
-                  />
-                </div>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                  {d.day}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-4 mt-3 text-[10px] text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-green-500" /> 7+ hrs
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-yellow-500" /> 6-7 hrs
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-red-500" /> under 6
-            </div>
-          </div>
-        </div>
-
-        {/* Stage breakdown */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">
-            Sleep Stage Breakdown
-          </h3>
-          <div className="space-y-3">
-            {STAGE_BREAKDOWN.map((s) => (
-              <div key={s.stage} className="flex items-center gap-3">
-                <span className="text-xs text-gray-500 dark:text-gray-400 w-20">
-                  {s.stage}
-                </span>
-                <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${s.color}`}
-                    style={{ width: `${s.percent}%` }}
-                  />
-                </div>
-                <span className="text-xs text-gray-700 dark:text-gray-300 w-14 text-right">
-                  {s.hours}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-800/30">
-            <p className="text-xs text-indigo-700 dark:text-indigo-300">
-              Deep sleep is the restoration phase. Adults need 1.5-2 hrs. Avoid
-              screens and large meals within 90 minutes of bed to increase your
-              deep sleep share.
-            </p>
-          </div>
+      {/* Period selector */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+          Sleep trends
+        </h3>
+        <div className="inline-flex items-center gap-1 bg-white dark:bg-gray-900 rounded-xl p-1 border border-gray-100 dark:border-gray-800 shadow-sm">
+          {PERIODS.map((p) => (
+            <button
+              key={p.value}
+              type="button"
+              onClick={() => onSelectPeriod(p.value)}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                period === p.value
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Consistency note */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-        <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-xl border border-yellow-200 dark:border-yellow-800/30">
-          <p className="text-xs text-yellow-700 dark:text-yellow-300">
-            Your sleep is inconsistent — strong weekends but weaker weekdays. Aim
-            to align bedtime within a 30-minute window every night, including
-            weekends.
+      {trendsLoading && !trends ? (
+        <div className="py-10 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+        </div>
+      ) : !trends || trends.total_checkins === 0 ? (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No check-ins yet. Head to the Daily Check-in tab and start tracking
+            to see sleep trends here.
           </p>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Stats cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((s) => (
+              <div
+                key={s.label}
+                className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm"
+              >
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {s.label}
+                </span>
+                <div className="flex items-baseline gap-1 mt-1">
+                  <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                    {s.value}
+                  </span>
+                  <span className="text-sm text-gray-400 dark:text-gray-500">
+                    {s.unit}
+                  </span>
+                </div>
+                <span className={`text-xs ${s.statusColor}`}>{s.status}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Weekly pattern */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">
+              Recent sleep pattern
+            </h3>
+            {weekPoints.length === 0 ? (
+              <p className="text-xs text-gray-500 dark:text-gray-400 py-6 text-center">
+                Not enough data to render a pattern yet.
+              </p>
+            ) : (
+              <>
+                <div className="flex items-end justify-between gap-2 h-32">
+                  {weekPoints.map((d) => {
+                    const h = d.sleep_hours ?? 0;
+                    return (
+                      <div
+                        key={d.date}
+                        className="flex flex-col items-center flex-1 gap-1"
+                      >
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                          {h.toFixed(1)}h
+                        </span>
+                        <div className="w-full flex flex-col justify-end h-24">
+                          <div
+                            className={`w-full rounded-t-md ${hoursColor(h)}`}
+                            style={{ height: `${(h / maxHours) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                          {formatDay(d.date)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-4 mt-3 text-[10px] text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-green-500" /> 7+ hrs
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-yellow-500" /> 6-7
+                    hrs
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-red-500" /> under 6
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Improvement tips */}
       <div>
         <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
-          Sleep Improvement Programme
+          Sleep improvement programme
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {IMPROVEMENT_TIPS.map((tip) => (

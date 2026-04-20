@@ -1,10 +1,13 @@
 /**
  * api-client.ts
- * Shared helper for calling the animeshai backend at http://74.162.66.197/api
+ * Shared helper for calling the backend. Resolves the base URL from
+ * NEXT_PUBLIC_UMA_API_URL (e.g. http://127.0.0.1:8000) and appends `/api`.
  * Reads 'access_token' from localStorage and injects the Bearer header.
  */
 
-export const API_BASE = 'http://74.162.66.197/api';
+const RAW_BASE = process.env.NEXT_PUBLIC_UMA_API_URL;
+
+export const API_BASE = `${RAW_BASE}/api`;
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
