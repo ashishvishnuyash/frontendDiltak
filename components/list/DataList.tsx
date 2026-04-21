@@ -492,7 +492,6 @@ function ImportModal<T extends Record<string, any>>({
           return obj;
         });
 
-        // setUploadedCount(rows.length);
         setStep('success');
         onImportSuccess?.(rows);
         return;
