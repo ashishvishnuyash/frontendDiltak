@@ -27,6 +27,9 @@ import ServerAddress from '@/constent/ServerAddress';
 interface Company {
   id: string;
   name: string;
+  companyName?: string;
+  firstName?: string;
+  lastName?: string;
   industry: string;
   employees: number;
   plan: 'Starter' | 'Pro' | 'Enterprise';
