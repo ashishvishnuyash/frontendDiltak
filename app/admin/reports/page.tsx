@@ -38,12 +38,12 @@ export default function AdminReports() {
   });
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] mx-auto">
+    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-[1400px] mx-auto">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+          <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             Reports
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -52,45 +52,45 @@ export default function AdminReports() {
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-[11px] font-bold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all shadow-sm active:scale-95">
-            <Download className="h-5 w-5" /> Export All Data
+            <Download className="h-4 w-4 sm:h-5 sm:w-5" /> <span className="hidden sm:inline">Export All Data</span><span className="sm:hidden">Export</span>
           </button>
         </div>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: 'Total Logs',  value: reports.length,                                      icon: FileText,      color: 'text-indigo-500',  bg: 'bg-indigo-500/10 dark:bg-indigo-500/20' },
           { label: 'Reviewed',   value: reports.filter(r => r.status === 'reviewed').length, icon: TrendingUp,    color: 'text-emerald-500', bg: 'bg-emerald-500/10 dark:bg-emerald-500/20' },
           { label: 'Pending',    value: reports.filter(r => r.status === 'pending').length,  icon: Calendar,      color: 'text-amber-500',   bg: 'bg-amber-500/10 dark:bg-amber-500/20' },
           { label: 'Flagged',    value: reports.filter(r => r.status === 'flagged').length,  icon: AlertTriangle, color: 'text-red-500',     bg: 'bg-red-500/10 dark:bg-red-500/20' },
         ].map(s => (
-          <div key={s.label} className={`flex flex-col items-center justify-center p-5 rounded-2xl border border-border shadow-sm ${s.bg}`}>
+          <div key={s.label} className={`flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl border border-border shadow-sm ${s.bg}`}>
             <s.icon className={`h-5 w-5 ${s.color} opacity-80 mb-2`} />
-            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+            <p className={`text-xl sm:text-2xl font-black ${s.color}`}>{s.value}</p>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 text-center">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-3 sm:p-4 shadow-sm">
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by employee name or organization..."
-              className="w-full h-11 pl-10 pr-4 text-sm bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+              className="w-full h-10 sm:h-11 pl-9 sm:pl-10 pr-4 text-sm bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
           </div>
-          <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border">
+          <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border overflow-x-auto scrollbar-hide">
             {['all', 'reviewed', 'pending', 'flagged'].map(s => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-4 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all ${statusFilter === s ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all whitespace-nowrap ${statusFilter === s ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 {s}
               </button>
@@ -99,8 +99,50 @@ export default function AdminReports() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm overflow-hidden">
+      {/* Mobile card list */}
+      <div className="sm:hidden space-y-3">
+        {filtered.map((r, i) => (
+          <motion.div
+            key={r.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: i * 0.03 }}
+            className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <p className="font-bold text-foreground text-sm">{r.employee}</p>
+                <p className="text-[11px] text-muted-foreground">{r.company}</p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${riskCls[r.risk as keyof typeof riskCls]}`}>{r.risk}</span>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${statusCls[r.status]}`}>{r.status}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span className="px-2 py-0.5 rounded-lg bg-secondary text-[10px] font-bold uppercase">{r.type}</span>
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(r.wellness / 10) * 100}%` }} />
+                </div>
+                <span className="font-bold text-foreground">{r.wellness}</span>
+                <span>{new Date(r.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+        {filtered.length === 0 && (
+          <div className="py-16 text-center flex flex-col items-center justify-center">
+            <div className="w-14 h-14 bg-secondary/50 rounded-full flex items-center justify-center mb-3">
+              <FileText className="h-7 w-7 text-muted-foreground/30" />
+            </div>
+            <p className="text-sm font-bold text-foreground">No reports found</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table */}
+      <div className="hidden sm:block bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>

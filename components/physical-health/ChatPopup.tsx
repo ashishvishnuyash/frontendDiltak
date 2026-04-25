@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import ReactMarkdown from "react-markdown";
-import { askMedicalQuestion } from "@/lib/physical-health-service";
+import axios from "axios";
+import ServerAddress from "@/constent/ServerAddress";
 
 interface Message {
   id: string;
@@ -24,6 +25,13 @@ interface Message {
   sources?: string[];
   disclaimer?: string;
   confidence?: number;
+}
+
+interface AskResponse {
+  answer: string;
+  source_doc_ids: string[];
+  confidence: number;
+  disclaimer: string;
 }
 
 const QUICK_REPLIES = [
@@ -66,6 +74,20 @@ export default function ChatPopup() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  const askMedicalQuestion = async (question: string): Promise<AskResponse> => {
+    const token = localStorage.getItem('access_token');
+    const response = await axios.post(`${ServerAddress}/physical-health/ask`, 
+      { question },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      }
+    );
+    return response.data;
+  };
+
   const sendMessage = async (text?: string) => {
     const content = (text ?? currentMessage).trim();
     if (!content || loading) return;
@@ -106,15 +128,27 @@ export default function ChatPopup() {
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
+      let errorMessage = "Sorry, I couldn't answer that right now.";
+      
+      if (axios.isAxiosError(err) && err.response?.data?.detail) {
+        const detail = err.response.data.detail;
+        if (Array.isArray(detail) && detail[0]?.msg) {
+          errorMessage = `Sorry — ${detail[0].msg}`;
+        } else if (typeof detail === 'string') {
+          errorMessage = `Sorry — ${detail}`;
+        } else {
+          errorMessage = `Sorry — ${err.message}`;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = `Sorry — ${err.message}`;
+      }
+      
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           sender: "ai",
-          content:
-            err instanceof Error
-              ? `Sorry — ${err.message}`
-              : "Sorry, I couldn't answer that right now.",
+          content: errorMessage,
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -140,10 +174,11 @@ export default function ChatPopup() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-blue-500 shadow-lg shadow-blue-500/25 flex items-center justify-center hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-500/30 transition-all group"
+            className="fixed bottom-20 right-4 z-50 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/40 transition-all duration-300 hover:scale-110 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background sm:bottom-6 sm:right-6"
+            aria-label="Open chat assistant"
           >
-            <MessageCircle className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
-            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-950" />
+            <MessageCircle className="h-6 w-6 text-primary-foreground" />
+            <span className="absolute -right-1 -top-1 h-5 w-5 rounded-full border-2 border-background bg-destructive ring-2 ring-background" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -156,21 +191,23 @@ export default function ChatPopup() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] h-[560px] bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-0 right-0 z-50 flex flex-col overflow-hidden border border-border bg-background shadow-2xl
+              w-full h-[85dvh] rounded-t-2xl
+              sm:bottom-6 sm:right-6 sm:w-[400px] sm:h-[600px] sm:rounded-2xl"
           >
             {/* Header */}
-            <div className="bg-blue-500 px-4 py-3 flex items-center justify-between flex-shrink-0">
+            <div className="flex flex-shrink-0 items-center justify-between bg-gradient-to-r from-primary to-primary/90 px-4 py-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <Activity className="h-5 w-5 text-white" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20">
+                  <Activity className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm font-semibold text-primary-foreground">
                     Medical Docs Assistant
                   </span>
                   <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-green-300 rounded-full" />
-                    <span className="text-[10px] text-white/70">
+                    <div className="h-1.5 w-1.5 rounded-full bg-success" />
+                    <span className="text-[10px] text-primary-foreground/80">
                       Grounded on your uploads
                     </span>
                   </div>
@@ -178,18 +215,18 @@ export default function ChatPopup() {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-10 h-10 rounded-full bg-white/20 hover:bg-red-500 flex items-center justify-center transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20 transition-colors hover:bg-destructive hover:bg-destructive/80 focus:outline-none focus:ring-2 focus:ring-primary-foreground/50"
                 aria-label="Close chat"
               >
-                <X className="h-5 w-5 text-white" />
+                <X className="h-5 w-5 text-primary-foreground" />
               </button>
             </div>
 
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0 bg-gray-50 dark:bg-gray-950">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-muted/30 px-4 py-3">
               {/* Date label */}
               <div className="flex items-center justify-center">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-900 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-800">
+                <span className="rounded-full border border-border bg-background px-2 py-0.5 text-[10px] text-muted-foreground">
                   {new Date().toLocaleDateString("en-GB", {
                     day: "2-digit",
                     month: "2-digit",
@@ -208,21 +245,21 @@ export default function ChatPopup() {
                   }`}
                 >
                   <div
-                    className={`flex items-end gap-1.5 max-w-[85%] ${
+                    className={`flex max-w-[85%] items-end gap-1.5 ${
                       message.sender === "user" ? "flex-row-reverse" : ""
                     }`}
                   >
                     <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mb-3 ${
+                      className={`mb-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
                         message.sender === "user"
-                          ? "bg-amber-500"
-                          : "bg-blue-500"
+                          ? "bg-warning"
+                          : "bg-primary"
                       }`}
                     >
                       {message.sender === "user" ? (
-                        <User className="h-2.5 w-2.5 text-white" />
+                        <User className="h-3 w-3 text-white" />
                       ) : (
-                        <Activity className="h-2.5 w-2.5 text-white" />
+                        <Activity className="h-3 w-3 text-white" />
                       )}
                     </div>
 
@@ -232,10 +269,10 @@ export default function ChatPopup() {
                       }`}
                     >
                       <div
-                        className={`rounded-2xl px-3 py-2 text-xs leading-relaxed ${
+                        className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${
                           message.sender === "user"
-                            ? "bg-blue-500 text-white rounded-br-sm"
-                            : "bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-bl-sm shadow-sm"
+                            ? "rounded-br-sm bg-primary text-primary-foreground"
+                            : "rounded-bl-sm border border-border bg-background text-foreground shadow-sm"
                         }`}
                       >
                         <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -250,7 +287,7 @@ export default function ChatPopup() {
                             {message.sources.map((docId) => (
                               <span
                                 key={docId}
-                                className="inline-flex items-center gap-1 text-[9px] text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 px-1.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-800/40"
+                                className="inline-flex items-center gap-1 rounded-full border border-info/20 bg-info/10 px-1.5 py-0.5 text-[9px] text-info"
                                 title={docId}
                               >
                                 <FileText className="h-2 w-2" />
@@ -258,7 +295,7 @@ export default function ChatPopup() {
                               </span>
                             ))}
                             {message.confidence != null && (
-                              <span className="text-[9px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5">
+                              <span className="px-1.5 py-0.5 text-[9px] text-muted-foreground">
                                 confidence {Math.round(message.confidence * 100)}%
                               </span>
                             )}
@@ -266,13 +303,13 @@ export default function ChatPopup() {
                         )}
 
                       {message.sender === "ai" && message.disclaimer && (
-                        <div className="inline-flex items-start gap-1 text-[9px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/20 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800/30 max-w-full">
-                          <ShieldAlert className="h-2.5 w-2.5 flex-shrink-0 mt-0.5" />
+                        <div className="inline-flex max-w-full items-start gap-1 rounded-md border border-warning/30 bg-warning/10 px-2 py-1 text-[9px] text-warning">
+                          <ShieldAlert className="mt-0.5 h-2.5 w-2.5 flex-shrink-0" />
                           <span>{message.disclaimer}</span>
                         </div>
                       )}
 
-                      <span className="text-[9px] text-gray-400 dark:text-gray-500 px-0.5">
+                      <span className="px-0.5 text-[10px] text-muted-foreground">
                         {new Date(message.timestamp).toLocaleTimeString(
                           "en-US",
                           { hour: "2-digit", minute: "2-digit" },
@@ -286,13 +323,13 @@ export default function ChatPopup() {
               {loading && (
                 <div className="flex justify-start">
                   <div className="flex items-end gap-1.5">
-                    <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                      <Activity className="h-2.5 w-2.5 text-white" />
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+                      <Activity className="h-3 w-3 text-white" />
                     </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2 border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div className="rounded-xl border border-border bg-background px-3 py-2 shadow-sm">
                       <div className="flex items-center gap-1.5">
-                        <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
-                        <span className="text-[10px] text-gray-400">
+                        <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                        <span className="text-[10px] text-muted-foreground">
                           Searching your documents...
                         </span>
                       </div>
@@ -306,13 +343,13 @@ export default function ChatPopup() {
 
             {/* Quick replies */}
             {currentMessage.length === 0 && messages.length <= 2 && (
-              <div className="px-3 pb-2 flex flex-wrap gap-1.5 bg-gray-50 dark:bg-gray-950">
+              <div className="flex flex-wrap gap-1.5 border-t border-border/50 bg-muted/30 px-3 pb-2 pt-2">
                 {QUICK_REPLIES.map((msg, i) => (
                   <button
                     key={i}
                     onClick={() => sendMessage(msg)}
                     disabled={loading}
-                    className="px-2.5 py-1 text-[10px] text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-full transition-colors disabled:opacity-50"
+                    className="rounded-full border border-border bg-background px-2.5 py-1 text-[10px] text-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                   >
                     {msg}
                   </button>
@@ -321,8 +358,8 @@ export default function ChatPopup() {
             )}
 
             {/* Input row */}
-            <div className="bg-white dark:bg-gray-900 px-3 py-3 flex items-center gap-2 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
-              <div className="flex-1 flex items-center bg-gray-50 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 focus-within:border-blue-400 transition-colors">
+            <div className="flex flex-shrink-0 items-center gap-2 border-t border-border/50 bg-background px-3 py-3">
+              <div className="flex flex-1 items-center rounded-full border border-input bg-muted px-3 py-2 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
                 <input
                   type="text"
                   placeholder="Ask about your medical docs..."
@@ -330,15 +367,15 @@ export default function ChatPopup() {
                   onChange={(e) => setCurrentMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   disabled={loading}
-                  className="flex-1 bg-transparent border-none outline-none text-xs text-gray-700 dark:text-gray-200 placeholder-gray-400"
+                  className="flex-1 border-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
                 />
               </div>
               <button
                 onClick={() => sendMessage()}
                 disabled={loading || !currentMessage.trim()}
-                className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 disabled:opacity-40 flex items-center justify-center transition-colors flex-shrink-0"
+                className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-all hover:scale-105 hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
               >
-                <Send className="h-3.5 w-3.5 text-white" />
+                <Send className="h-5 w-5" />
               </button>
             </div>
           </motion.div>

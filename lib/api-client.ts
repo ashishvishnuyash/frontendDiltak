@@ -5,9 +5,9 @@
  * Reads 'access_token' from localStorage and injects the Bearer header.
  */
 
-const RAW_BASE = process.env.NEXT_PUBLIC_UMA_API_URL;
+import ServerAddress from "@/constent/ServerAddress";
 
-export const API_BASE = `${RAW_BASE}/api`;
+
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -42,7 +42,7 @@ export async function apiRequest<T = unknown>(
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   };
 
-  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  const url = path.startsWith('http') ? path : `${ServerAddress}${path}`;
   const res = await fetch(url, init);
 
   if (!res.ok) {

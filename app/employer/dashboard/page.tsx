@@ -767,22 +767,22 @@ function OrgHRAnalyticsPage() {
   ];
 
   return (
-    <div className="px-4 sm:px-6 lg:px-6 py-6 max-w-[1400px] mx-auto space-y-5">
+    <div className="px-3 sm:px-6 lg:px-6 py-4 sm:py-6 max-w-[1400px] mx-auto space-y-4 sm:space-y-5">
       {/* Header */}
       <motion.div
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Building2 className="h-5 w-5 text-emerald-500" />
+            <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
             <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
               Org & HR Analytics
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">
             Organisation Health Analytics
           </h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
@@ -797,7 +797,7 @@ function OrgHRAnalyticsPage() {
             size="sm"
             className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 h-9 px-3 text-xs font-medium"
           >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 mr-1 sm:mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Button
@@ -806,8 +806,9 @@ function OrgHRAnalyticsPage() {
             size="sm"
             className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 h-9 px-3 text-xs font-medium"
           >
-            <Download className="h-3.5 w-3.5 mr-1.5" />
-            Export Report
+            <Download className="h-3.5 w-3.5 mr-1 sm:mr-1.5" />
+            <span className="hidden sm:inline">Export Report</span>
+            <span className="sm:hidden">Export</span>
           </Button>
         </div>
       </motion.div>

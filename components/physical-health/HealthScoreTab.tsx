@@ -1,11 +1,25 @@
+
+
 "use client";
 
 import { CalendarCheck, Flame, Loader2, Sparkles, TrendingUp } from "lucide-react";
-import { usePhysicalHealth } from "@/hooks/use-physical-health";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import type { PhysicalHealthTabId } from "@/app/employee/physical-health/page";
+import ServerAddress from "@/constent/ServerAddress";
 
 interface HealthScoreTabProps {
   onNavigate?: (tabId: PhysicalHealthTabId) => void;
+}
+
+interface HealthScoreData {
+  score: number;
+  level: string;
+  last_checkin_date: string | null;
+  days_since_checkin: number | null;
+  streak_days: number;
+  highlights: string[];
+  concerns: string[];
 }
 
 // Overall score from backend is on 0-10; scale to 0-100 for the ring.
@@ -39,20 +53,56 @@ function formatDate(iso?: string | null): string {
 }
 
 export default function HealthScoreTab({ onNavigate }: HealthScoreTabProps = {}) {
-  const { score, scoreLoading } = usePhysicalHealth();
+  const [score, setScore] = useState<HealthScoreData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (scoreLoading && !score) {
+  useEffect(() => {
+    const fetchHealthScore = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        
+        const response = await axios.get(`${ServerAddress}/physical-health/score`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+
+        console.log("Health score data", response.data);
+        setScore(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching health score:', err);
+        setError("Unable to load health score. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHealthScore();
+  }, []);
+
+  if (loading) {
     return (
-      <div className="py-20 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
+        <p className="text-sm text-destructive">{error}</p>
       </div>
     );
   }
 
   if (!score) {
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="rounded-lg border border-border bg-card p-8 text-center shadow-sm">
+        <p className="text-sm text-muted-foreground">
           No health score yet. Submit a few daily check-ins to see your score.
         </p>
       </div>
@@ -68,43 +118,43 @@ export default function HealthScoreTab({ onNavigate }: HealthScoreTabProps = {})
     score.days_since_checkin == null || score.days_since_checkin > 1;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       {needsCheckIn && (
         <button
           type="button"
           onClick={() => onNavigate?.("check-in")}
-          className="w-full text-left bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl p-4 shadow-sm flex items-center gap-3 hover:bg-amber-100/60 dark:hover:bg-amber-950/30 transition-colors"
+          className="flex w-full items-center gap-3 rounded-lg border border-warning/30 bg-warning/10 p-3 sm:p-4 text-left shadow-sm transition-colors hover:bg-warning/20"
         >
-          <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-            <CalendarCheck className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-lg bg-warning/20">
+            <CalendarCheck className="h-5 w-5 sm:h-5 sm:w-5 text-warning" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-warning-foreground">
               Check in today to keep your score accurate
             </p>
-            <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mt-0.5">
+            <p className="mt-0.5 text-xs text-warning-foreground/80">
               {score.days_since_checkin == null
                 ? "No check-ins yet — take a minute to log today."
                 : `It's been ${score.days_since_checkin} day${score.days_since_checkin === 1 ? "" : "s"} since your last check-in.`}
             </p>
           </div>
-          <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+          <span className="text-xs font-medium text-warning-foreground flex-shrink-0">
             Check in →
           </span>
         </button>
       )}
 
       {/* Overall Score */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm text-center">
-        <div className="relative inline-flex items-center justify-center mb-5">
-          <svg className="w-60 h-60" viewBox="0 0 200 200">
+      <div className="rounded-lg border border-border bg-card p-5 sm:p-8 text-center shadow-sm">
+        <div className="relative inline-flex items-center justify-center">
+          <svg className="h-44 w-44 sm:h-60 sm:w-60" viewBox="0 0 200 200">
             <circle
               cx="100"
               cy="100"
               r="85"
               strokeWidth="14"
               fill="none"
-              className="stroke-gray-100 dark:stroke-gray-700"
+              className="stroke-muted"
             />
             <circle
               cx="100"
@@ -121,35 +171,35 @@ export default function HealthScoreTab({ onNavigate }: HealthScoreTabProps = {})
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-bold text-gray-800 dark:text-gray-100">
+            <span className="text-3xl sm:text-4xl font-bold text-foreground">
               {overall.toFixed(1)}
             </span>
-            <span className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+            <span className="mt-1 text-sm text-muted-foreground">
               / 10
             </span>
           </div>
         </div>
-        <div className="flex items-center justify-center gap-2 mb-2">
+        <div className="mb-2 mt-4 flex flex-wrap items-center justify-center gap-2">
           <span
-            className={`text-sm font-semibold px-3 py-1 rounded-full capitalize ${levelStyle(
+            className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold capitalize ${levelStyle(
               score.level,
             )}`}
           >
             {score.level}
           </span>
           {score.streak_days > 0 ? (
-            <span className="inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400">
-              <Flame className="h-4 w-4" />
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+              <Flame className="h-5 w-5 sm:h-5 sm:w-5" />
               {score.streak_days}-day streak
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              <Flame className="h-4 w-4" />
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs sm:text-sm font-medium text-muted-foreground">
+              <Flame className="h-5 w-5 sm:h-5 sm:w-5" />
               Start your streak — check in today!
             </span>
           )}
         </div>
-        <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center justify-center gap-2">
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
           {score.last_checkin_date && (
             <span>Last check-in: {formatDate(score.last_checkin_date)}</span>
           )}
@@ -163,17 +213,17 @@ export default function HealthScoreTab({ onNavigate }: HealthScoreTabProps = {})
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Highlights */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-4 w-4 text-green-600 dark:text-green-400" />
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-success" />
+            <h3 className="text-base font-semibold text-foreground">
               Highlights
             </h3>
           </div>
           {score.highlights.length === 0 ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               Keep checking in — highlights will appear once we have enough
               data.
             </p>
@@ -182,9 +232,9 @@ export default function HealthScoreTab({ onNavigate }: HealthScoreTabProps = {})
               {score.highlights.map((h, i) => (
                 <li
                   key={i}
-                  className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed flex gap-2"
+                  className="flex gap-2 text-xs leading-relaxed text-foreground/80"
                 >
-                  <TrendingUp className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <TrendingUp className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-success" />
                   <span>{h}</span>
                 </li>
               ))}
@@ -193,15 +243,15 @@ export default function HealthScoreTab({ onNavigate }: HealthScoreTabProps = {})
         </div>
 
         {/* Concerns */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-warning" />
+            <h3 className="text-base font-semibold text-foreground">
               Areas to improve
             </h3>
           </div>
           {score.concerns.length === 0 ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               Nothing flagged — keep it up.
             </p>
           ) : (
@@ -209,9 +259,9 @@ export default function HealthScoreTab({ onNavigate }: HealthScoreTabProps = {})
               {score.concerns.map((c, i) => (
                 <li
                   key={i}
-                  className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed flex gap-2"
+                  className="flex gap-2 text-xs leading-relaxed text-foreground/80"
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0 mt-2" />
+                  <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-warning" />
                   <span>{c}</span>
                 </li>
               ))}

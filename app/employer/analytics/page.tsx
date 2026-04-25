@@ -162,13 +162,13 @@ function AnalyticsPage() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-6 py-6 max-w-[1400px] mx-auto space-y-6">
+    <div className="px-3 sm:px-6 lg:px-6 py-4 sm:py-6 max-w-[1400px] mx-auto space-y-4 sm:space-y-6">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <BarChart2 className="h-6 w-6 text-emerald-500" />
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <BarChart2 className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-500" />
             Organisation Analytics
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -180,30 +180,30 @@ function AnalyticsPage() {
           <Button
             onClick={() => setUseDemoData(!useDemoData)}
             variant="outline"
-            className={`rounded-xl border-gray-200 dark:border-gray-800 ${useDemoData ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'bg-white dark:bg-gray-950 text-gray-600'} h-10`}
+            className={`rounded-xl border-gray-200 dark:border-gray-800 ${useDemoData ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'bg-white dark:bg-gray-950 text-gray-600'} h-9 text-xs`}
           >
-            <Brain className="h-5 w-5 mr-2" />
-            {useDemoData ? 'Demo Mode: ON' : 'Use Demo Data'}
+            <Brain className="h-4 w-4 mr-1.5" />
+            {useDemoData ? 'Demo: ON' : 'Demo Data'}
           </Button>
           
           <Button
             variant="outline"
             onClick={fetchAnalytics}
-            className="rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-600 dark:text-gray-300 h-10"
+            className="rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-600 dark:text-gray-300 h-9 text-xs"
           >
-            <RefreshCw className="h-5 w-5 mr-2" />
+            <RefreshCw className="h-4 w-4 mr-1.5" />
             Refresh
           </Button>
 
-          <Button className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white h-10 px-4 font-semibold shadow-md shadow-emerald-500/10">
-            <Download className="h-5 w-5 mr-2" />
-            Download PDF
+          <Button className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white h-9 px-3 text-xs font-semibold shadow-md shadow-emerald-500/10">
+            <Download className="h-4 w-4 mr-1.5" />
+            PDF
           </Button>
         </div>
       </div>
 
       {/* Row 1: Key Metrics Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: 'Avg Wellness', value: `${analytics.wellnessMetrics.avgWellness}/10`, icon: Heart, color: 'text-emerald-500', bg: 'bg-emerald-50/50 dark:bg-emerald-950/10' },
           { label: 'Total Reports', value: analytics.wellnessMetrics.totalReports, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50/50 dark:bg-blue-950/10' },

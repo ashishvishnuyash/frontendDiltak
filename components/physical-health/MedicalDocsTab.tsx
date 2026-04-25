@@ -11,16 +11,9 @@ import {
   Upload,
   UploadCloud,
 } from "lucide-react";
-import {
-  ALLOWED_MEDICAL_EXTENSIONS,
-  MAX_MEDICAL_FILE_BYTES,
-  deleteMedicalDocument,
-  getMedicalDocument,
-  getMedicalDocumentStatus,
-  listMedicalDocuments,
-  uploadMedicalReport,
-} from "@/lib/physical-health-service";
+import axios from "axios";
 import { toast } from "@/hooks/use-toast";
+import ServerAddress from "@/constent/ServerAddress";
 import type {
   MedicalDocumentDetail,
   MedicalReportType,
@@ -37,35 +30,38 @@ const REPORT_TYPES: { value: MedicalReportType; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+const ALLOWED_MEDICAL_EXTENSIONS = [".pdf", ".docx", ".doc"];
+const MAX_MEDICAL_FILE_BYTES = 10 * 1024 * 1024; // 10MB
+
 const STATUS_STYLES: Record<string, string> = {
   uploaded:
-    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800/40",
+    "bg-info/10 text-info border-info/20",
   processing:
-    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/40",
+    "bg-warning/10 text-warning border-warning/20",
   analyzed:
-    "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800/40",
+    "bg-success/10 text-success border-success/20",
   failed:
-    "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800/40",
+    "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 const URGENCY_STYLES: Record<string, string> = {
   routine:
-    "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+    "bg-muted text-muted-foreground",
   follow_up:
-    "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300",
+    "bg-info/10 text-info",
   urgent:
-    "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300",
+    "bg-warning/10 text-warning",
   emergency:
-    "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300",
+    "bg-destructive/10 text-destructive",
 };
 
 const FLAG_STATUS_STYLES: Record<string, string> = {
   normal:
-    "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-300",
+    "bg-success/10 text-success",
   borderline:
-    "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300",
-  low: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300",
-  high: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300",
+    "bg-warning/10 text-warning",
+  low: "bg-info/10 text-info",
+  high: "bg-destructive/10 text-destructive",
 };
 
 function formatBytes(bytes: number): string {
@@ -108,8 +104,19 @@ export default function MedicalDocsTab() {
   const loadList = useCallback(async () => {
     setLoadingList(true);
     try {
-      const res = await listMedicalDocuments({ page: 1, limit: 50 });
-      setDocs(res.documents);
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${ServerAddress}/physical-health/medical`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      
+      if (response.data.success) {
+        setDocs(response.data.documents || []);
+      } else {
+        throw new Error("Failed to load documents");
+      }
     } catch (e) {
       toast({
         title: "Could not load documents",
@@ -133,17 +140,39 @@ export default function MedicalDocsTab() {
     }
   };
 
+  const getDocumentStatus = async (docId: string) => {
+    const token = localStorage.getItem('access_token');
+    const response = await axios.get(`${ServerAddress}/physical-health/medical/${docId}/status`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    return response.data;
+  };
+
+  const getDocumentDetail = async (docId: string) => {
+    const token = localStorage.getItem('access_token');
+    const response = await axios.get(`${ServerAddress}/physical-health/medical/${docId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    return response.data;
+  };
+
   const startPoller = useCallback((docId: string) => {
     if (pollersRef.current[docId]) return;
     let elapsed = 0;
     const handle = setInterval(async () => {
       elapsed += 3000;
       try {
-        const status = await getMedicalDocumentStatus(docId);
+        const status = await getDocumentStatus(docId);
         if (status.status === "analyzed" || status.status === "failed") {
           stopPoller(docId);
           try {
-            const detail = await getMedicalDocument(docId);
+            const detail = await getDocumentDetail(docId);
             setDocs((prev) =>
               prev.map((d) => (d.doc_id === docId ? detail : d)),
             );
@@ -226,20 +255,33 @@ export default function MedicalDocsTab() {
     }
     setUploading(true);
     try {
-      const res = await uploadMedicalReport(file, {
-        report_type: reportType,
-        report_date: reportDate || undefined,
-        issuing_facility: facility.trim() || undefined,
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('report_type', reportType);
+      if (reportDate) formData.append('report_date', reportDate);
+      if (facility.trim()) formData.append('issuing_facility', facility.trim());
+
+      const response = await axios.post(`${ServerAddress}/physical-health/medical/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
       });
-      toast({
-        title: "Upload started",
-        description: res.message || "Processing your document…",
-      });
-      setFile(null);
-      setReportDate("");
-      setFacility("");
-      await loadList();
-      startPoller(res.doc_id);
+
+      if (response.data.success) {
+        toast({
+          title: "Upload started",
+          description: response.data.message || "Processing your document…",
+        });
+        setFile(null);
+        setReportDate("");
+        setFacility("");
+        await loadList();
+        startPoller(response.data.doc_id);
+      } else {
+        throw new Error("Upload failed");
+      }
     } catch (err) {
       toast({
         title: "Upload failed",
@@ -259,7 +301,7 @@ export default function MedicalDocsTab() {
     setExpandedId(docId);
     if (!detailCache[docId]) {
       try {
-        const detail = await getMedicalDocument(docId);
+        const detail = await getDocumentDetail(docId);
         setDetailCache((prev) => ({ ...prev, [docId]: detail }));
       } catch (e) {
         toast({
@@ -275,7 +317,14 @@ export default function MedicalDocsTab() {
     if (!confirm("Delete this document? This cannot be undone.")) return;
     setDeletingId(docId);
     try {
-      await deleteMedicalDocument(docId);
+      const token = localStorage.getItem('access_token');
+      await axios.delete(`${ServerAddress}/physical-health/medical/${docId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      
       stopPoller(docId);
       setDocs((prev) => prev.filter((d) => d.doc_id !== docId));
       setDetailCache((prev) => {
@@ -303,17 +352,17 @@ export default function MedicalDocsTab() {
       {/* Upload panel */}
       <form
         onSubmit={onUpload}
-        className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4"
+        className="rounded-lg border border-border bg-card p-5 shadow-sm space-y-4"
       >
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/20 flex items-center justify-center flex-shrink-0">
-            <UploadCloud className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <UploadCloud className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            <h3 className="mb-1 text-base font-semibold text-foreground">
               Upload medical report
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               PDF or Word document, up to{" "}
               {formatBytes(MAX_MEDICAL_FILE_BYTES)}. AI analysis starts
               automatically.
@@ -321,9 +370,9 @@ export default function MedicalDocsTab() {
           </div>
         </div>
 
-        <label className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer transition-colors">
-          <Upload className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-          <span className="text-sm text-gray-700 dark:text-gray-300 flex-1 truncate">
+        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-input px-4 py-3 transition-colors hover:border-primary">
+          <Upload className="h-5 w-5 text-muted-foreground" />
+          <span className="flex-1 truncate text-sm text-foreground">
             {file
               ? `${file.name} (${formatBytes(file.size)})`
               : "Choose a file…"}
@@ -336,9 +385,9 @@ export default function MedicalDocsTab() {
           />
         </label>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+            <label className="mb-1 block text-xs text-muted-foreground">
               Report type
             </label>
             <select
@@ -346,7 +395,7 @@ export default function MedicalDocsTab() {
               onChange={(e) =>
                 setReportType(e.target.value as MedicalReportType)
               }
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {REPORT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -356,18 +405,18 @@ export default function MedicalDocsTab() {
             </select>
           </div>
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+            <label className="mb-1 block text-xs text-muted-foreground">
               Report date
             </label>
             <input
               type="date"
               value={reportDate}
               onChange={(e) => setReportDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+            <label className="mb-1 block text-xs text-muted-foreground">
               Issuing facility
             </label>
             <input
@@ -375,7 +424,7 @@ export default function MedicalDocsTab() {
               value={facility}
               onChange={(e) => setFacility(e.target.value)}
               placeholder="e.g. Apollo Hospital"
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
@@ -384,16 +433,16 @@ export default function MedicalDocsTab() {
           <button
             type="submit"
             disabled={uploading || !file}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium shadow-sm disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {uploading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
                 Uploading…
               </>
             ) : (
               <>
-                <UploadCloud className="h-4 w-4" />
+                <UploadCloud className="h-5 w-5" />
                 Upload
               </>
             )}
@@ -402,29 +451,29 @@ export default function MedicalDocsTab() {
       </form>
 
       {/* List */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <h3 className="text-base font-semibold text-foreground">
             Your medical documents
           </h3>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-muted-foreground">
             {docs.length} document{docs.length === 1 ? "" : "s"}
           </span>
         </div>
 
         {loadingList ? (
-          <div className="py-10 flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : docs.length === 0 ? (
           <div className="py-10 text-center">
-            <FileText className="h-10 w-10 mx-auto text-gray-300 dark:text-gray-600" />
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
+            <FileText className="mx-auto h-10 w-10 text-muted-foreground" />
+            <p className="mt-3 text-sm text-muted-foreground">
               No documents yet. Upload your first medical report above.
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+          <ul className="divide-y divide-border">
             {docs.map((d) => {
               const detail = detailCache[d.doc_id] ?? d;
               const isOpen = expandedId === d.doc_id;
@@ -433,22 +482,22 @@ export default function MedicalDocsTab() {
               return (
                 <li key={d.doc_id} className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                      <FileText className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="truncate text-sm font-medium text-foreground max-w-[160px] sm:max-w-none">
                           {d.filename}
                         </span>
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full border ${statusClass}`}
+                          className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass}`}
                         >
                           {d.status}
                         </span>
                         {d.urgency_level && (
                           <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full ${
+                            className={`rounded-full px-2 py-0.5 text-[10px] ${
                               URGENCY_STYLES[d.urgency_level as UrgencyLevel] ??
                               URGENCY_STYLES.routine
                             }`}
@@ -457,7 +506,7 @@ export default function MedicalDocsTab() {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+                      <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
                         <span>{d.report_type}</span>
                         <span>•</span>
                         <span>Uploaded {formatDate(d.uploaded_at)}</span>
@@ -474,42 +523,42 @@ export default function MedicalDocsTab() {
                     <button
                       type="button"
                       onClick={() => toggleExpand(d.doc_id)}
-                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="rounded-lg p-2 transition-colors hover:bg-muted"
                       aria-label={isOpen ? "Collapse" : "Expand"}
                     >
                       {isOpen ? (
-                        <ChevronUp className="h-4 w-4 text-gray-500" />
+                        <ChevronUp className="h-5 w-5 text-muted-foreground" />
                       ) : (
-                        <ChevronDown className="h-4 w-4 text-gray-500" />
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
                       )}
                     </button>
                     <button
                       type="button"
                       onClick={() => onDelete(d.doc_id)}
                       disabled={deletingId === d.doc_id}
-                      className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 transition-colors disabled:opacity-60"
+                      className="rounded-lg p-2 text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
                       aria-label="Delete"
                     >
                       {deletingId === d.doc_id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-5 w-5 animate-spin" />
                       ) : (
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-5 w-5" />
                       )}
                     </button>
                   </div>
 
                   {isOpen && (
-                    <div className="mt-4 ml-12 space-y-3">
+                    <div className="ml-0 sm:ml-12 mt-4 space-y-3">
                       {detail.status === "processing" ||
                       detail.status === "uploaded" ? (
-                        <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/20 rounded-xl p-3 border border-amber-200 dark:border-amber-800/30">
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                        <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
+                          <Loader2 className="h-5 w-5 animate-spin" />
                           Analysis in progress — this usually takes less than a
                           minute.
                         </div>
                       ) : detail.status === "failed" ? (
-                        <div className="flex items-start gap-2 text-xs text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/20 rounded-xl p-3 border border-red-200 dark:border-red-800/30">
-                          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                          <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0" />
                           Analysis failed. Try deleting and re-uploading the
                           document.
                         </div>
@@ -517,10 +566,10 @@ export default function MedicalDocsTab() {
                         <>
                           {detail.summary && (
                             <div>
-                              <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                              <h4 className="mb-1 text-xs font-semibold text-foreground">
                                 Summary
                               </h4>
-                              <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                              <p className="text-xs leading-relaxed text-foreground/80">
                                 {detail.summary}
                               </p>
                             </div>
@@ -528,10 +577,10 @@ export default function MedicalDocsTab() {
                           {detail.key_findings &&
                             detail.key_findings.length > 0 && (
                               <div>
-                                <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                <h4 className="mb-1 text-xs font-semibold text-foreground">
                                   Key findings
                                 </h4>
-                                <ul className="list-disc pl-5 space-y-0.5 text-xs text-gray-600 dark:text-gray-300">
+                                <ul className="list-inside list-disc space-y-0.5 text-xs text-foreground/80">
                                   {detail.key_findings.map((f, i) => (
                                     <li key={i}>{f}</li>
                                   ))}
@@ -541,13 +590,13 @@ export default function MedicalDocsTab() {
                           {detail.flagged_values &&
                             detail.flagged_values.length > 0 && (
                               <div>
-                                <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                <h4 className="mb-1 text-xs font-semibold text-foreground">
                                   Flagged values
                                 </h4>
-                                <div className="overflow-x-auto">
-                                  <table className="w-full text-xs">
+                                <div className="overflow-x-auto -mx-1">
+                                  <table className="w-full text-xs min-w-[360px]">
                                     <thead>
-                                      <tr className="text-left text-gray-500 dark:text-gray-400">
+                                      <tr className="text-left text-muted-foreground">
                                         <th className="py-1 pr-3 font-medium">
                                           Marker
                                         </th>
@@ -566,20 +615,20 @@ export default function MedicalDocsTab() {
                                       {detail.flagged_values.map((fv, i) => (
                                         <tr
                                           key={i}
-                                          className="border-t border-gray-100 dark:border-gray-800"
+                                          className="border-t border-border"
                                         >
-                                          <td className="py-1.5 pr-3 text-gray-700 dark:text-gray-300">
+                                          <td className="py-1.5 pr-3 text-foreground">
                                             {fv.name}
                                           </td>
-                                          <td className="py-1.5 pr-3 text-gray-700 dark:text-gray-300">
+                                          <td className="py-1.5 pr-3 text-foreground">
                                             {fv.value}
                                           </td>
-                                          <td className="py-1.5 pr-3 text-gray-500 dark:text-gray-400">
+                                          <td className="py-1.5 pr-3 text-muted-foreground">
                                             {fv.normal_range}
                                           </td>
                                           <td className="py-1.5 pr-3">
                                             <span
-                                              className={`text-[10px] px-2 py-0.5 rounded-full ${
+                                              className={`rounded-full px-2 py-0.5 text-[10px] ${
                                                 FLAG_STATUS_STYLES[fv.status] ??
                                                 FLAG_STATUS_STYLES.normal
                                               }`}
@@ -592,10 +641,10 @@ export default function MedicalDocsTab() {
                                     </tbody>
                                   </table>
                                 </div>
-                                <ul className="mt-2 space-y-1 text-[11px] text-gray-500 dark:text-gray-400">
+                                <ul className="mt-2 space-y-1 text-[11px] text-muted-foreground">
                                   {detail.flagged_values.map((fv, i) => (
                                     <li key={i}>
-                                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                                      <span className="font-medium text-foreground">
                                         {fv.name}:
                                       </span>{" "}
                                       {fv.plain_explanation}
@@ -607,10 +656,10 @@ export default function MedicalDocsTab() {
                           {detail.recommendations &&
                             detail.recommendations.length > 0 && (
                               <div>
-                                <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                <h4 className="mb-1 text-xs font-semibold text-foreground">
                                   Recommendations
                                 </h4>
-                                <ul className="list-disc pl-5 space-y-0.5 text-xs text-gray-600 dark:text-gray-300">
+                                <ul className="list-inside list-disc space-y-0.5 text-xs text-foreground/80">
                                   {detail.recommendations.map((r, i) => (
                                     <li key={i}>{r}</li>
                                   ))}
@@ -618,7 +667,7 @@ export default function MedicalDocsTab() {
                               </div>
                             )}
                           {detail.follow_up_needed && (
-                            <div className="text-xs text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/20 rounded-xl p-3 border border-blue-200 dark:border-blue-800/30">
+                            <div className="rounded-lg border border-info/30 bg-info/10 p-3 text-xs text-info">
                               Follow-up recommended — consider booking a
                               consultation.
                             </div>

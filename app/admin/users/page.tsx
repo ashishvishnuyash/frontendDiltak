@@ -36,12 +36,12 @@ export default function AdminUsers() {
   });
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] mx-auto">
+    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-[1400px] mx-auto">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+          <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             Users
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -50,58 +50,103 @@ export default function AdminUsers() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/admin/users/invite" className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-500/20 active:scale-95">
-            <Plus className="h-5 w-5" /> Invite User
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" /> Invite User
           </Link>
         </div>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: 'Total',     value: users.length,                                    icon: Users,       color: 'text-gray-800 dark:text-gray-100', bg: 'bg-secondary/50' },
           { label: 'Active',    value: users.filter(u => u.status === 'active').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
           { label: 'Managers',  value: users.filter(u => u.role === 'manager').length,  icon: Shield,      color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
           { label: 'Employers', value: users.filter(u => u.role === 'employer').length, icon: Building2,    color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
         ].map(s => (
-          <div key={s.label} className={`flex flex-col items-center justify-center p-5 rounded-2xl border border-border shadow-sm ${s.bg}`}>
+          <div key={s.label} className={`flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl border border-border shadow-sm ${s.bg}`}>
             <s.icon className={`h-5 w-5 ${s.color} opacity-80 mb-2`} />
-            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+            <p className={`text-xl sm:text-2xl font-black ${s.color}`}>{s.value}</p>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 text-center">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-3 sm:p-4 shadow-sm">
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, email or company..."
-              className="w-full h-11 pl-10 pr-4 text-sm bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+              className="w-full h-10 sm:h-11 pl-9 sm:pl-10 pr-4 text-sm bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
           </div>
-          <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border">
+          <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border overflow-x-auto scrollbar-hide">
             {['all', 'employee', 'manager', 'employer'].map(r => (
               <button
                 key={r}
                 onClick={() => setRoleFilter(r)}
-                className={`px-4 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all ${roleFilter === r ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all whitespace-nowrap ${roleFilter === r ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 {r}
               </button>
             ))}
           </div>
-          <button className="flex items-center gap-2 px-4 h-11 border border-border rounded-xl text-[11px] font-bold text-muted-foreground hover:bg-secondary transition-all">
-            <Download className="h-5 w-5" /> Export
-          </button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm overflow-hidden">
+      {/* Mobile card list */}
+      <div className="sm:hidden space-y-3">
+        {filtered.map((u, i) => (
+          <motion.div
+            key={u.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: i * 0.03 }}
+            className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+                  <span className="text-xs font-black text-indigo-500">{u.name[0]}</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-foreground text-sm truncate">{u.name}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{u.email}</p>
+                </div>
+              </div>
+              <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest flex-shrink-0 ${roleCls[u.role]}`}>{u.role}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{u.company}</span>
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(u.wellness / 10) * 100}%` }} />
+                </div>
+                <span className="font-bold text-foreground">{u.wellness}</span>
+                <span className={`flex items-center gap-1 text-[10px] font-bold uppercase ${u.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                  {u.status}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+        {filtered.length === 0 && (
+          <div className="py-16 text-center flex flex-col items-center justify-center">
+            <div className="w-14 h-14 bg-secondary/50 rounded-full flex items-center justify-center mb-3">
+              <Search className="h-7 w-7 text-muted-foreground/30" />
+            </div>
+            <p className="text-sm font-bold text-foreground">No users found</p>
+            <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table */}
+      <div className="hidden sm:block bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>

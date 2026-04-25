@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   CartesianGrid,
   Line,
@@ -18,7 +18,8 @@ import {
   Info,
   Loader2,
 } from "lucide-react";
-import { usePhysicalHealth } from "@/hooks/use-physical-health";
+import axios from "axios";
+import ServerAddress from "@/constent/ServerAddress";
 import type {
   TrendDirection,
   TrendPeriod,
@@ -65,6 +66,31 @@ const METRIC_BY_KEY: Record<MetricKey, MetricMeta> = Object.fromEntries(
   METRICS.map((m) => [m.key, m]),
 ) as Record<MetricKey, MetricMeta>;
 
+interface TrendsData {
+  period: string;
+  data_points: TrendPoint[];
+  averages: {
+    energy_level: number;
+    sleep_quality: number;
+    sleep_hours: number;
+    exercise_minutes: number;
+    nutrition_quality: number;
+    pain_level: number;
+    hydration: number;
+    exercise_days_per_week: number;
+  };
+  trend_direction: {
+    energy_level: TrendDirection;
+    sleep_quality: TrendDirection;
+    sleep_hours: TrendDirection;
+    exercise_minutes: TrendDirection;
+    nutrition_quality: TrendDirection;
+    pain_level: TrendDirection;
+    hydration: TrendDirection;
+  };
+  total_checkins: number;
+}
+
 function formatShortDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString(undefined, {
@@ -78,10 +104,10 @@ function formatShortDate(iso: string): string {
 
 function trendIcon(dir: TrendDirection | string) {
   if (dir === "improving")
-    return <ArrowUp className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />;
+    return <ArrowUp className="h-3.5 w-3.5 text-success" />;
   if (dir === "declining")
-    return <ArrowDown className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />;
-  return <ArrowRight className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />;
+    return <ArrowDown className="h-3.5 w-3.5 text-destructive" />;
+  return <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />;
 }
 
 function trendLabel(dir: TrendDirection | string): string {
@@ -92,10 +118,10 @@ function trendLabel(dir: TrendDirection | string): string {
 
 function trendClass(dir: TrendDirection | string): string {
   if (dir === "improving")
-    return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20";
+    return "text-success bg-success/10";
   if (dir === "declining")
-    return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20";
-  return "text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800";
+    return "text-destructive bg-destructive/10";
+  return "text-muted-foreground bg-muted";
 }
 
 // Right-axis metrics (minutes, hours) plot on a separate scale so the 1–10 lines
@@ -105,11 +131,37 @@ function isRightAxis(key: MetricKey): boolean {
 }
 
 export default function TrendsTab() {
-  const { trends, trendsLoading, refreshTrends } = usePhysicalHealth();
+  const [trends, setTrends] = useState<TrendsData | null>(null);
+  const [trendsLoading, setTrendsLoading] = useState(true);
   const [period, setPeriod] = useState<TrendPeriod>("30d");
   const [visible, setVisible] = useState<Set<MetricKey>>(
     () => new Set<MetricKey>(["energy_level", "sleep_quality"]),
   );
+
+  const fetchTrends = async (periodValue: TrendPeriod) => {
+    try {
+      setTrendsLoading(true);
+      const token = localStorage.getItem('access_token');
+      
+      const response = await axios.get(`${ServerAddress}/physical-health/trends`, {
+        params: { period: periodValue },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      
+      setTrends(response.data);
+    } catch (err) {
+      console.error('Error fetching trends:', err);
+    } finally {
+      setTrendsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrends(period);
+  }, [period]);
 
   const chartData = useMemo(() => {
     if (!trends) return [];
@@ -127,7 +179,6 @@ export default function TrendsTab() {
 
   const onPeriod = async (p: TrendPeriod) => {
     setPeriod(p);
-    await refreshTrends(p);
   };
 
   const toggleMetric = (key: MetricKey) => {
@@ -148,25 +199,25 @@ export default function TrendsTab() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-blue-500" />
+          <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <BarChart3 className="h-5 w-5 text-primary" />
             Health trends
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Daily averages from your check-ins. Gaps mean no check-in that day.
           </p>
         </div>
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+        <div className="flex gap-1 rounded-lg bg-muted p-1 self-start sm:self-auto">
           {PERIODS.map((p) => (
             <button
               key={p.value}
               onClick={() => onPeriod(p.value)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+              className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
                 period === p.value
-                  ? "bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {p.label}
@@ -183,10 +234,10 @@ export default function TrendsTab() {
             <button
               key={m.key}
               onClick={() => toggleMetric(m.key)}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                 on
-                  ? "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 shadow-sm"
-                  : "bg-transparent border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-500"
+                  ? "border-border bg-card text-foreground shadow-sm"
+                  : "border-border bg-transparent text-muted-foreground"
               }`}
             >
               <span
@@ -200,18 +251,18 @@ export default function TrendsTab() {
       </div>
 
       {/* Chart */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+      <div className="rounded-lg border border-border bg-card p-3 sm:p-5 shadow-sm">
         {trendsLoading && !trends ? (
-          <div className="h-[320px] flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+          <div className="flex h-[240px] sm:h-[320px] items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : !trends || trends.total_checkins === 0 ? (
-          <div className="h-[320px] flex flex-col items-center justify-center text-center">
-            <Info className="h-8 w-8 text-gray-300 dark:text-gray-600 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex h-[240px] sm:h-[320px] flex-col items-center justify-center text-center">
+            <Info className="mb-2 h-8 w-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
               No check-ins yet for this period.
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <p className="mt-1 text-xs text-muted-foreground">
               Submit a daily check-in and your trends will appear here.
             </p>
           </div>
@@ -223,32 +274,33 @@ export default function TrendsTab() {
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                className="stroke-gray-100 dark:stroke-gray-800"
+                className="stroke-border"
               />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 11 }}
-                className="text-gray-400 dark:text-gray-500"
+                className="text-muted-foreground"
               />
               <YAxis
                 yAxisId="left"
                 domain={[0, 10]}
                 tick={{ fontSize: 11 }}
-                className="text-gray-400 dark:text-gray-500"
+                className="text-muted-foreground"
               />
               {usesRight && (
                 <YAxis
                   yAxisId="right"
                   orientation="right"
                   tick={{ fontSize: 11 }}
-                  className="text-gray-400 dark:text-gray-500"
+                  className="text-muted-foreground"
                 />
               )}
               <RechartsTooltip
                 contentStyle={{
                   fontSize: 12,
-                  borderRadius: 12,
-                  borderColor: "rgba(0,0,0,0.08)",
+                  borderRadius: 8,
+                  borderColor: "hsl(var(--border))",
+                  backgroundColor: "hsl(var(--background))",
                 }}
               />
               {Array.from(visible).map((key) => {
@@ -273,38 +325,37 @@ export default function TrendsTab() {
         )}
       </div>
 
-      {/* Trend direction per metric */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+      <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
+        <h3 className="mb-4 text-base font-semibold text-foreground">
           Trend direction
         </h3>
         {!trends ? (
-          <p className="text-xs text-gray-400 dark:text-gray-500">
+          <p className="text-xs text-muted-foreground">
             No data yet.
           </p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {METRICS.map((m) => {
               // `pain_relief` maps back to the backend's `pain_level` key.
               const backendKey =
                 m.key === "pain_relief" ? "pain_level" : m.key;
-              const dir = trends.trend_direction[backendKey] ?? "stable";
+              const dir = trends.trend_direction[backendKey as keyof typeof trends.trend_direction] ?? "stable";
               return (
                 <div
                   key={m.key}
-                  className="flex items-center justify-between px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-800"
+                  className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
                 >
                   <div className="flex items-center gap-2">
                     <span
                       className="h-2 w-2 rounded-full"
                       style={{ backgroundColor: m.color }}
                     />
-                    <span className="text-xs text-gray-700 dark:text-gray-300">
+                    <span className="text-xs text-foreground">
                       {m.label}
                     </span>
                   </div>
                   <span
-                    className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${trendClass(dir)}`}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${trendClass(dir)}`}
                   >
                     {trendIcon(dir)}
                     {trendLabel(dir)}
@@ -316,17 +367,16 @@ export default function TrendsTab() {
         )}
       </div>
 
-      {/* Averages */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+      <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
+        <h3 className="mb-4 text-base font-semibold text-foreground">
           Period averages
         </h3>
         {!trends ? (
-          <p className="text-xs text-gray-400 dark:text-gray-500">
+          <p className="text-xs text-muted-foreground">
             No data yet.
           </p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             <AverageCell label="Energy" value={trends.averages.energy_level} suffix="/10" />
             <AverageCell label="Sleep quality" value={trends.averages.sleep_quality} suffix="/10" />
             <AverageCell label="Sleep hours" value={trends.averages.sleep_hours} suffix="h" />
@@ -369,11 +419,11 @@ function AverageCell({
         : value.toFixed(1)
       : "—";
   return (
-    <div className="rounded-xl border border-gray-100 dark:border-gray-800 p-3">
-      <p className="text-[11px] text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="text-base font-semibold text-gray-800 dark:text-gray-100 mt-0.5">
+    <div className="rounded-lg border border-border p-3">
+      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-base font-semibold text-foreground">
         {v}
-        <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-0.5">
+        <span className="ml-0.5 text-xs font-normal text-muted-foreground">
           {suffix}
         </span>
       </p>

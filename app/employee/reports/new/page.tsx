@@ -355,53 +355,41 @@ export default function NewReportPage() {
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <motion.div
           className="absolute top-20 left-10 w-72 h-72 bg-emerald-300/20 dark:bg-emerald-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.2, 1],
-          }}
+          animate={{ x: [0, 100, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute top-40 right-20 w-96 h-96 bg-blue-300/20 dark:bg-blue-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, -80, 0],
-            y: [0, 100, 0],
-            scale: [1, 1.3, 1],
-          }}
+          animate={{ x: [0, -80, 0], y: [0, 100, 0], scale: [1, 1.3, 1] }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-20 left-1/3 w-80 h-80 bg-teal-300/20 dark:bg-teal-600/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, 60, 0],
-            y: [0, -80, 0],
-            scale: [1, 1.1, 1],
-          }}
+          animate={{ x: [0, 60, 0], y: [0, -80, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
-      <div className="max-w-auto mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-auto mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <Link href="/employee/dashboard" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back to Dashboard
+        <div className="mb-6 sm:mb-8">
+          <Link href="/employee/dashboard" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-3 sm:mb-4">
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+            <span className="text-sm sm:text-base">Back to Dashboard</span>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">New Wellness Report</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">New Wellness Report</h1>
+          <p className="text-sm text-gray-600 mt-1 sm:mt-2">
             Take a moment to reflect on your current mental and emotional state.
           </p>
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-xs sm:text-sm font-medium text-gray-700">
               Step {currentStep} of {totalSteps}: {getStepTitle(currentStep)}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-xs sm:text-sm text-gray-500">
               {Math.round((currentStep / totalSteps) * 100)}% Complete
             </span>
           </div>
@@ -410,12 +398,12 @@ export default function NewReportPage() {
 
         {/* Form Card */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">{getStepTitle(currentStep)}</CardTitle>
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="text-lg sm:text-xl">{getStepTitle(currentStep)}</CardTitle>
           </CardHeader>
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-8">
             {error && (
-              <Alert variant="destructive" className="mb-6">
+              <Alert variant="destructive" className="mb-4 sm:mb-6">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -423,11 +411,12 @@ export default function NewReportPage() {
             {renderStep()}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8 pt-6 border-t">
+            <div className="flex justify-between mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
               <Button
                 variant="outline"
                 onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
                 disabled={currentStep === 1}
+                className="text-sm"
               >
                 Previous
               </Button>
@@ -435,6 +424,7 @@ export default function NewReportPage() {
               {currentStep < totalSteps ? (
                 <Button
                   onClick={() => setCurrentStep(prev => Math.min(totalSteps, prev + 1))}
+                  className="text-sm"
                 >
                   Next
                 </Button>
@@ -442,7 +432,7 @@ export default function NewReportPage() {
                 <Button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-green-600 hover:bg-green-700 text-sm"
                 >
                   {loading ? (
                     <>
@@ -451,7 +441,7 @@ export default function NewReportPage() {
                     </>
                   ) : (
                     <>
-                      <Save className="h-5 w-5 mr-2" />
+                      <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                       Save Report
                     </>
                   )}
@@ -462,8 +452,8 @@ export default function NewReportPage() {
         </Card>
 
         {/* Privacy Notice */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800">
+        <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 rounded-lg">
+          <p className="text-xs sm:text-sm text-blue-800">
             <strong>Privacy Notice:</strong> Your wellness data is encrypted and stored securely. 
             Only you can view your individual reports. Employers can only see anonymized, 
             aggregated data to understand overall team wellness trends.

@@ -220,17 +220,20 @@ function EmployeeReportsPage() {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-6 py-6 max-w-[1400px] mx-auto bg-gray-50 dark:bg-gray-950 min-h-full rounded-xl">
+    <div className="px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-[1400px] mx-auto bg-gray-50 dark:bg-gray-950 min-h-full rounded-xl">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
         <h1 className="text-base font-semibold text-gray-800 dark:text-white">
           My Wellness Reports
         </h1>
-    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-sm overflow-hidden bg-white dark:bg-gray-900">
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* View toggle */}
+          <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-sm overflow-hidden bg-white dark:bg-gray-900">
             <button
               onClick={() => setViewMode('interactive')}
-              className={`px-5 py-1.5 text-sm font-medium transition-all ${
+              className={`px-3 sm:px-5 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                 viewMode === 'interactive'
                   ? 'bg-emerald-600 text-white'
                   : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -240,7 +243,7 @@ function EmployeeReportsPage() {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`px-5 py-1.5 text-sm font-medium transition-all ${
+              className={`px-3 sm:px-5 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                 viewMode === 'list'
                   ? 'bg-emerald-600 text-white'
                   : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -249,23 +252,21 @@ function EmployeeReportsPage() {
               List
             </button>
           </div>
-          
-        <div className="flex items-center gap-3">
-          {/* View toggle — pill style matching image */}
-      
 
           {/* Export */}
           <button
             onClick={() => setExportOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-1.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-sm transition-colors"
+            className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs sm:text-sm font-medium rounded-sm transition-colors"
           >
-            <FileDown className="h-5 w-5" />
-            Export
+            <FileDown className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Export</span>
           </button>
 
           {/* Add Report */}
-          <Link href="/employee/reports/new" className="flex items-center gap-1.5 px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-sm transition-colors">
-            Add Report <Plus className="h-5 w-5" />
+          <Link href="/employee/reports/new" className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-sm transition-colors">
+            <span className="hidden sm:inline">Add Report</span>
+            <span className="sm:hidden">Add</span>
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
           </Link>
 
           {/* Refresh */}
@@ -275,7 +276,7 @@ function EmployeeReportsPage() {
             className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50"
             aria-label="Refresh"
           >
-            <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>

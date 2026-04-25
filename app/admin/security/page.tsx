@@ -39,12 +39,12 @@ export default function AdminSecurity() {
   const [showIPBlock, setShowIPBlock] = useState(true);
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] mx-auto">
+    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-[1400px] mx-auto">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+          <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             Security
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -53,14 +53,14 @@ export default function AdminSecurity() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 shadow-sm">
-            <ShieldCheck className="h-5 w-5 text-emerald-500" />
+            <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Platform Secure</span>
           </div>
         </div>
       </div>
 
       {/* Security score + alerts summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 flex flex-col items-center justify-center text-center shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
             <ShieldCheck className="h-20 w-20 -mr-6 -mt-6" />
@@ -182,13 +182,35 @@ export default function AdminSecurity() {
           </div>
         </div>
 
-        {/* Login attempts table */}
+        {/* Login attempts */}
         <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm flex flex-col">
-          <div className="px-6 py-5 border-b border-border">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
             <h2 className="text-sm font-black text-foreground tracking-tight uppercase">Recent Access Logs</h2>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Last 24 hours of platform login attempts</p>
           </div>
-          <div className="overflow-x-auto flex-1">
+          {/* Mobile card list */}
+          <div className="sm:hidden p-4 space-y-3">
+            {loginAttempts.map((a) => {
+              const Icon = statusIcon[a.status];
+              return (
+                <div key={a.id} className="p-3 rounded-xl bg-secondary/30 border border-border">
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <p className="font-bold text-foreground text-xs truncate">{a.user}</p>
+                    <div className={`flex items-center gap-1 font-black text-[10px] uppercase tracking-widest flex-shrink-0 ${statusCls[a.status]}`}>
+                      <Icon className="h-3 w-3" />
+                      {a.status}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span className="font-mono">{a.ip}</span>
+                    <span>{a.time}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto flex-1">
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-secondary/30">
@@ -198,7 +220,7 @@ export default function AdminSecurity() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {loginAttempts.map((a, i) => {
+                {loginAttempts.map((a) => {
                   const Icon = statusIcon[a.status];
                   return (
                     <tr key={a.id} className="hover:bg-secondary/20 transition-colors group">

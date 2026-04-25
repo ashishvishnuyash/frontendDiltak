@@ -141,9 +141,8 @@ export default function SleepTab() {
 
   return (
     <div className="space-y-5">
-      {/* Period selector */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
           Sleep trends
         </h3>
         <div className="inline-flex items-center gap-1 bg-white dark:bg-gray-900 rounded-xl p-1 border border-gray-100 dark:border-gray-800 shadow-sm">
@@ -200,9 +199,8 @@ export default function SleepTab() {
             ))}
           </div>
 
-          {/* Weekly pattern */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm mt-4">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">
               Recent sleep pattern
             </h3>
             {weekPoints.length === 0 ? (
@@ -253,9 +251,8 @@ export default function SleepTab() {
         </>
       )}
 
-      {/* Improvement tips */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">
           Sleep improvement programme
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

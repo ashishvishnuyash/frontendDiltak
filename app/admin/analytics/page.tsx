@@ -45,20 +45,20 @@ export default function AdminAnalytics() {
   const [range, setRange] = useState<typeof ranges[number]>('7 days');
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-[1400px] mx-auto">
+    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5 max-w-[1400px] mx-auto">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Analytics</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Analytics</h1>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Platform-wide wellness and engagement metrics</p>
         </div>
-        <div className="flex gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1">
+        <div className="flex gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1 self-start sm:self-auto">
           {ranges.map(r => (
             <button
               key={r}
               onClick={() => setRange(r)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${range === r ? 'bg-indigo-500 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              className={`px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${range === r ? 'bg-indigo-500 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
             >
               {r}
             </button>
@@ -67,7 +67,7 @@ export default function AdminAnalytics() {
       </div>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {topMetrics.map((m, i) => {
           const Icon = m.icon;
           return (

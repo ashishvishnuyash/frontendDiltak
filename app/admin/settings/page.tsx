@@ -38,34 +38,58 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-[1400px] mx-auto space-y-6">
+    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-[1400px] mx-auto space-y-4 sm:space-y-6">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+          <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             Settings
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-medium">
             Configure system-wide parameters, security protocols, and visual preferences.
           </p>
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-start sm:justify-end">
           <button
             onClick={handleSave}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${saved ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20'}`}
+            className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${saved ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20'}`}
           >
-            {saved ? <CheckCircle className="h-5 w-5" /> : <Save className="h-5 w-5" />}
-            {saved ? 'Changes Saved' : 'Update Configuration'}
+            {saved ? <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" /> : <Save className="h-4 w-4 sm:h-5 sm:w-5" />}
+            {saved ? 'Saved' : 'Save Changes'}
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-8">
 
-        {/* Sidebar nav */}
+        {/* Mobile: horizontal scrollable tabs / Desktop: sidebar nav */}
         <div className="lg:w-64 flex-shrink-0">
-          <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-2 shadow-sm sticky top-6">
+          {/* Mobile horizontal tabs */}
+          <div className="lg:hidden overflow-x-auto scrollbar-hide">
+            <div className="flex gap-1 p-1 bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm min-w-max">
+              {sections.map(s => {
+                const Icon = sectionIcon[s];
+                const isActive = active === s;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setActive(s)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                      isActive
+                        ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/20'
+                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    {s}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {/* Desktop sidebar */}
+          <div className="hidden lg:block bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-2 shadow-sm sticky top-6">
             {sections.map(s => {
               const Icon = sectionIcon[s];
               const isActive = active === s;

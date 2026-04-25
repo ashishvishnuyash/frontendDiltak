@@ -167,32 +167,33 @@ function EmployeeDashboard() {
   ];
 
   return (
-    <div className="px-4 sm:px-6 lg:px-6 py-6 max-w-[1400px] mx-auto space-y-5">
+    <div className="px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-[1400px] mx-auto space-y-4 sm:space-y-5">
 
       {/* ── ROW 1: Wellness Snap + Daily Tips ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-5">
 
         {/* Current Wellness Snap */}
-        <div className="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Current Wellness Snap</h2>
+        <div className="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100">Current Wellness Snap</h2>
             <Link href="/employee/reports"
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              <BarChart2 className="h-3.5 w-3.5" />
-              View Analytics
+              className="flex items-center gap-1 sm:gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <BarChart2 className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+              <span className="hidden sm:inline">View Analytics</span>
+              <span className="sm:hidden">Analytics</span>
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
 
           {latest ? (
-            <div className="bg-green-50/60 dark:bg-green-950/10 rounded-2xl p-6 flex items-center justify-around flex-wrap gap-6">
+            <div className="bg-green-50/60 dark:bg-green-950/10 rounded-2xl p-4 sm:p-6 grid grid-cols-2 sm:flex sm:items-center sm:justify-around gap-4 sm:gap-6">
               <Ring value={latest.mood_rating} color="#3B82F6" emoji="😊" label="MOOD" />
               <Ring value={latest.energy_level} color="#10B981" emoji="⚡" label="ENERGY" />
               <Ring value={latest.stress_level} color="#F59E0B" emoji="🌸" label="STRESS" />
               <Ring value={latest.overall_wellness} color="#10B981" emoji="🌿" label="WELLNESS" />
             </div>
           ) : (
-            <div className="bg-green-50/60 dark:bg-green-950/10 rounded-2xl p-10 flex flex-col items-center gap-3">
+            <div className="bg-green-50/60 dark:bg-green-950/10 rounded-2xl p-8 sm:p-10 flex flex-col items-center gap-3">
               <Brain className="h-10 w-10 text-gray-300 dark:text-gray-600" />
               <p className="text-sm text-gray-400">No check-ins yet</p>
               <Link href="/employee/reports/new" className="text-xs font-medium text-emerald-600 hover:underline">
@@ -203,22 +204,22 @@ function EmployeeDashboard() {
         </div>
 
         {/* Daily Wellness Tips */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Daily Wellness Tips</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100">Daily Wellness Tips</h2>
             <Link href="/employee/wellness-hub"
               className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-emerald-600 transition-colors">
               View All <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 sm:gap-3">
             {tips.map(t => (
-              <div key={t.title} className={`flex items-center gap-3 p-3.5 rounded-xl ${t.bg}`}>
+              <div key={t.title} className={`flex items-center gap-3 p-3 sm:p-3.5 rounded-xl ${t.bg}`}>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t.title}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{t.body}</p>
                 </div>
-                <span className="text-3xl flex-shrink-0">{t.emoji}</span>
+                <span className="text-2xl sm:text-3xl flex-shrink-0">{t.emoji}</span>
               </div>
             ))}
           </div>
@@ -226,55 +227,55 @@ function EmployeeDashboard() {
       </div>
 
       {/* ── ROW 2: Wellness Trends + Recent Reports ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-5">
 
         {/* Wellness Trends */}
-        <div className="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">
+        <div className="xl:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100">
               Wellness Trends <span className="text-xs font-normal text-gray-400">(Last 7 days)</span>
             </h2>
             <Link href="/employee/reports"
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              <BarChart2 className="h-3.5 w-3.5" />
-              View Analytics
+              className="flex items-center gap-1 sm:gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <BarChart2 className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+              <span className="hidden sm:inline">View Analytics</span>
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
 
           {chartData.length > 0 ? (
-            <div className="flex gap-4 items-start">
-              <div className="flex-1 min-w-0">
-                <ResponsiveContainer width="100%" height={200}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
+              <div className="flex-1 min-w-0 w-full">
+                <ResponsiveContainer width="100%" height={180}>
                   <LineChart data={chartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                    <XAxis dataKey="date" tick={{ fontSize: 9 }} />
-                    <YAxis domain={[0, 10]} tick={{ fontSize: 9 }} ticks={[0, 2, 4, 6, 8, 10]} />
+                    <XAxis dataKey="date" tick={{ fontSize: 8 }} />
+                    <YAxis domain={[0, 10]} tick={{ fontSize: 8 }} ticks={[0, 2, 4, 6, 8, 10]} />
                     <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #e5e7eb' }} />
-                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-                    <Line type="monotone" dataKey="Mood" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="Stress" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="Energy" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 10, paddingTop: 8 }} />
+                    <Line type="monotone" dataKey="Mood" stroke="#3B82F6" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="Stress" stroke="#F59E0B" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="Energy" stroke="#10B981" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
               {/* Average Wellness card */}
-              <div className="flex-shrink-0 w-28 border border-gray-100 dark:border-gray-700 rounded-xl p-3 flex flex-col items-center justify-center gap-1 self-center">
+              <div className="flex-shrink-0 sm:w-28 w-full sm:self-center border border-gray-100 dark:border-gray-700 rounded-xl p-3 flex sm:flex-col items-center justify-center gap-2 sm:gap-1">
                 <p className="text-[10px] text-gray-400 text-center leading-tight">Average Wellness</p>
-                <p className="text-4xl font-bold text-emerald-500">{String(avgWellness).padStart(2, '0')}</p>
+                <p className="text-3xl sm:text-4xl font-bold text-emerald-500">{String(avgWellness).padStart(2, '0')}</p>
               </div>
             </div>
           ) : (
-            <div className="h-[200px] flex items-center justify-center">
-              <p className="text-sm text-gray-400">No data yet — complete a check-in to see trends.</p>
+            <div className="h-[180px] flex items-center justify-center">
+              <p className="text-sm text-gray-400 text-center px-4">No data yet — complete a check-in to see trends.</p>
             </div>
           )}
         </div>
 
         {/* Recent Reports */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Recent Reports</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100">Recent Reports</h2>
             <Link href="/employee/reports"
               className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-emerald-600 transition-colors">
               View All <ArrowRight className="h-3 w-3" />
@@ -285,11 +286,11 @@ function EmployeeDashboard() {
             <div className="space-y-1">
               {/* AI summary banner */}
               <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 mb-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-gray-400" />
-                  <span className="text-[11px] text-gray-500 dark:text-gray-400">AI Summary of your recent behaviour</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Sparkles className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                  <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 truncate">AI Summary of your recent behaviour</span>
                 </div>
-                <span className="text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full">● Balanced</span>
+                <span className="text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full flex-shrink-0 ml-2">● Balanced</span>
               </div>
               {reports[0] && (
                 <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 italic px-1 mb-3">
@@ -301,12 +302,12 @@ function EmployeeDashboard() {
               <div className="grid grid-cols-3 gap-2">
                 {reports.slice(0, 3).map((r, i) => {
                   const rl = riskLabel(r.risk_level);
-                  const dateStr = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                  const dateStr = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
                   return (
-                    <div key={r.id} className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800">
-                      <p className="text-[10px] font-semibold text-gray-700 dark:text-gray-300 leading-tight">{dateStr}</p>
+                    <div key={r.id} className="flex flex-col gap-1.5 p-2 sm:p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800">
+                      <p className="text-[9px] sm:text-[10px] font-semibold text-gray-700 dark:text-gray-300 leading-tight">{dateStr}</p>
                       <div className="flex items-center gap-1">
-                        <span className="text-sm font-bold text-gray-800 dark:text-gray-100">{r.overall_wellness}/10</span>
+                        <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100">{r.overall_wellness}/10</span>
                         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${rl.dot}`} />
                       </div>
                       <div className="space-y-0.5">
@@ -332,9 +333,9 @@ function EmployeeDashboard() {
       </div>
 
       {/* ── ROW 3: Quick Actions ── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5 shadow-sm">
+        <h2 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {quickActions.map(a => (
             <QuickAction key={a.href} {...a} />
           ))}

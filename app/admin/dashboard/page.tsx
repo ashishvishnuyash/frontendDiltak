@@ -125,19 +125,19 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-[1400px] mx-auto opacity-100 transition-opacity duration-300">
+    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-5 max-w-[1400px] mx-auto opacity-100 transition-opacity duration-300">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+          <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             Admin Dashboard
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-medium">
             Platform overview — {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {loading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full border border-emerald-500/20">
             <span className="relative flex h-2 w-2">
@@ -145,18 +145,14 @@ export default function AdminDashboard() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              {loading ? 'Fetching live data...' : 'All systems operational'}
+              {loading ? 'Fetching...' : 'All systems operational'}
             </span>
           </div>
-          <div className="h-8 w-px bg-border hidden sm:block mx-1" />
-          <button className="p-2 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors border border-border">
-            <Zap className="h-5 w-5 text-amber-500" />
-          </button>
         </div>
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((s, i) => {
           const Icon = s.icon;
           return (
@@ -166,15 +162,15 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
+              className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 sm:p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
             >
               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Icon className="h-16 w-16 -mr-4 -mt-4 rotate-12" />
               </div>
               
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center shadow-inner`}>
-                  <Icon className={`h-5 w-5 ${s.color}`} />
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${s.bg} flex items-center justify-center shadow-inner`}>
+                  <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${s.color}`} />
                 </div>
                 <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-lg text-[10px] font-bold ${s.up ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' : 'bg-red-50 text-red-500 dark:bg-red-500/10'}`}>
                   {s.up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -183,12 +179,12 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <p className="text-3xl font-black text-foreground tracking-tight">
+                <p className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
                   {loading ? '---' : s.value}
                 </p>
-                <div className="flex items-center justify-between mt-1">
-                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{s.label}</p>
-                  <p className="text-[10px] text-muted-foreground/60 italic">{s.delta}</p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-1 gap-0.5">
+                  <p className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{s.label}</p>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground/60 italic">{s.delta}</p>
                 </div>
               </div>
             </motion.div>
@@ -197,11 +193,11 @@ export default function AdminDashboard() {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-5">
 
         {/* Trend chart */}
-        <div className="xl:col-span-2 bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
+        <div className="xl:col-span-2 bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 sm:p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div>
               <h2 className="text-sm font-bold text-foreground">Platform Activity</h2>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Last 7 days performance</p>
@@ -210,7 +206,7 @@ export default function AdminDashboard() {
               Full analytics <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="gUsers" x1="0" y1="0" x2="0" y2="1">
@@ -223,30 +219,9 @@ export default function AdminDashboard() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-muted-foreground/10" vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fontWeight: 600 }}
-                dy={10}
-                className="text-muted-foreground"
-              />
-              <YAxis 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fontWeight: 600 }}
-                dx={-10}
-                className="text-muted-foreground"
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  fontSize: 11, 
-                  borderRadius: '12px', 
-                  border: '1px solid hsl(var(--border))',
-                  backgroundColor: 'hsl(var(--card))',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }} 
-              />
+              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600 }} dy={10} className="text-muted-foreground" />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600 }} dx={-10} className="text-muted-foreground" />
+              <Tooltip contentStyle={{ fontSize: 11, borderRadius: '12px', border: '1px solid hsl(var(--border))', backgroundColor: 'hsl(var(--card))', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
               <Area type="monotone" dataKey="users" stroke="#6366f1" fill="url(#gUsers)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} name="Users" />
               <Area type="monotone" dataKey="reports" stroke="#10b981" fill="url(#gReports)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} name="Reports" />
             </AreaChart>
@@ -254,22 +229,22 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent activity */}
-        <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 sm:p-6 shadow-sm overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div>
               <h2 className="text-sm font-bold text-foreground">Live Activity</h2>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Real-time system events</p>
             </div>
             <Link href="/admin/activity" className="text-[11px] font-bold text-indigo-500 hover:text-indigo-600 transition-colors">View all</Link>
           </div>
-          <div className="space-y-4 flex-1">
+          <div className="space-y-3 sm:space-y-4 flex-1">
             {recentActivity.map((a, i) => {
               const Icon = a.icon;
               return (
-                <div key={i} className="flex gap-4 group cursor-pointer">
+                <div key={i} className="flex gap-3 sm:gap-4 group cursor-pointer">
                   <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-xl ${a.dot.replace('bg-', 'bg-').split('-')[0]}-500/10 dark:${a.dot}-500/20 flex items-center justify-center border border-border group-hover:border-indigo-500/30 transition-all`}>
-                      <Icon className={`h-5 w-5 ${a.dot.replace('bg-', 'text-')}`} />
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-secondary flex items-center justify-center border border-border group-hover:border-indigo-500/30 transition-all`}>
+                      <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${a.dot.replace('bg-', 'text-')}`} />
                     </div>
                     {i < recentActivity.length - 1 && <div className="w-px flex-1 bg-border my-1" />}
                   </div>
@@ -285,19 +260,19 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Role Breakdown (New Component using roleBreakdown data) */}
-      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+      {/* Role Breakdown */}
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 sm:p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div>
             <h2 className="text-sm font-bold text-foreground">Role Distribution</h2>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">User accounts by permission level</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
           {statsData?.roleBreakdown && Object.entries(statsData.roleBreakdown).map(([role, count]) => (
-            <div key={role} className="p-4 rounded-xl bg-secondary/50 border border-border flex flex-col items-center text-center">
+            <div key={role} className="p-3 sm:p-4 rounded-xl bg-secondary/50 border border-border flex flex-col items-center text-center">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter mb-1">{role}</p>
-              <p className="text-xl font-black text-foreground">{count.toLocaleString()}</p>
+              <p className="text-lg sm:text-xl font-black text-foreground">{count.toLocaleString()}</p>
             </div>
           ))}
           {!statsData?.roleBreakdown && [1,2,3,4].map(i => (
@@ -307,8 +282,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* Top companies */}
-      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 sm:p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div>
             <h2 className="text-sm font-bold text-foreground">Top Organizations</h2>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">By overall engagement & wellness</p>
@@ -317,7 +292,28 @@ export default function AdminDashboard() {
             All companies <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-        <div className="overflow-x-auto -mx-6">
+        {/* Mobile card view */}
+        <div className="sm:hidden space-y-3">
+          {topCompanies.map((c, i) => (
+            <div key={i} className="p-3 rounded-xl border border-border bg-secondary/20">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-bold text-foreground">{c.name}</p>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${riskCls[c.risk as keyof typeof riskCls]}`}>{c.risk}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{c.users.toLocaleString()} users</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(c.wellness / 10) * 100}%` }} />
+                  </div>
+                  <span className="font-bold text-foreground">{c.wellness}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Desktop table view */}
+        <div className="hidden sm:block overflow-x-auto -mx-6">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border bg-secondary/30">
@@ -353,7 +349,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
           { href: '/admin/companies', icon: Building2,   label: 'Companies', sub: `${statsData?.totalCompanies || 48} active`, bg: 'from-blue-500 to-indigo-600' },
           { href: '/admin/users',     icon: Users,       label: 'Users',     sub: `${statsData?.totalUsers || '3,241'} total`, bg: 'from-emerald-500 to-teal-600' },
@@ -365,17 +361,17 @@ export default function AdminDashboard() {
             <Link key={q.href} href={q.href}>
               <motion.div 
                 whileHover={{ y: -4 }}
-                className="group flex flex-col gap-4 p-5 bg-card dark:bg-gray-900/50 rounded-2xl border border-border hover:border-indigo-500/50 hover:shadow-lg transition-all"
+                className="group flex flex-col gap-3 sm:gap-4 p-4 sm:p-5 bg-card dark:bg-gray-900/50 rounded-2xl border border-border hover:border-indigo-500/50 hover:shadow-lg transition-all"
               >
-                <div className={`w-12 h-12 bg-gradient-to-br ${q.bg} rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform`}>
-                  <Icon className="h-6 w-6 text-white" />
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${q.bg} rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform`}>
+                  <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-black text-foreground tracking-tight">{q.label}</p>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground/30 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
                   </div>
-                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mt-1 opacity-60">{q.sub}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 opacity-60 truncate">{q.sub}</p>
                 </div>
               </motion.div>
             </Link>

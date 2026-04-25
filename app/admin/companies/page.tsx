@@ -583,11 +583,11 @@ export default function AdminCompanies() {
 
   return (
     <>
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] mx-auto">
+      <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-[1400px] mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+            <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
               Companies
             </h1>
             <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -598,7 +598,7 @@ export default function AdminCompanies() {
             <CustomButton
               variant="primary"
               size="md"
-              icon={<Plus className="h-5 w-5" />}
+              icon={<Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
               onClick={() => router.push('/admin/companies/add')}
             >
               Add Company
@@ -607,7 +607,7 @@ export default function AdminCompanies() {
         </div>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
             {
               label: 'Total',
@@ -640,10 +640,10 @@ export default function AdminCompanies() {
           ].map((s) => (
             <div
               key={s.label}
-              className={`flex flex-col items-center justify-center p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm ${s.bg}`}
+              className={`flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm ${s.bg}`}
             >
               <s.icon className={`h-5 w-5 ${s.color} opacity-80 mb-2`} />
-              <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+              <p className={`text-xl sm:text-2xl font-black ${s.color}`}>{s.value}</p>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 text-center">
                 {s.label}
               </p>
@@ -652,7 +652,7 @@ export default function AdminCompanies() {
         </div>
 
         {/* DataList Component */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-3 sm:p-6 shadow-sm">
           <DataList<Company>
             key={refreshKey}
             apiPath={`${ServerAddress}/admin/employers`}
