@@ -787,14 +787,31 @@ export function DataList<T extends Record<string, any>>({
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDirection>(null);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(defaultPageSize);
-  const [totalCount, setTotalCount] = useState(0);
 
-  // Fetch data from API
+  // Server-side pagination metadata from API response
+  const [totalCount,  setTotalCount]  = useState(0);
+  const [totalPages,  setTotalPages]  = useState(1);
+  const [hasNext,     setHasNext]     = useState(false);
+  const [hasPrev,     setHasPrev]     = useState(false);
+
+  // Debounce search so we don't fire a request on every keystroke
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setPage(1);
+    }, 350);
+  }
+
+  // ── Fetch data from API (server-side pagination) ───────────────────────────
   useEffect(() => {
     if (!apiPath) {
       setInternalData(data);
@@ -808,28 +825,49 @@ export function DataList<T extends Record<string, any>>({
       try {
         const token = localStorage.getItem('access_token');
 
+        // Build query params — always send page & limit so the API paginates
+        const params: Record<string, string | number> = {
+          page,
+          limit: pageSize,
+        };
+        if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
+
         const response = await axios.get(apiPath, {
+          params,
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-console.log("response.data.data", response);
+
+        const resData = response.data;
+
+        // Extract the data array
         let fetchedData: T[] = [];
-        
         if (transformResponse) {
-          fetchedData = transformResponse(response.data);
-        } else if (dataPath && response.data[dataPath]) {
-          fetchedData = response.data[dataPath];
-        } else if (Array.isArray(response.data)) {
-          fetchedData = response.data;
-        } else if (response.data.success && response.data.data) {
-          fetchedData = response.data.data;
+          fetchedData = transformResponse(resData);
+        } else if (dataPath && resData[dataPath]) {
+          fetchedData = resData[dataPath];
+        } else if (Array.isArray(resData)) {
+          fetchedData = resData;
+        } else if (resData.success && resData.data) {
+          fetchedData = resData.data;
         } else {
-          const possibleArray = Object.values(response.data).find(Array.isArray);
+          const possibleArray = Object.values(resData).find(Array.isArray);
           if (possibleArray) fetchedData = possibleArray as T[];
         }
 
         if (isMounted) {
           setInternalData(fetchedData);
-          setTotalCount(response.data.total || fetchedData.length);
+
+          // Read server-side pagination metadata
+          const total      = resData.total      ?? fetchedData.length;
+          const tPages     = resData.totalPages  ?? Math.max(1, Math.ceil(total / pageSize));
+          const apiHasNext = resData.hasNext     ?? page < tPages;
+          const apiHasPrev = resData.hasPrev     ?? page > 1;
+
+          setTotalCount(total);
+          setTotalPages(tPages);
+          setHasNext(apiHasNext);
+          setHasPrev(apiHasPrev);
+
           onDataLoaded?.(fetchedData);
         }
       } catch (err: any) {
@@ -845,7 +883,9 @@ console.log("response.data.data", response);
 
     fetchData();
     return () => { isMounted = false; };
-  }, [apiPath, dataPath, transformResponse]);
+  // Re-fetch whenever page, pageSize, or debounced search changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiPath, dataPath, transformResponse, page, pageSize, debouncedSearch]);
 
   const [globalSort, setGlobalSort] = useState('newest');
   const [globalSortOpen, setGlobalSortOpen] = useState(false);
@@ -871,19 +911,11 @@ console.log("response.data.data", response);
     setPage(1);
   }
 
+  // Client-side filtering/sorting applied on top of the current page's data
   const processed = useMemo(() => {
     let rows = [...internalData];
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      rows = rows.filter(row =>
-        columns.some(col => {
-          const val = row[col.key];
-          return val != null && String(val).toLowerCase().includes(q);
-        })
-      );
-    }
-
+    // Client-side column filter (for columns not sent as query params)
     if (globalFilter !== 'all' && filterableColumns[0]) {
       const key = filterableColumns[0].key;
       rows = rows.filter(row => String(row[key]) === globalFilter);
@@ -895,6 +927,7 @@ console.log("response.data.data", response);
       }
     });
 
+    // Client-side sort within the current page
     if (sortKey && sortDir) {
       rows.sort((a, b) => {
         const av = a[sortKey], bv = b[sortKey];
@@ -918,10 +951,19 @@ console.log("response.data.data", response);
     }
 
     return rows;
-  }, [internalData, search, globalFilter, columnFilters, sortKey, sortDir, globalSort, columns, filterableColumns]);
+  }, [internalData, globalFilter, columnFilters, sortKey, sortDir, globalSort, filterableColumns]);
 
-  const totalPages = Math.max(1, Math.ceil(processed.length / pageSize));
-  const paginated = processed.slice((page - 1) * pageSize, page * pageSize);
+  // When using API pagination the server already sliced the data — show it all
+  // When using static data prop, slice client-side
+  const paginated = apiPath ? processed : processed.slice((page - 1) * pageSize, page * pageSize);
+  const clientTotalPages = apiPath ? totalPages : Math.max(1, Math.ceil(processed.length / pageSize));
+  const clientHasNext    = apiPath ? hasNext    : page < clientTotalPages;
+  const clientHasPrev    = apiPath ? hasPrev    : page > 1;
+  const displayTotal     = apiPath ? totalCount : processed.length;
+  const rangeStart       = (page - 1) * pageSize + 1;
+  const rangeEnd         = apiPath
+    ? Math.min(page * pageSize, totalCount)
+    : Math.min(page * pageSize, processed.length);
 
   function getRowKey(row: T, i: number): string {
     if (!rowKey) return String(i);
@@ -929,29 +971,11 @@ console.log("response.data.data", response);
     return String(row[rowKey]);
   }
 
+  // After a successful import, reset to page 1 to trigger a fresh fetch
   const handleImportSuccess = (rows: Record<string, any>[]) => {
-    if (apiPath) {
-      const token = localStorage.getItem('access_token');
-      axios.get(apiPath, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      }).then(response => {
-        let fetchedData: T[] = [];
-        if (transformResponse) {
-          fetchedData = transformResponse(response.data);
-        } else if (dataPath && response.data[dataPath]) {
-          fetchedData = response.data[dataPath];
-        } else if (Array.isArray(response.data)) {
-          fetchedData = response.data;
-        } else if (response.data.success && response.data.data) {
-          fetchedData = response.data.data;
-        }
-        setInternalData(fetchedData);
-        onDataLoaded?.(fetchedData);
-        toast.success('Data refreshed successfully');
-      }).catch(err => {
-        console.error('Failed to refresh data:', err);
-      });
-    }
+    setPage(1);
+    setDebouncedSearch('');
+    setSearch('');
     onImportSuccess?.(rows);
   };
 
@@ -965,7 +989,7 @@ console.log("response.data.data", response);
             <input
               type="text"
               value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1); }}
+              onChange={e => handleSearchChange(e.target.value)}
               placeholder={searchPlaceholder}
               className="w-full pl-9 pr-3 py-2.5 text-sm bg-gray-50/50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:focus:ring-emerald-600 text-gray-800 dark:text-gray-200 placeholder-gray-400 transition-all font-medium"
             />
@@ -1123,7 +1147,9 @@ console.log("response.data.data", response);
         {/* Pagination */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-1">
           <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 font-medium">
-            <span className="bg-gray-50 dark:bg-gray-800/60 px-2 py-1 rounded-md">{(page - 1) * pageSize + 1}–{Math.min(page * pageSize, processed.length)} of {totalCount || processed.length}</span>
+            <span className="bg-gray-50 dark:bg-gray-800/60 px-2 py-1 rounded-md">
+              {displayTotal === 0 ? '0' : `${rangeStart}–${rangeEnd}`} of {displayTotal}
+            </span>
             <span className="text-gray-200 dark:text-gray-700">|</span>
             <div className="flex items-center gap-1">
               <select
@@ -1135,18 +1161,62 @@ console.log("response.data.data", response);
               </select>
             </div>
           </div>
+
+          {/* Page controls */}
           <div className="flex items-center gap-1">
+            {/* Prev */}
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
+              disabled={!clientHasPrev}
               className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Previous page"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
+
+            {/* Page number pills — show up to 5 around current page */}
+            {(() => {
+              const total = clientTotalPages;
+              if (total <= 1) return null;
+              const delta = 2;
+              const range: number[] = [];
+              for (let i = Math.max(1, page - delta); i <= Math.min(total, page + delta); i++) {
+                range.push(i);
+              }
+              const showLeadingEllipsis  = range[0] > 2;
+              const showTrailingEllipsis = range[range.length - 1] < total - 1;
+              const pages: (number | '...')[] = [];
+              if (range[0] > 1) pages.push(1);
+              if (showLeadingEllipsis) pages.push('...');
+              pages.push(...range);
+              if (showTrailingEllipsis) pages.push('...');
+              if (range[range.length - 1] < total) pages.push(total);
+
+              return pages.map((p, idx) =>
+                p === '...' ? (
+                  <span key={`ellipsis-${idx}`} className="px-1 text-xs text-gray-400 select-none">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p as number)}
+                    className={`min-w-[28px] h-7 px-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                      page === p
+                        ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              );
+            })()}
+
+            {/* Next */}
             <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
+              onClick={() => setPage(p => p + 1)}
+              disabled={!clientHasNext}
               className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Next page"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>

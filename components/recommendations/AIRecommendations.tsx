@@ -217,7 +217,7 @@ export default function AIRecommendations() {
           disabled={loading}
           className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>
       </div>
@@ -288,7 +288,7 @@ export default function AIRecommendations() {
             href="/employee/chat"
             className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
           >
-            <MessageSquare className="h-4 w-4" />
+            <MessageSquare className="h-5 w-5" />
             Start Wellness Chat
           </a>
         </motion.div>

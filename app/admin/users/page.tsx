@@ -2,38 +2,190 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Users, Search, Plus, Eye, Edit, Trash2, CheckCircle, XCircle, Download, Shield, Building2 } from 'lucide-react';
+import {
+  Users, Plus, Eye, CheckCircle, Shield, Building2,
+  MessageSquare, FileText, Activity,
+} from 'lucide-react';
+import { DataList, type ColumnDef } from '@/components/list/DataList';
+import ServerAddress from '@/constent/ServerAddress';
 
-const users = [
-  { id: '1', name: 'Sarah Johnson',  email: 'sarah@acme.com',       company: 'Acme Corp',       role: 'employee', wellness: 8.4, status: 'active',   lastSeen: '2 min ago' },
-  { id: '2', name: 'Mike Chen',      email: 'mike@techstart.com',    company: 'TechStart Inc',   role: 'manager',  wellness: 6.1, status: 'active',   lastSeen: '1 hr ago' },
-  { id: '3', name: 'Emily Davis',    email: 'emily@greenleaf.com',   company: 'GreenLeaf Ltd',   role: 'employee', wellness: 7.9, status: 'active',   lastSeen: '3 hr ago' },
-  { id: '4', name: 'Alex Rodriguez', email: 'alex@nexus.com',        company: 'Nexus Solutions', role: 'employer', wellness: 6.8, status: 'active',   lastSeen: 'Yesterday' },
-  { id: '5', name: 'Jordan Lee',     email: 'jordan@bright.com',     company: 'Bright Future',   role: 'employee', wellness: 9.1, status: 'active',   lastSeen: '5 min ago' },
-  { id: '6', name: 'Taylor Kim',     email: 'taylor@momentum.com',   company: 'Momentum Co',     role: 'employee', wellness: 5.2, status: 'inactive', lastSeen: '2 weeks ago' },
-  { id: '7', name: 'Chris Park',     email: 'chris@apex.com',        company: 'Apex Industries', role: 'manager',  wellness: 7.3, status: 'active',   lastSeen: '30 min ago' },
-  { id: '8', name: 'Dana White',     email: 'dana@clarity.com',      company: 'Clarity Health',  role: 'employee', wellness: 8.8, status: 'active',   lastSeen: '10 min ago' },
-];
+// ── types ──────────────────────────────────────────────────────────────────────
+
+interface AdminUser {
+  uid: string;
+  id?: string;
+  firstName?: string;
+  first_name?: string;
+  lastName?: string;
+  last_name?: string;
+  email: string;
+  role: 'employee' | 'manager' | 'hr' | 'employer' | 'admin';
+  companyName?: string;
+  company_name?: string;
+  department?: string;
+  isActive?: boolean;
+  is_active?: boolean;
+  lastActive?: string;
+  last_login?: string;
+  totalSessions?: number;
+  aiCalls30d?: number;
+  costAllTime?: number;
+}
+
+// ── styles ─────────────────────────────────────────────────────────────────────
 
 const roleCls: Record<string, string> = {
   employee: 'text-gray-600 bg-gray-100 dark:bg-gray-800',
   manager:  'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
   employer: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20',
+  hr:       'text-teal-600 bg-teal-50 dark:bg-teal-900/20',
   admin:    'text-red-600 bg-red-50 dark:bg-red-900/20',
 };
 
-export default function AdminUsers() {
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
+// ── component ──────────────────────────────────────────────────────────────────
 
-  const filtered = users.filter(u => {
-    const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.company.toLowerCase().includes(search.toLowerCase());
-    const matchRole = roleFilter === 'all' || u.role === roleFilter;
-    return matchSearch && matchRole;
-  });
+export default function AdminUsers() {
+  const [users, setUsers] = useState<AdminUser[]>([]);
+
+  const totalUsers    = users.length;
+  const activeUsers   = users.filter(u => u.isActive ?? u.is_active).length;
+  const managerCount  = users.filter(u => u.role === 'manager').length;
+  const employerCount = users.filter(u => u.role === 'employer').length;
+
+  const columns: ColumnDef<AdminUser>[] = [
+    {
+      key: 'firstName',
+      title: 'User',
+      sortable: true,
+      render: (_, row) => {
+        const fname = row.firstName ?? row.first_name ?? '';
+        const lname = row.lastName  ?? row.last_name  ?? '';
+        const initials = `${fname[0] ?? ''}${lname[0] ?? ''}`.toUpperCase() || row.email[0].toUpperCase();
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+              <span className="text-xs font-black text-indigo-500">{initials}</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+                {fname} {lname}
+              </p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{row.email}</p>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'role',
+      title: 'Role',
+      sortable: true,
+      filterable: true,
+      filterOptions: [
+        { label: 'Employee', value: 'employee' },
+        { label: 'Manager',  value: 'manager'  },
+        { label: 'HR',       value: 'hr'       },
+        { label: 'Employer', value: 'employer' },
+        { label: 'Admin',    value: 'admin'    },
+      ],
+      render: (val) => (
+        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${roleCls[val as string] ?? roleCls.employee}`}>
+          {val as string}
+        </span>
+      ),
+    },
+    {
+      key: 'companyName',
+      title: 'Company',
+      sortable: true,
+      render: (val, row) => (
+        <span className="text-sm text-muted-foreground font-medium">
+          {(val as string) ?? row.company_name ?? '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'lastActive',
+      title: 'Last Active',
+      sortable: true,
+      render: (val, row) => {
+        const raw = (val as string) ?? row.last_login;
+        if (!raw) return <span className="text-xs text-muted-foreground">—</span>;
+        return (
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {new Date(raw).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'totalSessions',
+      title: 'Total Sessions',
+      sortable: true,
+      render: (val) => (
+        <span className="text-sm font-semibold text-foreground tabular-nums">
+          {(val as number)?.toLocaleString() ?? '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'aiCalls30d',
+      title: 'AI Calls (30d)',
+      sortable: true,
+      render: (val) => (
+        <div className="flex items-center gap-1.5">
+          <MessageSquare className="h-3.5 w-3.5 text-indigo-400" />
+          <span className="text-sm font-semibold text-foreground tabular-nums">
+            {(val as number) ?? '—'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'costAllTime',
+      title: 'Cost (all-time)',
+      sortable: true,
+      render: (val) => (
+        <span className="text-sm font-semibold text-foreground tabular-nums">
+          {val != null ? `$${(val as number).toFixed(2)}` : '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'isActive',
+      title: 'Status',
+      sortable: true,
+      filterable: true,
+      filterOptions: [
+        { label: 'Active',   value: 'true'  },
+        { label: 'Inactive', value: 'false' },
+      ],
+      render: (_, row) => {
+        const active = row.isActive ?? row.is_active;
+        return (
+          <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${active ? 'text-emerald-600' : 'text-gray-400'}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-400'}`} />
+            {active ? 'Active' : 'Inactive'}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'uid',
+      title: 'Actions',
+      width: '80px',
+      render: (_, row) => (
+        <div className="flex items-center gap-1">
+          <Link
+            href={`/admin/users/${row.uid ?? row.id}`}
+            className="p-2 rounded-xl text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all inline-flex items-center justify-center"
+          >
+            <Eye className="h-5 w-5" />
+          </Link>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-[1400px] mx-auto">
@@ -45,23 +197,27 @@ export default function AdminUsers() {
             Users
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-medium">
-            Manage platform users, roles, and overall engagement levels.
+            Manage platform users, roles, and per-user AI usage.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/admin/users/invite" className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-500/20 active:scale-95">
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5" /> Invite User
+          <Link
+            href="/admin/users/invite"
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-500/20 active:scale-95"
+          >
+            <Plus className="h-5 w-5" /> Invite User
           </Link>
         </div>
       </div>
 
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: 'Total',     value: users.length,                                    icon: Users,       color: 'text-gray-800 dark:text-gray-100', bg: 'bg-secondary/50' },
-          { label: 'Active',    value: users.filter(u => u.status === 'active').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-          { label: 'Managers',  value: users.filter(u => u.role === 'manager').length,  icon: Shield,      color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-          { label: 'Employers', value: users.filter(u => u.role === 'employer').length, icon: Building2,    color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
+          { label: 'Total',     value: totalUsers,    icon: Users,       color: 'text-gray-800 dark:text-gray-100', bg: 'bg-secondary/50' },
+          { label: 'Active',    value: activeUsers,   icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+          { label: 'Managers',  value: managerCount,  icon: Shield,      color: 'text-blue-600',    bg: 'bg-blue-50 dark:bg-blue-500/10' },
+          { label: 'Employers', value: employerCount, icon: Building2,   color: 'text-purple-600',  bg: 'bg-purple-50 dark:bg-purple-500/10' },
         ].map(s => (
           <div key={s.label} className={`flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl border border-border shadow-sm ${s.bg}`}>
             <s.icon className={`h-5 w-5 ${s.color} opacity-80 mb-2`} />
@@ -71,153 +227,37 @@ export default function AdminUsers() {
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-3 sm:p-4 shadow-sm">
-        <div className="flex flex-col gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search by name, email or company..."
-              className="w-full h-10 sm:h-11 pl-9 sm:pl-10 pr-4 text-sm bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-            />
-          </div>
-          <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border overflow-x-auto scrollbar-hide">
-            {['all', 'employee', 'manager', 'employer'].map(r => (
-              <button
-                key={r}
-                onClick={() => setRoleFilter(r)}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all whitespace-nowrap ${roleFilter === r ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile card list */}
-      <div className="sm:hidden space-y-3">
-        {filtered.map((u, i) => (
-          <motion.div
-            key={u.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: i * 0.03 }}
-            className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-4 shadow-sm"
-          >
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
-                  <span className="text-xs font-black text-indigo-500">{u.name[0]}</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-foreground text-sm truncate">{u.name}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{u.email}</p>
-                </div>
-              </div>
-              <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest flex-shrink-0 ${roleCls[u.role]}`}>{u.role}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{u.company}</span>
-              <div className="flex items-center gap-2">
-                <div className="w-12 h-1.5 bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(u.wellness / 10) * 100}%` }} />
-                </div>
-                <span className="font-bold text-foreground">{u.wellness}</span>
-                <span className={`flex items-center gap-1 text-[10px] font-bold uppercase ${u.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-                  {u.status}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-        {filtered.length === 0 && (
-          <div className="py-16 text-center flex flex-col items-center justify-center">
-            <div className="w-14 h-14 bg-secondary/50 rounded-full flex items-center justify-center mb-3">
-              <Search className="h-7 w-7 text-muted-foreground/30" />
-            </div>
-            <p className="text-sm font-bold text-foreground">No users found</p>
-            <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Desktop Table */}
-      <div className="hidden sm:block bg-card dark:bg-gray-900/50 rounded-2xl border border-border shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border bg-secondary/30">
-                {['User', 'Company', 'Role', 'Wellness', 'Status', 'Last Seen', ''].map(h => (
-                  <th key={h} className="text-left text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4 whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtered.map((u, i) => (
-                <motion.tr
-                  key={u.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="hover:bg-secondary/20 transition-colors group"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 border border-indigo-500/20 group-hover:border-indigo-500 transition-colors">
-                        <span className="text-xs font-black text-indigo-500">{u.name[0]}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-bold text-foreground truncate group-hover:text-indigo-500 transition-colors">{u.name}</p>
-                        <p className="text-[10px] text-muted-foreground font-medium truncate">{u.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground font-medium whitespace-nowrap">{u.company}</td>
-                  <td className="px-6 py-4">
-                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${roleCls[u.role]}`}>{u.role}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(u.wellness / 10) * 100}%` }} />
-                      </div>
-                      <span className="text-foreground font-bold tabular-nums">{u.wellness}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${u.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-400'}`} />
-                      {u.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground font-medium whitespace-nowrap">{u.lastSeen}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-1">
-                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Eye className="h-5 w-5" /></button>
-                      <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Edit className="h-5 w-5" /></button>
-                      <button className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"><Trash2 className="h-5 w-5" /></button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {filtered.length === 0 && (
-          <div className="py-20 text-center flex flex-col items-center justify-center">
-            <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
-              <Search className="h-8 w-8 text-muted-foreground/30" />
-            </div>
-            <p className="text-sm font-bold text-foreground">No users found</p>
-            <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters or search terms.</p>
-          </div>
-        )}
+      {/* DataList */}
+      <div className="bg-card dark:bg-gray-900/50 rounded-2xl border border-border p-3 sm:p-6 shadow-sm">
+        <DataList<AdminUser>
+          apiPath={`${ServerAddress}/admin/employees`}
+          dataPath="employees"
+          onDataLoaded={(data) => setUsers(data)}
+          columns={columns}
+          rowKey={(row) => row.uid ?? row.id ?? row.email}
+          searchPlaceholder="Search by name, email or company..."
+          defaultPageSize={10}
+          emptyMessage="No users found."
+          onExport={() => {
+            const csv = [
+              ['Name', 'Email', 'Role', 'Company', 'Status', 'AI Calls (30d)', 'Cost (all-time)'],
+              ...users.map(u => [
+                `${u.firstName ?? u.first_name ?? ''} ${u.lastName ?? u.last_name ?? ''}`.trim(),
+                u.email,
+                u.role,
+                u.companyName ?? u.company_name ?? '',
+                (u.isActive ?? u.is_active) ? 'Active' : 'Inactive',
+                u.aiCalls30d ?? '',
+                u.costAllTime != null ? `$${u.costAllTime.toFixed(2)}` : '',
+              ]),
+            ].map(r => r.join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            a.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+          }}
+        />
       </div>
     </div>
   );
 }
-

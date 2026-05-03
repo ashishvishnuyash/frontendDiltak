@@ -55,7 +55,7 @@ export default function AdminSettings() {
             onClick={handleSave}
             className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${saved ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20'}`}
           >
-            {saved ? <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" /> : <Save className="h-4 w-4 sm:h-5 sm:w-5" />}
+            {saved ? <CheckCircle className="h-5 w-5 sm:h-5 sm:w-5" /> : <Save className="h-5 w-5 sm:h-5 sm:w-5" />}
             {saved ? 'Saved' : 'Save Changes'}
           </button>
         </div>
@@ -81,7 +81,7 @@ export default function AdminSettings() {
                         : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                     }`}
                   >
-                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <Icon className="h-5 w-5 flex-shrink-0" />
                     {s}
                   </button>
                 );

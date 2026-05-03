@@ -186,7 +186,7 @@ export function DesktopTopBar({
               {/* Menu items */}
               <div className="py-2">
                 <Link
-                  href={`/${user?.role || 'admin'}/profile`}
+                  href={`/${(user?.role || 'admin').toLowerCase()}/profile`}
                   onClick={() => setProfileOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
@@ -194,14 +194,14 @@ export function DesktopTopBar({
                   <span className="font-medium">My Profile</span>
                 </Link>
 
-                <Link
-                  href={`/${user?.role || 'admin'}/settings`}
+                {/* <Link
+                  href={`/${(user?.role || 'admin').toLowerCase()}/settings`}
                   onClick={() => setProfileOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <Settings className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                   <span className="font-medium">Settings</span>
-                </Link>
+                </Link> */}
 
                 {/* Theme submenu */}
                 {/* <div className="px-4 py-3 border-t border-gray-50 dark:border-gray-800">

@@ -54,7 +54,7 @@ const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'relative inline-flex items-center justify-center font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
+          'relative inline-flex items-center justify-center font-bold rounded-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
           variants[variant],
           sizes[size],
           fullWidth && 'w-full',

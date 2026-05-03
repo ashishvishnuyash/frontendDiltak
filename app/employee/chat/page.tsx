@@ -337,6 +337,7 @@ export default function EmployeeChatPage() {
   // Options panel state
   const [showOptionsPanel, setShowOptionsPanel] = useState(false);
   const [showEndConfirmation, setShowEndConfirmation] = useState(false);
+  const [showMinMessagesAlert, setShowMinMessagesAlert] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -1412,15 +1413,15 @@ export default function EmployeeChatPage() {
         <div className={`flex flex-col min-h-0 relative bg-white dark:bg-gray-900 overflow-hidden ${
           isAvatarMode
             ? 'flex-1 lg:w-1/2 rounded-none lg:border-r border-gray-200 dark:border-gray-700'
-            : 'flex-1 rounded-2xl border border-gray-200 dark:border-gray-800 mx-auto w-full'
-        }`} style={isAvatarMode ? { height: '100%' } : { maxWidth: 760, height: '100%' }}>
+            : 'flex-1 rounded-2xl border border-gray-200 dark:border-gray-800 w-full'
+        }`} style={{ height: '100%' }}>
           {/* Chat Section */}
           <div className="flex flex-col w-full min-h-0" style={{ height: '100%' }}>
 
             {/* Chat Header */}
             <div className="bg-white dark:bg-gray-900 px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm">
                   <Sparkles className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">Wellness Assistant</span>
@@ -1436,13 +1437,18 @@ export default function EmployeeChatPage() {
                 )}
                 {!sessionEnded && (
                   <button
-                    onClick={() => setShowEndConfirmation(true)}
+                    onClick={() => {
+                      if (messages.length < 6) {
+                        setShowMinMessagesAlert(true);
+                      } else {
+                        setShowEndConfirmation(true);
+                      }
+                    }}
                     disabled={loading || messages.length === 0}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-red-200 dark:border-red-900/30 rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors disabled:opacity-40"
                   >
-                    <Heart className="h-3.5 w-3.5 text-red-400" />
-                    New Wellness Check
-                    <Plus className="h-3.5 w-3.5 text-gray-400" />
+                    <PhoneOff className="h-3.5 w-3.5 text-red-500" />
+                    End Conversation
                   </button>
                 )}
                 {!sessionEnded && (
@@ -1831,7 +1837,7 @@ export default function EmployeeChatPage() {
                     }`}
                   >
                     {isSttRecording ? (
-                      <Square className="h-4 w-4 text-white" fill="white" />
+                      <Square className="h-5 w-5 text-white" fill="white" />
                     ) : (
                       <Mic className="h-5 w-5 text-white" strokeWidth={2.5} />
                     )}
@@ -1896,7 +1902,8 @@ export default function EmployeeChatPage() {
                   <div className="py-1">
                     {/* Files */}
                     <button
-                      onClick={() => { openFileDialog(); setShowOptionsPanel(false); }}
+                      // onClick={() => { openFileDialog(); setShowOptionsPanel(false); }}
+                      onClick={() => { alert("Comming Soon..."); }}
                       disabled={loading || sessionEnded}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
@@ -1904,16 +1911,18 @@ export default function EmployeeChatPage() {
                         <Paperclip className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Add photos &amp; files</span>
+                      <span className="ml-2 text-[10px] text-purple-500 font-medium">Soon</span>
                     </button>
 
                     {/* Images */}
                     <button
                       onClick={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file'; input.multiple = true; input.accept = 'image/*';
-                        input.onchange = (e) => handleFileSelect(e as any);
-                        input.click();
-                        setShowOptionsPanel(false);
+                        // const input = document.createElement('input');
+                        // input.type = 'file'; input.multiple = true; input.accept = 'image/*';
+                        // input.onchange = (e) => handleFileSelect(e as any);
+                        // input.click();
+                        // setShowOptionsPanel(false);
+                        alert("Comming Soon...");
                       }}
                       disabled={loading || sessionEnded}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
@@ -1922,13 +1931,15 @@ export default function EmployeeChatPage() {
                         <ImageIcon className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Add images</span>
+                      <span className="ml-2 text-[10px] text-purple-500 font-medium">Soon</span>
                     </button>
 
                     {/* Deep Conversation */}
                     <button
                       onClick={() => {
-                        toast.info('Deep Conversation coming soon!', { duration: 3000 });
-                        setShowOptionsPanel(false);
+                        // toast.info('Deep Conversation coming soon!', { duration: 3000 });
+                        // setShowOptionsPanel(false);
+                        alert("Comming Soon...");
                       }}
                       disabled={loading || sessionEnded}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
@@ -1951,7 +1962,8 @@ export default function EmployeeChatPage() {
 
                     {/* Avatar toggle */}
                     <button
-                      onClick={() => { setIsAvatarMode(!isAvatarMode); toast.success(isAvatarMode ? 'Avatar disabled' : 'Avatar enabled'); setShowOptionsPanel(false); }}
+                      // onClick={() => { setIsAvatarMode(!isAvatarMode); toast.success(isAvatarMode ? 'Avatar disabled' : 'Avatar enabled'); setShowOptionsPanel(false); }}
+                      onClick={() => { alert("Comming Soon..."); }}
                       disabled={loading || sessionEnded}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
@@ -1961,12 +1973,14 @@ export default function EmployeeChatPage() {
                       <div className="flex-1 text-left">
                         <span className="font-medium">{isAvatarMode ? 'Disable avatar' : 'Enable avatar'}</span>
                         {isAvatarMode && <span className="ml-2 text-[10px] text-emerald-500 font-medium">Active</span>}
+                        <span className="ml-2 text-[10px] text-purple-500 font-medium">Soon</span>
                       </div>
                     </button>
 
                     {/* Avatar settings */}
                     <button
-                      onClick={() => { toggleSettings(); setShowOptionsPanel(false); }}
+                      // onClick={() => { toggleSettings(); setShowOptionsPanel(false); }}
+                      onClick={() => { alert("Comming Soon..."); }}
                       disabled={loading || sessionEnded}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
@@ -1974,10 +1988,11 @@ export default function EmployeeChatPage() {
                         <Settings className="h-3.5 w-3.5 text-gray-500" />
                       </div>
                       <span className="font-medium">Avatar settings</span>
+                      <span className="ml-2 text-[10px] text-purple-500 font-medium">Soon</span>
                     </button>
 
                     {/* Test mic */}
-                    <button
+                    {/* <button
                       onClick={() => { isRecording ? stopRecording() : startRecording(); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
@@ -1989,10 +2004,10 @@ export default function EmployeeChatPage() {
                         <span className="font-medium">Test microphone</span>
                         {isRecording && <span className="ml-2 text-[10px] text-red-500 font-medium">Recording…</span>}
                       </div>
-                    </button>
+                    </button> */}
 
                     {/* Test TTS */}
-                    <button
+                    {/* <button
                       onClick={() => { speakText('Hello! This is a test of the text-to-speech system.'); setShowOptionsPanel(false); }}
                       disabled={loading || sessionEnded || isSpeaking}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
@@ -2004,13 +2019,20 @@ export default function EmployeeChatPage() {
                         <span className="font-medium">Test voice</span>
                         {isSpeaking && <span className="ml-2 text-[10px] text-blue-500 font-medium">Speaking…</span>}
                       </div>
-                    </button>
+                    </button> */}
 
                     <div className="mx-3 my-1 border-t border-gray-100 dark:border-gray-800" />
 
                     {/* End conversation */}
                     <button
-                      onClick={() => { setShowOptionsPanel(false); setShowEndConfirmation(true); }}
+                      onClick={() => { 
+                        setShowOptionsPanel(false); 
+                        if (messages.length < 6) {
+                          setShowMinMessagesAlert(true);
+                        } else {
+                          setShowEndConfirmation(true); 
+                        }
+                      }}
                       disabled={loading || sessionEnded || messages.length === 0}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50"
                     >
@@ -2045,8 +2067,7 @@ export default function EmployeeChatPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 30 }}
             transition={{ duration: 0.5 }}
-            className="hidden lg:flex lg:w-1/2 bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 overflow-hidden flex-col"
-            style={{ height: '100%' }}
+            className="flex w-full lg:w-1/2 h-[35vh] lg:h-full bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 overflow-hidden flex-col border-b lg:border-b-0 lg:border-l border-gray-200 dark:border-gray-700 order-first lg:order-last"
           >
               {/* Avatar Header */}
               <div className="border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 px-4 py-3 relative z-20 flex-shrink-0">
@@ -2203,6 +2224,29 @@ export default function EmployeeChatPage() {
             </button>
           </div>
         </motion.div>
+      )}
+
+      {/* Minimum Messages Alert Dialog */}
+      {showMinMessagesAlert && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-sm w-full p-6 text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/20 mb-4">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              Keep the Conversation Going!
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Minimum 6 messages are required to end the conversation and generate the report. This helps us provide a better and more accurate wellness assessment.
+            </p>
+            <Button
+              onClick={() => setShowMinMessagesAlert(false)}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              Continue Chatting
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* End Conversation Confirmation Dialog */}

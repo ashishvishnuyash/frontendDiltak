@@ -17,6 +17,7 @@ import { DataList } from '@/components/list/DataList';
 import type { ColumnDef } from '@/components/list/DataList';
 import { BrandLoader } from '@/components/loader';
 import { generateReportPDF } from '@/lib/generate-report-pdf';
+import { CustomButton } from '@/components/button/CustomButton';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -220,17 +221,45 @@ function EmployeeReportsPage() {
   };
 
   return (
-    <div className="px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-[1400px] mx-auto bg-gray-50 dark:bg-gray-950 min-h-full rounded-xl">
+    <div className="flex flex-col flex-1 w-full h-full p-4 sm:p-6 lg:p-8 space-y-6">
 
       {/* ── Header ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-        <h1 className="text-base font-semibold text-gray-800 dark:text-white">
-          My Wellness Reports
-        </h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl p-4 sm:p-6 rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-sm">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 tracking-tight">
+            Wellness Reports
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Track and analyze your mental and physical health history over time.
+          </p>
+        </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
           {/* View toggle */}
-          <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-sm overflow-hidden bg-white dark:bg-gray-900">
+          {/* <div className="flex items-center p-1 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+            <button
+              onClick={() => setViewMode('interactive')}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                viewMode === 'interactive'
+                  ? 'bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              Interactive
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              List
+            </button>
+          </div> */}
+
+      <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-sm overflow-hidden bg-white dark:bg-gray-900">
             <button
               onClick={() => setViewMode('interactive')}
               className={`px-3 sm:px-5 py-1.5 text-xs sm:text-sm font-medium transition-all ${
@@ -253,31 +282,38 @@ function EmployeeReportsPage() {
             </button>
           </div>
 
-          {/* Export */}
-          <button
-            onClick={() => setExportOpen(true)}
-            className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs sm:text-sm font-medium rounded-sm transition-colors"
-          >
-            <FileDown className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">Export</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Export */}
+            <CustomButton
+              variant="outline"
+              size="sm"
+              icon={<FileDown className="h-5 w-5" />}
+              onClick={() => setExportOpen(true)}
+            >
+              <span className="hidden sm:inline">Export</span>
+            </CustomButton>
 
-          {/* Add Report */}
-          <Link href="/employee/reports/new" className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-sm transition-colors">
-            <span className="hidden sm:inline">Add Report</span>
-            <span className="sm:hidden">Add</span>
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-          </Link>
+            {/* Refresh */}
+            <CustomButton
+              variant="outline"
+              size="sm"
+              icon={<RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />}
+              onClick={fetchReports}
+              disabled={refreshing}
+            >
+              <span className="hidden sm:inline">Refresh</span>
+            </CustomButton>
 
-          {/* Refresh */}
-          <button
-            onClick={fetchReports}
-            disabled={refreshing}
-            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50"
-            aria-label="Refresh"
-          >
-            <RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 ${refreshing ? 'animate-spin' : ''}`} />
-          </button>
+            {/* Add Report */}
+            <CustomButton
+              variant="primary"
+              size="sm"
+              icon={<Plus className="h-5 w-5" />}
+              onClick={() => router.push("/employee/reports/new")}
+            >
+              New Report
+            </CustomButton>
+          </div>
         </div>
       </div>
 
@@ -290,14 +326,25 @@ function EmployeeReportsPage() {
             previousData={reports[1]}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center">
-              <Plus className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+          <div className="flex flex-col items-center justify-center py-24 gap-5 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl shadow-sm">
+            <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-full flex items-center justify-center shadow-inner">
+              <FileDown className="h-10 w-10 text-emerald-500 dark:text-emerald-400" />
             </div>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">No reports yet</p>
-            <Link href="/employee/reports/new" className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors">
-              Create your first report <ArrowRight className="h-5 w-5" />
-            </Link>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">No reports available</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                Generate your first wellness report to see detailed insights, trends, and personalized recommendations.
+              </p>
+            </div>
+            <CustomButton
+              variant="primary"
+              icon={<ArrowRight className="h-5 w-5" />}
+              iconPosition="right"
+              onClick={() => router.push("/employee/reports/new")}
+              className="mt-2"
+            >
+              Create your first report
+            </CustomButton>
           </div>
         )
       )}
@@ -322,76 +369,78 @@ function EmployeeReportsPage() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/30 dark:bg-black/50 z-40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 backdrop-blur-sm transition-opacity"
             onClick={() => setExportOpen(false)}
           />
           {/* Dialog */}
           <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-sm p-6">
+            <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 w-full max-w-sm p-6 transform transition-all">
 
               {/* Header */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center">
                     <FileDown className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Export Report</h2>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Download detailed PDF</p>
+                    <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Export Report</h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Download detailed PDF</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setExportOpen(false)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               {/* Date range inputs */}
-              <div className="space-y-3 mb-5">
+              <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">From</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-wider">From Date</label>
                   <input
                     type="date"
                     value={fromDate}
                     onChange={e => setFromDate(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-600 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">To</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-wider">To Date</label>
                   <input
                     type="date"
                     value={toDate}
                     onChange={e => setToDate(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-600 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all"
                   />
                 </div>
               </div>
 
               {/* Info */}
-              <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
                 {fromDate || toDate
                   ? `Exporting reports ${fromDate ? `from ${new Date(fromDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''} ${toDate ? `to ${new Date(toDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}`
-                  : 'Leave both empty to export all reports.'}
+                  : 'Leave both empty to export all historical reports.'}
               </p>
 
               {/* Actions */}
-              <div className="flex gap-2">
-                <button
+              <div className="flex gap-3">
+                <CustomButton
+                  variant="outline"
+                  className="flex-1"
                   onClick={() => setExportOpen(false)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </CustomButton>
+                <CustomButton
+                  variant="primary"
+                  className="flex-1"
+                  icon={<Download className="h-5 w-5" />}
                   onClick={handleExport}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
                 >
-                  <Download className="h-5 w-5" />
                   Download PDF
-                </button>
+                </CustomButton>
               </div>
             </div>
           </div>

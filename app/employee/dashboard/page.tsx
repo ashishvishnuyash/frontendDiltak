@@ -207,10 +207,10 @@ function EmployeeDashboard() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100">Daily Wellness Tips</h2>
-            <Link href="/employee/wellness-hub"
+            {/* <Link href="/employee/wellness-hub"
               className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-emerald-600 transition-colors">
               View All <ArrowRight className="h-3 w-3" />
-            </Link>
+            </Link> */}
           </div>
           <div className="flex flex-col gap-2 sm:gap-3">
             {tips.map(t => (

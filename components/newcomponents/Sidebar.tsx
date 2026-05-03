@@ -12,6 +12,7 @@ export interface NavItem {
   icon?: LucideIcon;
   badge?: number;
   exact?: boolean;
+  section?: string; // optional section header label
 }
 
 export interface SidebarProps {
@@ -171,6 +172,14 @@ function Sidebar({
         <ul className="flex flex-col gap-0.5" role="list">
           {items.map((item) => (
             <li key={item.path}>
+              {item.section && !isCollapsed && (
+                <p className="px-3 pt-4 pb-1 text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-[0.15em]">
+                  {item.section}
+                </p>
+              )}
+              {item.section && isCollapsed && (
+                <div className="my-2 mx-auto w-6 h-px bg-gray-200 dark:bg-gray-700" />
+              )}
               <SidebarItem item={item} collapsed={isCollapsed} onNavigate={onNavigate} />
             </li>
           ))}

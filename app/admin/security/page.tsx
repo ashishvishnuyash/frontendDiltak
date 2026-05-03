@@ -53,7 +53,7 @@ export default function AdminSecurity() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 shadow-sm">
-            <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
+            <ShieldCheck className="h-5 w-5 sm:h-5 sm:w-5 text-emerald-500" />
             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Platform Secure</span>
           </div>
         </div>

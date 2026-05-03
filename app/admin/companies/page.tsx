@@ -353,12 +353,29 @@ export default function AdminCompanies() {
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
               {row.companyName}
             </p>
-            {/* <p className="text-[11px] text-gray-400 dark:text-gray-500">
-              ID: {row.uid || row.id}
-            </p> */}
           </div>
         </div>
       ),
+    },
+    {
+      key: 'plan',
+      title: 'Plan',
+      sortable: true,
+      filterable: true,
+      filterOptions: [
+        { label: 'Free',       value: 'free'       },
+        { label: 'Starter',    value: 'Starter'    },
+        { label: 'Pro',        value: 'Pro'        },
+        { label: 'Enterprise', value: 'Enterprise' },
+      ],
+      render: (val) => {
+        const v = (val as string) ?? 'Starter';
+        return (
+          <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${planCls[v as keyof typeof planCls] ?? planCls.Starter}`}>
+            {v}
+          </span>
+        );
+      },
     },
     {
       key: 'industry',
@@ -598,7 +615,7 @@ export default function AdminCompanies() {
             <CustomButton
               variant="primary"
               size="md"
-              icon={<Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
+              icon={<Plus className="h-5 w-5 sm:h-5 sm:w-5" />}
               onClick={() => router.push('/admin/companies/add')}
             >
               Add Company

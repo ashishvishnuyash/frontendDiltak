@@ -374,7 +374,7 @@ export default function NewReportPage() {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <Link href="/employee/dashboard" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-3 sm:mb-4">
-            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+            <ArrowLeft className="h-5 w-5 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
             <span className="text-sm sm:text-base">Back to Dashboard</span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">New Wellness Report</h1>
@@ -441,7 +441,7 @@ export default function NewReportPage() {
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+                      <Save className="h-5 w-5 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                       Save Report
                     </>
                   )}

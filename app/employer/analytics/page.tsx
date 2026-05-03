@@ -182,7 +182,7 @@ function AnalyticsPage() {
             variant="outline"
             className={`rounded-xl border-gray-200 dark:border-gray-800 ${useDemoData ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'bg-white dark:bg-gray-950 text-gray-600'} h-9 text-xs`}
           >
-            <Brain className="h-4 w-4 mr-1.5" />
+            <Brain className="h-5 w-5 mr-1.5" />
             {useDemoData ? 'Demo: ON' : 'Demo Data'}
           </Button>
           
@@ -191,12 +191,12 @@ function AnalyticsPage() {
             onClick={fetchAnalytics}
             className="rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-600 dark:text-gray-300 h-9 text-xs"
           >
-            <RefreshCw className="h-4 w-4 mr-1.5" />
+            <RefreshCw className="h-5 w-5 mr-1.5" />
             Refresh
           </Button>
 
           <Button className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white h-9 px-3 text-xs font-semibold shadow-md shadow-emerald-500/10">
-            <Download className="h-4 w-4 mr-1.5" />
+            <Download className="h-5 w-5 mr-1.5" />
             PDF
           </Button>
         </div>

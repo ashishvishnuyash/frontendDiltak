@@ -393,20 +393,24 @@ export default function CommunityFeed({ user }: { user: User }) {
   const selectedPost = posts.find(p => p.id === selectedId) ?? null;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 bg-gray-50 dark:bg-gray-950 min-h-full">
+    <div className="flex flex-col flex-1 w-full h-full p-4 sm:p-6 lg:p-8 space-y-6">
 
-      {/* Page title */}
-      <h1 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-6">Our Star Community</h1>
+      {/* Page header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl p-4 sm:p-6 rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-sm">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 tracking-tight">
+            Our Star Community
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Connect, share, and support each other in a safe space.
+          </p>
+        </div>
 
-      {/* Sub-header bar */}
-      <div className="flex items-center justify-between mb-5">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">What people are sharing</span>
-
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Impact */}
-          <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
             <TrendingUp className="h-3.5 w-3.5" />
-            Impact
+            <span className="hidden sm:inline">Impact</span>
             <ChevronDown className="h-3 w-3 text-gray-400" />
           </button>
 
@@ -414,17 +418,17 @@ export default function CommunityFeed({ user }: { user: User }) {
           <div className="relative">
             <button
               onClick={() => setFilterOpen(v => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
             >
               <Filter className="h-3.5 w-3.5" />
-              All Filters
+              <span className="hidden sm:inline">Filters</span>
               <ChevronDown className="h-3 w-3 text-gray-400" />
             </button>
             <AnimatePresence>
               {filterOpen && (
                 <motion.div
                   initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-                  className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-30 py-1"
+                  className="absolute right-0 top-full mt-1 w-44 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-30 py-1"
                 >
                   {['all', ...Object.keys(categoryLabel)].map(c => (
                     <button key={c} onClick={() => { setCategory(c); setFilterOpen(false); }}
@@ -440,14 +444,14 @@ export default function CommunityFeed({ user }: { user: User }) {
           {/* Add Post */}
           <button
             onClick={handleAddPost}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-sm"
           >
-            Add Post <Plus className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Add Post</span> <Plus className="h-3.5 w-3.5" />
           </button>
 
           {/* Refresh */}
-          <button onClick={fetchPosts} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-white dark:hover:bg-gray-800 transition-colors">
-            <RefreshCw className="h-5 w-5" />
+          <button onClick={fetchPosts} className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-400 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
+            <RefreshCw className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -463,10 +467,12 @@ export default function CommunityFeed({ user }: { user: User }) {
               <p className="text-xs text-gray-400">Loading posts…</p>
             </div>
           ) : posts.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 py-14 flex flex-col items-center gap-3">
-              <Shield className="h-9 w-9 text-gray-200 dark:text-gray-700" />
-              <p className="text-sm text-gray-400">No posts yet. Be the first to share!</p>
-              <button onClick={handleAddPost} className="px-4 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors">
+            <div className="bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl py-14 flex flex-col items-center gap-3 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-full flex items-center justify-center shadow-inner">
+                <Shield className="h-8 w-8 text-emerald-500 dark:text-emerald-400" />
+              </div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mt-2">No posts yet. Be the first to share!</p>
+              <button onClick={handleAddPost} className="px-5 py-2 mt-2 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors shadow-sm">
                 Add Post
               </button>
             </div>
@@ -486,7 +492,7 @@ export default function CommunityFeed({ user }: { user: User }) {
         {/* Detail panel */}
         <AnimatePresence>
           {selectedPost && (
-            <div className="lg:sticky lg:top-20 lg:self-start">
+            <div className="order-first lg:order-none lg:sticky lg:top-20 lg:self-start mb-6 lg:mb-0">
               <DetailPanel
                 post={selectedPost}
                 replies={repliesMap[selectedPost.id] ?? []}

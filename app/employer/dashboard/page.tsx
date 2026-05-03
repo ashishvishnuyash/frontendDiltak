@@ -71,6 +71,9 @@ interface RetentionRiskResponse {
   period_days: number;
   note: string;
   computed_at: string;
+  // Synthetic field set client-side when the API returns a privacy suppression response
+  _suppressed?: boolean;
+  _suppression_reason?: string;
 }
 
 interface DiltakEngagementResponse {
@@ -290,65 +293,299 @@ function WellnessTrendChart({ data }: { data: WellnessTrendResponse | null }) {
 
 // ─── Department Comparison Chart ──────────────────────────────────────────────
 
+const BURNOUT_META: Record<string, { color: string; bg: string; darkBg: string; label: string }> = {
+  high:    { color: '#EF4444', bg: 'bg-red-50',    darkBg: 'dark:bg-red-950/20',    label: 'High Risk'   },
+  medium:  { color: '#F59E0B', bg: 'bg-amber-50',  darkBg: 'dark:bg-amber-950/20',  label: 'Medium Risk' },
+  low:     { color: '#10B981', bg: 'bg-emerald-50',darkBg: 'dark:bg-emerald-950/20',label: 'Low Risk'    },
+  unknown: { color: '#9CA3AF', bg: 'bg-gray-50',   darkBg: 'dark:bg-gray-800',      label: 'Unknown'     },
+};
+
+function getBurnoutMeta(risk: string) {
+  return BURNOUT_META[risk?.toLowerCase()] ?? BURNOUT_META.unknown;
+}
+
+// Custom bar label rendered inside the chart
+function CustomBarLabel(props: any) {
+  const { x, y, width, height, value } = props;
+  if (width < 28) return null;
+  return (
+    <text
+      x={x + width - 6}
+      y={y + height / 2}
+      fill="#fff"
+      fontSize={10}
+      fontWeight={700}
+      textAnchor="end"
+      dominantBaseline="middle"
+    >
+      {value}
+    </text>
+  );
+}
+
+// Custom tooltip
+function DeptTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null;
+  const d: DepartmentData = payload[0]?.payload;
+  const meta = getBurnoutMeta(d.burnout_risk);
+  return (
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-3 text-xs min-w-[160px]">
+      <p className="font-bold text-gray-800 dark:text-gray-100 mb-2">{d.label}</p>
+      <div className="space-y-1.5">
+        <div className="flex justify-between gap-4">
+          <span className="text-gray-500">Wellness</span>
+          <span className="font-bold text-gray-800 dark:text-gray-100">{d.wellness_index}/100</span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-gray-500">Engagement</span>
+          <span className="font-bold text-gray-800 dark:text-gray-100">{d.engagement_pct}%</span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-gray-500">Size band</span>
+          <span className="font-bold text-gray-800 dark:text-gray-100">{d.size_band}</span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-gray-500">Burnout risk</span>
+          <span className="font-bold" style={{ color: meta.color }}>{meta.label}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DepartmentComparisonChart({ data }: { data: DepartmentComparisonResponse | null }) {
+  const [view, setView] = useState<'chart' | 'cards'>('chart');
+
   if (!data || !data.departments.length) {
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 text-center">
-        <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 flex flex-col items-center justify-center gap-3 min-h-[200px]">
+        <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+          <Users className="h-6 w-6 text-gray-300" />
+        </div>
         <p className="text-sm text-gray-500">No department data available</p>
       </div>
     );
   }
 
-  const visibleDepartments = data.departments.filter(d => !d.suppressed);
-  
+  const visible    = data.departments.filter(d => !d.suppressed);
+  const suppressed = data.departments.filter(d => d.suppressed);
+
+  // Sort by wellness_index descending for the chart
+  const sorted = [...visible].sort((a, b) => b.wellness_index - a.wellness_index);
+
+  // Hotspot dept
+  const hotspot = visible.find(d => d.label === data.hotspot_label);
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-            Department Wellness Comparison
-          </h3>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {data.period_days} days · Hotspot: {data.hotspot_label}
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              Department Wellness Comparison
+            </h3>
+            {data.label_masking && (
+              <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
+                <ShieldCheck className="h-3 w-3" />
+                Privacy masked
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Last {data.period_days} days · {visible.length} departments
+            {suppressed.length > 0 && ` · ${suppressed.length} suppressed (small groups)`}
           </p>
         </div>
-        {data.label_masking && (
-          <div className="flex items-center gap-1 text-xs text-amber-600">
-            <ShieldCheck className="h-3 w-3" />
-            <span>Privacy masked</span>
+
+        {/* View toggle */}
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 flex-shrink-0">
+          {(['chart', 'cards'] as const).map(v => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-2.5 py-1 rounded-md text-[10px] font-bold capitalize transition-all ${
+                view === v
+                  ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Hotspot alert */}
+      {hotspot && (
+        <div className="mx-5 mt-4 flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30">
+          <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="text-xs font-bold text-red-700 dark:text-red-400">Hotspot: </span>
+            <span className="text-xs text-red-600 dark:text-red-400">
+              <strong>{hotspot.label}</strong> has the lowest wellness index ({hotspot.wellness_index}/100)
+              with <strong>{hotspot.burnout_risk}</strong> burnout risk
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div className="p-5">
+        {view === 'chart' ? (
+          <>
+            {/* Horizontal bar chart */}
+            <ResponsiveContainer width="100%" height={Math.max(220, sorted.length * 52)}>
+              <BarChart
+                data={sorted}
+                layout="vertical"
+                margin={{ top: 4, right: 16, left: 0, bottom: 4 }}
+                barSize={28}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" horizontal={false} />
+                <XAxis
+                  type="number"
+                  domain={[0, 100]}
+                  stroke="#D1D5DB"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={v => `${v}`}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="label"
+                  stroke="#9CA3AF"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  width={90}
+                  tick={{ fontWeight: 600 }}
+                />
+                <Tooltip content={<DeptTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
+                <Bar dataKey="wellness_index" radius={[0, 6, 6, 0]} label={<CustomBarLabel />}>
+                  {sorted.map((entry, i) => (
+                    <Cell key={i} fill={getBurnoutMeta(entry.burnout_risk).color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+
+            {/* Engagement overlay — small dots below */}
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                Engagement % by department
+              </p>
+              <div className="space-y-2">
+                {sorted.map(dept => (
+                  <div key={dept.label} className="flex items-center gap-3">
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 w-[88px] flex-shrink-0 truncate font-medium">
+                      {dept.label}
+                    </span>
+                    <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-indigo-400 dark:bg-indigo-500 transition-all duration-700"
+                        style={{ width: `${dept.engagement_pct}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-600 dark:text-gray-300 w-8 text-right tabular-nums">
+                      {dept.engagement_pct}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Cards view */
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {sorted.map((dept, i) => {
+              const meta = getBurnoutMeta(dept.burnout_risk);
+              const isHotspot = dept.label === data.hotspot_label;
+              return (
+                <motion.div
+                  key={dept.label}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`relative p-4 rounded-xl border transition-all ${
+                    isHotspot
+                      ? 'border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/10'
+                      : 'border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30'
+                  }`}
+                >
+                  {isHotspot && (
+                    <span className="absolute top-2 right-2 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 uppercase tracking-widest">
+                      Hotspot
+                    </span>
+                  )}
+
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <p className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-tight pr-10">
+                      {dept.label}
+                    </p>
+                  </div>
+
+                  {/* Wellness index bar */}
+                  <div className="mb-3">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Wellness</span>
+                      <span className="text-sm font-black" style={{ color: meta.color }}>
+                        {dept.wellness_index}/100
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${dept.wellness_index}%`, backgroundColor: meta.color }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+                      <p className="text-xs font-black text-gray-700 dark:text-gray-200">{dept.engagement_pct}%</p>
+                      <p className="text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">Engaged</p>
+                    </div>
+                    <div className={`p-1.5 rounded-lg border ${meta.bg} ${meta.darkBg} border-transparent`}>
+                      <p className="text-xs font-black capitalize" style={{ color: meta.color }}>
+                        {dept.burnout_risk}
+                      </p>
+                      <p className="text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">Burnout</p>
+                    </div>
+                    <div className="p-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+                      <p className="text-xs font-black text-gray-700 dark:text-gray-200">{dept.size_band}</p>
+                      <p className="text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">Size</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {/* Suppressed notice */}
+            {suppressed.length > 0 && (
+              <div className="sm:col-span-2 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                <Info className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <strong>{suppressed.length}</strong> department{suppressed.length > 1 ? 's' : ''} suppressed — group size too small to display without compromising privacy.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={visibleDepartments} layout="vertical" margin={{ left: 80 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" domain={[0, 100]} stroke="#9CA3AF" fontSize={11} />
-          <YAxis type="category" dataKey="label" stroke="#9CA3AF" fontSize={11} />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #E5E7EB',
-              borderRadius: '8px',
-              fontSize: '12px',
-            }}
-          />
-          <Bar dataKey="wellness_index" fill="#10B981" radius={[0, 4, 4, 0]}>
-            {visibleDepartments.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getRiskColor(entry.burnout_risk)} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-      <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-        {visibleDepartments.map(dept => (
-          <div key={dept.label} className="flex items-center gap-1.5">
-            <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: getRiskColor(dept.burnout_risk) }} />
-            <span className="text-xs text-gray-600 dark:text-gray-400">
-              {dept.label}: {dept.wellness_index}/100
-            </span>
+
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-3 px-5 pb-4">
+        {Object.entries(BURNOUT_META).filter(([k]) => k !== 'unknown').map(([key, meta]) => (
+          <div key={key} className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: meta.color }} />
+            <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">{meta.label}</span>
           </div>
         ))}
+        <span className="ml-auto text-[10px] text-gray-400 dark:text-gray-500">
+          Computed: {new Date(data.computed_at).toLocaleString()}
+        </span>
       </div>
     </div>
   );
@@ -357,72 +594,153 @@ function DepartmentComparisonChart({ data }: { data: DepartmentComparisonRespons
 // ─── Retention Risk Chart ─────────────────────────────────────────────────────
 
 function RetentionRiskChart({ data }: { data: RetentionRiskResponse | null }) {
-  if (!data || !data.risk_bands.length) {
+  // Privacy suppression — API returned 422 insufficient_cohort
+  if (data?._suppressed) {
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 text-center">
-        <AlertTriangle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              Retention Risk Analysis
+            </h3>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              Modelled from engagement + stress proxy signals
+            </p>
+          </div>
+          <span className="flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
+            <ShieldCheck className="h-3 w-3" />
+            Suppressed
+          </span>
+        </div>
+        <div className="px-5 py-8 flex flex-col items-center gap-4 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex items-center justify-center">
+            <ShieldCheck className="h-7 w-7 text-amber-500" />
+          </div>
+          <div className="max-w-xs">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              Not enough data to display
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+              Retention risk analysis requires a minimum cohort size to protect individual privacy.
+              As your team grows and engagement data accumulates, this section will unlock automatically.
+            </p>
+          </div>
+          <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 max-w-xs text-left">
+            <Info className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+              Modelled from engagement + stress proxy signals. No individual data is used or stored.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No data at all
+  if (!data || !data.risk_bands?.length) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 flex flex-col items-center justify-center gap-3 min-h-[200px]">
+        <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+          <AlertTriangle className="h-6 w-6 text-gray-300" />
+        </div>
         <p className="text-sm text-gray-500">No retention risk data available</p>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-2xl border p-5 ${getRiskBgColor(data.overall_risk)}`}>
-      <div className="flex items-center justify-between mb-4">
+    <div className={`rounded-2xl border overflow-hidden ${getRiskBgColor(data.overall_risk)}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-200/60 dark:border-gray-700/60">
         <div>
           <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
             Retention Risk Analysis
           </h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            Overall Risk: {data.overall_risk.toUpperCase()}
+            Overall risk: <span className="font-bold capitalize" style={{ color: getRiskColor(data.overall_risk) }}>{data.overall_risk}</span>
+            {' · '}{data.period_days} days
           </p>
         </div>
-        <div className="flex items-center gap-1">
-          <Info className="h-5 w-5 text-gray-400" />
-          <span className="text-[10px] text-gray-500">{data.period_days} days</span>
-        </div>
+        <span
+          className="text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest border"
+          style={{
+            color: getRiskColor(data.overall_risk),
+            backgroundColor: `${getRiskColor(data.overall_risk)}18`,
+            borderColor: `${getRiskColor(data.overall_risk)}30`,
+          }}
+        >
+          {data.overall_risk}
+        </span>
       </div>
-      
-      <ResponsiveContainer width="100%" height={200}>
-        <RePieChart>
-          <Pie
-            data={data.risk_bands}
-            cx="50%"
-            cy="50%"
-            innerRadius={50}
-            outerRadius={80}
-            paddingAngle={5}
-            dataKey="percentage"
-            label={({ band, percentage }) => `${band}: ${percentage}%`}
-            labelLine={false}
-          >
-            {data.risk_bands.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getRiskColor(entry.band)} />
-            ))}
-          </Pie>
-          <Tooltip />
-        </RePieChart>
-      </ResponsiveContainer>
-      
-      <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-        {data.risk_bands.map(band => (
-          <div key={band.band} className="text-center">
-            <div className="flex items-center justify-center gap-1">
-              {getTrendIcon(band.trend)}
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+
+      <div className="p-5 space-y-5">
+        {/* Donut chart */}
+        <ResponsiveContainer width="100%" height={200}>
+          <RePieChart>
+            <Pie
+              data={data.risk_bands}
+              cx="50%"
+              cy="50%"
+              innerRadius={55}
+              outerRadius={80}
+              paddingAngle={4}
+              dataKey="percentage"
+              startAngle={90}
+              endAngle={-270}
+            >
+              {data.risk_bands.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={getRiskColor(entry.band)} stroke="none" />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={{
+                fontSize: 11,
+                borderRadius: 10,
+                border: '1px solid #E5E7EB',
+                backgroundColor: 'white',
+              }}
+              formatter={(value: any, name: any) => [`${value}%`, name]}
+            />
+          </RePieChart>
+        </ResponsiveContainer>
+
+        {/* Risk band rows */}
+        <div className="space-y-2.5">
+          {data.risk_bands.map(band => (
+            <div key={band.band} className="flex items-center gap-3">
+              <div
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: getRiskColor(band.band) }}
+              />
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 capitalize w-16 flex-shrink-0">
                 {band.band}
               </span>
+              <div className="flex-1 h-1.5 bg-white/60 dark:bg-gray-700/60 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${band.percentage}%`, backgroundColor: getRiskColor(band.band) }}
+                />
+              </div>
+              <span className="text-xs font-bold tabular-nums w-8 text-right" style={{ color: getRiskColor(band.band) }}>
+                {band.percentage}%
+              </span>
+              <div className="flex-shrink-0">{getTrendIcon(band.trend)}</div>
             </div>
-            <p className="text-lg font-bold mt-1" style={{ color: getRiskColor(band.band) }}>
-              {band.percentage}%
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        {/* Note */}
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-white/60 dark:bg-gray-900/40 border border-gray-200/60 dark:border-gray-700/40">
+          <Info className="h-3.5 w-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed italic">
+            {data.note}
+          </p>
+        </div>
+
+        <p className="text-[10px] text-gray-400 text-right">
+          Computed: {new Date(data.computed_at).toLocaleString()}
+        </p>
       </div>
-      
-      <p className="text-[10px] text-gray-500 mt-3 text-center italic">
-        {data.note}
-      </p>
     </div>
   );
 }
@@ -653,15 +971,32 @@ function OrgHRAnalyticsPage() {
       
       const newData: any = {};
       let successCount = 0;
-      
+      let suppressedCount = 0;
+
       results.forEach((result, index) => {
         const key = endpoints[index].key;
         if (result.status === 'fulfilled') {
           newData[key] = result.value.data;
           successCount++;
         } else {
-          console.error(`Failed to fetch ${key}:`, result.reason);
-          newData[key] = null;
+          const err = result.reason;
+          // Detect privacy-suppression responses (422 with insufficient_cohort / suppressed flag)
+          const detail = err?.response?.data?.detail;
+          const isSuppressed =
+            err?.response?.status === 422 &&
+            (detail?.suppressed === true || detail?.error === 'insufficient_cohort');
+
+          if (isSuppressed && key === 'retention_risk') {
+            // Store a typed sentinel so the component can render a proper suppressed state
+            newData[key] = {
+              _suppressed: true,
+              _suppression_reason: detail?.error ?? 'insufficient_cohort',
+            } as RetentionRiskResponse;
+            suppressedCount++;
+          } else {
+            console.error(`Failed to fetch ${key}:`, err?.response?.data ?? err?.message);
+            newData[key] = null;
+          }
         }
       });
       
@@ -675,7 +1010,7 @@ function OrgHRAnalyticsPage() {
         last_updated: new Date().toISOString(),
       });
       
-      if (successCount < endpoints.length) {
+      if (successCount + suppressedCount < endpoints.length) {
         toast.warning(`Loaded ${successCount}/${endpoints.length} analytics modules`);
       } else {
         toast.success('Org & HR Analytics refreshed');
@@ -753,10 +1088,18 @@ function OrgHRAnalyticsPage() {
     },
     {
       label: 'Retention Risk',
-      value: data.retention_risk?.overall_risk?.toUpperCase() ?? '—',
+      value: data.retention_risk?._suppressed
+        ? 'Suppressed'
+        : data.retention_risk?.overall_risk?.toUpperCase() ?? '—',
       icon: AlertTriangle,
-      color: getRiskColor(data.retention_risk?.overall_risk || ''),
-      sub: data.retention_risk ? `${data.retention_risk.period_days} days` : undefined,
+      color: data.retention_risk?._suppressed
+        ? '#F59E0B'
+        : getRiskColor(data.retention_risk?.overall_risk || ''),
+      sub: data.retention_risk?._suppressed
+        ? 'Insufficient cohort size'
+        : data.retention_risk
+        ? `${data.retention_risk.period_days} days`
+        : undefined,
     },
     {
       label: 'Program Lift',
@@ -777,7 +1120,7 @@ function OrgHRAnalyticsPage() {
       >
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
+            <Building2 className="h-5 w-5 sm:h-5 sm:w-5 text-emerald-500" />
             <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
               Org & HR Analytics
             </span>

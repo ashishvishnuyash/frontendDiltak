@@ -277,7 +277,9 @@ export default function LoginPage() {
             >
               Forgot username/password?
             </button>
-            <span className="text-xs text-gray-500">Terms &amp; Conditions</span>
+            <Link href="/terms" className="text-xs text-gray-500 hover:text-emerald-600 transition-colors">
+              Terms &amp; Conditions
+            </Link>
           </div>
         </div>
       </main>

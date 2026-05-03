@@ -12,7 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [collapsed, setCollapsed] = useState(false);
 
   const navUser = user
-    ? { first_name: user.first_name, last_name: user.last_name, email: user.email, role: 'Admin' }
+    ? { first_name: user.first_name, last_name: user.last_name, email: user.email, role: 'admin' }
     : undefined;
 
   return (

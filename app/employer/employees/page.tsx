@@ -513,7 +513,7 @@ function EmployeesPage() {
           <CustomButton
             variant="primary"
             size="md"
-            icon={<Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
+            icon={<Plus className="h-5 w-5 sm:h-5 sm:w-5" />}
             onClick={() => router.push("/employer/employees/add")}
           >
             Add Employee

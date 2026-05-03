@@ -2,16 +2,11 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   X,
   Mail,
   CheckCircle,
   Loader2,
-  KeyRound,
   ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -84,121 +79,112 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={handleClose}
           />
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl"
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               onClick={handleClose}
               disabled={loading}
-              className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-gray-700 transition-colors rounded-full hover:bg-gray-100"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <div className="p-6">
+            <div className="p-8 sm:p-10">
               {success ? (
                 // Success State
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="text-center space-y-4"
+                  className="text-center space-y-5"
                 >
-                  <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                  <div className="mx-auto w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-8 w-8 text-emerald-500" />
                   </div>
                   
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
                       Check Your Email
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                    <p className="text-gray-500 text-sm mb-4">
                       We've sent a password reset link to:
                     </p>
-                    <p className="font-medium text-gray-900 dark:text-gray-100 mb-4">
+                    <p className="font-semibold text-gray-900 mb-4">
                       {email}
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Click the link in the email to reset your password. If you don't see it, check your spam folder.
+                    <p className="text-sm text-gray-500 leading-relaxed">
+                      Click the link in the email to reset your password. If you don't see it, be sure to check your spam folder.
                     </p>
                   </div>
 
                   <div className="space-y-3 pt-4">
-                    <Button 
+                    <button 
                       onClick={handleClose}
-                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                      className="w-full px-6 py-2.5 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
                     >
-                      Back to Sign In
-                    </Button>
-                    <Button 
-                      variant="outline" 
+                      Back to Login
+                    </button>
+                    <button 
                       onClick={handleTryDifferentEmail}
-                      className="w-full"
+                      className="w-full flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
                     >
-                      <ArrowLeft className="h-5 w-5 mr-2" />
+                      <ArrowLeft className="h-4 w-4" />
                       Try Different Email
-                    </Button>
+                    </button>
                   </div>
                 </motion.div>
               ) : (
                 // Form State
                 <>
                   {/* Header */}
-                  <div className="text-center mb-6">
-                    <motion.div
-                      className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-4"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <KeyRound className="h-6 w-6 text-white" />
-                    </motion.div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                      Reset Your Password
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      Reset Password
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Enter your email address and we'll send you a reset link
+                    <p className="text-sm text-gray-500">
+                      Enter your email address and we'll send you a link to reset your password.
                     </p>
                   </div>
 
-                  <form onSubmit={handleResetPassword} className="space-y-4">
+                  <form onSubmit={handleResetPassword} className="space-y-5">
                     {error && (
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
+                        className="p-3 text-[11px] font-medium text-red-600 bg-red-50 border border-red-100 rounded-lg"
                       >
-                        <Alert variant="destructive" className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/50">
-                          <AlertDescription className="text-red-700 dark:text-red-300 text-sm">{error}</AlertDescription>
-                        </Alert>
+                        {error}
                       </motion.div>
                     )}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="reset-email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Email Address
-                      </Label>
+                    <div>
+                      <label htmlFor="reset-email" className="block text-xs font-medium text-gray-500 mb-1.5">
+                        Email Address <span className="text-red-500">*</span>
+                      </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                        <Input
+                        <Mail className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                        <input
                           id="reset-email"
                           type="email"
-                          placeholder="Enter your email address"
+                          placeholder="Enter your email"
                           value={email}
                           onChange={(e) => {
                             setEmail(e.target.value);
                             if (error) setError('');
                           }}
-                          className="pl-10"
+                          className="w-full text-sm pl-10 pr-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:border-emerald-400 transition-colors"
                           disabled={loading}
                           required
                         />
@@ -206,41 +192,39 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                      <Button
+                      <button
                         type="button"
-                        variant="outline"
                         onClick={handleClose}
                         disabled={loading}
-                        className="flex-1"
+                        className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50"
                       >
                         Cancel
-                      </Button>
-                      <Button
+                      </button>
+                      <button
                         type="submit"
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                         disabled={!email.trim() || loading}
+                        className="flex-1 flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors disabled:opacity-50"
                       >
                         {loading ? (
                           <div className="flex items-center space-x-2">
-                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <Loader2 className="h-4 w-4 animate-spin" />
                             <span>Sending...</span>
                           </div>
                         ) : (
-                          'Send Reset Link'
+                          'Send Link'
                         )}
-                      </Button>
+                      </button>
                     </div>
                   </form>
 
                   {/* Help Text */}
-                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2 text-sm">Need help?</h3>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                      <p>• Make sure you enter the email address associated with your account</p>
-                      <p>• Check your spam or junk folder if you don't receive the email</p>
-                      <p>• The reset link will expire after 1 hour for security</p>
-                      <p>• Contact your administrator if you continue having issues</p>
-                    </div>
+                  <div className="mt-8 pt-6 border-t border-gray-100">
+                    <h3 className="font-medium text-gray-800 text-xs mb-3">Need help?</h3>
+                    <ul className="text-[11px] text-gray-500 space-y-2 list-disc pl-4">
+                      <li>Use the email address associated with your account.</li>
+                      <li>Check your spam or junk folder if you don't receive the email.</li>
+                      <li>The reset link will expire after 1 hour for security reasons.</li>
+                    </ul>
                   </div>
                 </>
               )}

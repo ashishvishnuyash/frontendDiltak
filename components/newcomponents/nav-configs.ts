@@ -69,13 +69,20 @@ export const employerNavItems: NavItem[] = [
 ];
 
 export const adminNavItems: NavItem[] = [
-  { path: '/admin/dashboard',    label: 'Dashboard',    icon: LayoutDashboard, exact: true },
-  { path: '/admin/companies',    label: 'Companies',    icon: Building2 },
-  // { path: '/admin/users',        label: 'Users',        icon: Users },
-  { path: '/admin/analytics',    label: 'Analytics',    icon: BarChart3 },
-  { path: '/admin/reports',      label: 'Reports',      icon: FileText },
-  { path: '/admin/activity',     label: 'Activity',     icon: Activity },
-  { path: '/admin/security',     label: 'Security',     icon: Lock },
-  { path: '/admin/settings',     label: 'Settings',     icon: Settings },
-  { path: '/admin/profile',      label: 'My Profile',      icon: User },
+  // Platform
+  { path: '/admin/dashboard',                  label: 'Overview',          icon: LayoutDashboard, exact: true, section: 'Platform' },
+  { path: '/admin/companies',                  label: 'Companies',         icon: Building2 },
+  { path: '/admin/users',                      label: 'Users',             icon: Users },
+  // Analytics
+  { path: '/admin/analytics',                  label: 'Usage Logs',        icon: BarChart3, section: 'Analytics' },
+  { path: '/admin/credits',                    label: 'Credits',           icon: Database },
+  { path: '/admin/activity',                   label: 'Audit Log',         icon: Activity },
+  // // Gamification
+  // { path: '/admin/gamification',               label: 'Gam. Overview',     icon: Trophy, section: 'Gamification' },
+  // { path: '/admin/gamification/challenges',    label: 'Challenges',        icon: Star },
+  // // Employer View
+  // { path: '/admin/employer/team-engagement',   label: 'Team Engagement',   icon: BarChart3, section: 'Employer View' },
+  // { path: '/admin/employer/team-gamification', label: 'Team Gamification', icon: Trophy },
+  // Other
+  { path: '/admin/profile',                    label: 'My Profile',        icon: User, section: 'Account' },
 ];

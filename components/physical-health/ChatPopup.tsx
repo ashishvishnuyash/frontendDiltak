@@ -215,7 +215,7 @@ export default function ChatPopup() {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20 transition-colors hover:bg-destructive hover:bg-destructive/80 focus:outline-none focus:ring-2 focus:ring-primary-foreground/50"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/20 transition-colors hover:bg-destructive hover:bg-destructive/80 focus:outline-none focus:ring-2 focus:ring-primary-foreground/50"
                 aria-label="Close chat"
               >
                 <X className="h-5 w-5 text-primary-foreground" />
