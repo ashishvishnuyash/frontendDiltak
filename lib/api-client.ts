@@ -7,7 +7,7 @@
 
 import ServerAddress from "@/constent/ServerAddress";
 
-
+export const API_BASE = ServerAddress;
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;

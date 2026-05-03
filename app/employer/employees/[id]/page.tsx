@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { withAuth } from '@/components/auth/with-auth';
 import { BrandLoader } from '@/components/loader';
-import { apiGet, apiPost, API_BASE } from '@/lib/api-client';
+import { apiGet, apiPost } from '@/lib/api-client';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
