@@ -31,7 +31,7 @@ const REPORT_TYPES: { value: MedicalReportType; label: string }[] = [
 ];
 
 const ALLOWED_MEDICAL_EXTENSIONS = [".pdf", ".docx", ".doc"];
-const MAX_MEDICAL_FILE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_MEDICAL_FILE_BYTES = 100 * 1024 * 1024; // 10MB
 
 const STATUS_STYLES: Record<string, string> = {
   uploaded:

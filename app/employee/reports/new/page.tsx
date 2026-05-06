@@ -22,9 +22,8 @@ import {
   Save, 
   ArrowLeft
 } from 'lucide-react'; // Assuming these are used for icons
-import { useUser } from '@/hooks/use-user'; // Correct import for useUser
-import { collection, addDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase'; // Import db
+import { useAuth } from '@/contexts/auth-context';
+import { apiPost } from '@/lib/api-client';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Spinner } from '@/components/loader';
@@ -45,8 +44,7 @@ interface ReportData {
 
 export default function NewReportPage() {
   const router = useRouter();
-  // Removed Supabase client initialization
-  const { user } = useUser(); // Get the user object from the hook
+  const { user } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -76,22 +74,24 @@ export default function NewReportPage() {
     setLoading(true);
     setError('');
 
-    const reportToSave: ReportData = {
-      ...reportData,
-      timestamp: new Date(), // Use serverTimestamp() if running on server/functions - keeping New Date for now
-      employee_id: user?.id || '', // Ensure employee_id is set before saving
-    };
-
     try {
-      // Assuming 'db' is imported from '@/lib/firebase'
-      await addDoc(collection(db, 'mental_health_reports'), reportToSave);
-
-      // No specific error check needed for addDoc success, caught by the catch block
-
-      // toast.success('Wellness report saved successfully!'); // Re-add toast if needed
+      await apiPost<{ success: boolean; report_id: string }>('/reports', {
+        employee_id: user?.id ?? null,
+        company_id: user?.company_id ?? null,
+        mood_rating: reportData.mood_rating,
+        stress_level: reportData.stress_level,
+        energy_level: reportData.energy_level,
+        work_satisfaction: reportData.work_satisfaction,
+        work_life_balance: reportData.work_life_balance,
+        anxiety_level: reportData.anxiety_level,
+        confidence_level: reportData.confidence_level,
+        sleep_quality: reportData.sleep_quality,
+        comments: reportData.comments,
+        session_type: 'self_report',
+      });
       router.push('/employee/dashboard');
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       console.error('Error:', err);
     } finally {
       setLoading(false);

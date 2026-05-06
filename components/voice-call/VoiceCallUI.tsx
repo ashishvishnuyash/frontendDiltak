@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, PhoneOff, Subtitles } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Subtitles, Bot, Sparkles } from "lucide-react";
 
 interface VoiceCallUIProps {
   isActive: boolean;
@@ -94,7 +94,7 @@ export default function VoiceCallUI({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.25 }}
-          className="fixed inset-0 z-50 flex flex-col items-center bg-[#0a0f1a]"
+          className="fixed inset-0 z-50 flex flex-col items-center bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0f1a] to-emerald-950/20"
         >
           {/* Top bar */}
           <div className="w-full flex items-center justify-between px-5 pt-5 pb-2">
@@ -129,39 +129,43 @@ export default function VoiceCallUI({
           {/* Central area */}
           <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full px-6">
             {/* Avatar orb */}
-            <div className="relative flex items-center justify-center">
+            <div className="relative flex items-center justify-center py-8">
               {/* Outer glow ring */}
               <motion.div
                 animate={
                   isSpeaking
-                    ? { scale: [1, 1.18, 1], opacity: [0.2, 0.4, 0.2] }
+                    ? { scale: [1, 1.25, 1], opacity: [0.15, 0.3, 0.15] }
                     : isRecording
-                    ? { scale: [1, 1.12, 1], opacity: [0.15, 0.3, 0.15] }
-                    : { scale: 1, opacity: 0.08 }
+                    ? { scale: [1, 1.15, 1], opacity: [0.1, 0.2, 0.1] }
+                    : { scale: 1, opacity: 0.05 }
                 }
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute w-52 h-52 rounded-full bg-emerald-400"
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute w-64 h-64 rounded-full bg-emerald-500/30 blur-2xl"
               />
               {/* Mid ring */}
               <motion.div
                 animate={
                   isSpeaking || isRecording
-                    ? { scale: [1, 1.1, 1], opacity: [0.25, 0.5, 0.25] }
-                    : { scale: 1, opacity: 0.12 }
+                    ? { scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }
+                    : { scale: 1, opacity: 0.1 }
                 }
-                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-                className="absolute w-40 h-40 rounded-full bg-emerald-500"
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                className="absolute w-48 h-48 rounded-full border border-emerald-400/20 bg-emerald-500/10 backdrop-blur-sm"
               />
               {/* Core orb */}
-              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-700 shadow-2xl flex items-center justify-center z-10">
-                <span className="text-white text-3xl font-bold select-none">U</span>
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-teal-400 via-emerald-500 to-green-600 shadow-[0_0_40px_rgba(16,185,129,0.3)] flex items-center justify-center z-10 border border-white/20 relative overflow-hidden backdrop-blur-md">
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/30 to-transparent opacity-50" />
+                <Bot className="w-14 h-14 text-white drop-shadow-lg z-10" />
               </div>
             </div>
 
             {/* Name + role */}
-            <div className="text-center">
-              <p className="text-white text-xl font-semibold tracking-wide">Uma</p>
-              <p className="text-white/40 text-xs mt-0.5">Wellness AI Companion</p>
+            <div className="text-center mt-2">
+              <p className="text-white text-3xl font-bold tracking-tight">Saathi</p>
+              <div className="flex items-center justify-center gap-1.5 mt-2">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <p className="text-white/60 text-sm font-medium">Your AI Wellness Companion</p>
+              </div>
             </div>
 
             {/* Waveform */}
@@ -225,25 +229,25 @@ export default function VoiceCallUI({
             {/* Mute */}
             <button
               onClick={onToggleMute}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all backdrop-blur-md shadow-lg border ${
                 isMuted
-                  ? "bg-white/20 ring-2 ring-white/30"
-                  : "bg-white/10 hover:bg-white/20"
+                  ? "bg-white/20 border-white/30 text-white ring-2 ring-white/20"
+                  : "bg-white/5 border-white/10 text-white/80 hover:bg-white/15 hover:text-white"
               }`}
             >
               {isMuted ? (
-                <MicOff className="h-6 w-6 text-white" />
+                <MicOff className="h-7 w-7" />
               ) : (
-                <Mic className="h-6 w-6 text-white" />
+                <Mic className="h-7 w-7" />
               )}
             </button>
 
             {/* End call */}
             <button
               onClick={onEndCall}
-              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-xl transition-colors"
+              className="w-20 h-20 rounded-full bg-red-500/90 hover:bg-red-500 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.3)] border border-red-400/50 transition-all hover:scale-105"
             >
-              <PhoneOff className="h-7 w-7 text-white" />
+              <PhoneOff className="h-8 w-8 text-white" />
             </button>
           </div>
 

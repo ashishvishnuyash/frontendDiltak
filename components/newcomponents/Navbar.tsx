@@ -44,11 +44,9 @@ export function DesktopTopBar({
 }) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-   const toggleTheme = useCallback(() => {
+  const toggleTheme = useCallback(() => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   }, [theme, setTheme]);
-
-  console.log("theme" , theme);
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

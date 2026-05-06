@@ -45,6 +45,7 @@ function SidebarItem({
     <Link
       href={item.path}
       onClick={onNavigate}
+      prefetch={true}
       title={collapsed ? item.label : undefined}
       aria-current={isActive ? 'page' : undefined}
       className={cn(
