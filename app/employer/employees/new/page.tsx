@@ -12,9 +12,6 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, UserPlus, Mail, User as UserIcon, Building, Users, Shield, Crown } from 'lucide-react';
 import { Spinner, SectionLoader } from '@/components/loader';
-import { auth, db } from '@/lib/firebase'; // Import Firebase auth and db
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, doc, setDoc, query, where, getDocs } from 'firebase/firestore'; // Import Firestore functions
 import { useUser } from '@/hooks/use-user';
 import { updateReportingChain } from '@/lib/hierarchy-service';
 import { toast } from 'sonner';
@@ -31,25 +28,18 @@ export default function NewEmployeePage() {
   useEffect(() => {
     const fetchManagers = async () => {
       if (!user?.company_id) return;
-
       try {
-        const managersRef = collection(db, 'users');
-        const managersQuery = query(
-          managersRef,
-          where('company_id', '==', user.company_id),
-          where('is_active', '==', true)
-        );
-        const managersSnapshot = await getDocs(managersQuery);
-        const managersData = managersSnapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() } as User))
-          .filter(u => u.role === 'manager' || u.role === 'hr' || u.role === 'admin' || u.role === 'employer');
-
-        setManagers(managersData);
+        const token = localStorage.getItem('access_token');
+        const res = await fetch(`/api/employer/employees?company_id=${user.company_id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const json = await res.json();
+        const all: User[] = json?.employees ?? json ?? [];
+        setManagers(all.filter(u => ['manager', 'hr', 'admin', 'employer'].includes(u.role)));
       } catch (error) {
         console.error('Error fetching managers:', error);
       }
     };
-
     fetchManagers();
   }, [user?.company_id]);
 

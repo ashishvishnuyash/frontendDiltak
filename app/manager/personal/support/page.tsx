@@ -7,7 +7,6 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Brain, ArrowRight } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
-import { auth } from '@/lib/firebase';
 import EscalationSupport from '@/components/support/EscalationSupport';
 
 export default function ManagerSupportPage() {

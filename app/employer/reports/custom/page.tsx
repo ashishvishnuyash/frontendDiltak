@@ -25,8 +25,8 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 import { toast } from 'sonner';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import type { MentalHealthReport, User as UserType } from '@/types';
 import { ButtonLoader, SectionLoader } from '@/components/loader';
 
@@ -117,24 +117,14 @@ export default function CustomReportPage() {
 
   const loadEmployees = async () => {
     try {
-      const employeesQuery = query(
-        collection(db, 'users'),
-        where('company_id', '==', user!.company_id),
-        where('role', 'in', ['employee', 'manager'])
-      );
-
-      const snapshot = await getDocs(employeesQuery);
-      const employeesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as UserType));
-
+      const token = localStorage.getItem('access_token');
+      const res = await axios.get(`${ServerAddress}/employer/employees`, {
+        params: { company_id: user!.company_id },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const employeesData: UserType[] = res.data?.employees ?? res.data ?? [];
       setEmployees(employeesData);
-
-      // Extract unique departments
-      const uniqueDepartments = Array.from(
-        new Set(employeesData.map(emp => emp.department).filter(Boolean))
-      ) as string[];
+      const uniqueDepartments = Array.from(new Set(employeesData.map(e => e.department).filter(Boolean))) as string[];
       setDepartments(uniqueDepartments);
     } catch (error) {
       console.error('Error loading employees:', error);
@@ -174,20 +164,14 @@ export default function CustomReportPage() {
       toast.error('Please enter a report name');
       return;
     }
-
     setLoading(true);
     try {
-      // Fetch reports based on filters
-      const reportsQuery = query(
-        collection(db, 'mental_health_reports'),
-        where('company_id', '==', user!.company_id)
-      );
-
-      const snapshot = await getDocs(reportsQuery);
-      let reports = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as MentalHealthReport));
+      const token = localStorage.getItem('access_token');
+      const res = await axios.get(`${ServerAddress}/reports`, {
+        params: { company_id: user!.company_id },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      let reports: MentalHealthReport[] = res.data?.reports ?? res.data ?? [];
 
       // Apply date filter
       reports = reports.filter(report => {
@@ -199,7 +183,7 @@ export default function CustomReportPage() {
 
       // Apply department filter
       if (reportConfig.filters.departments.length > 0) {
-        const employeesByDept = employees.filter(emp => 
+        const employeesByDept = employees.filter(emp =>
           reportConfig.filters.departments.includes(emp.department || '')
         );
         const employeeIds = new Set(employeesByDept.map(emp => emp.id));
@@ -208,12 +192,10 @@ export default function CustomReportPage() {
 
       // Apply risk level filter
       if (reportConfig.filters.riskLevels.length > 0) {
-        reports = reports.filter(report => 
+        reports = reports.filter(report =>
           reportConfig.filters.riskLevels.includes(report.risk_level)
         );
-      }
-
-      // Apply employee filter
+      }      // Apply employee filter
       if (reportConfig.filters.employeeIds.length > 0) {
         reports = reports.filter(report => 
           reportConfig.filters.employeeIds.includes(report.employee_id)

@@ -22,9 +22,9 @@ import {
   Save, 
   ArrowLeft
 } from 'lucide-react'; // Assuming these are used for icons
-import { useUser } from '@/hooks/use-user'; // Correct import for useUser
-import { collection, addDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase'; // Import db
+import { useUser } from '@/hooks/use-user';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Spinner } from '@/components/loader';
@@ -83,12 +83,16 @@ export default function NewReportPage() {
     };
 
     try {
-      // Assuming 'db' is imported from '@/lib/firebase'
-      await addDoc(collection(db, 'mental_health_reports'), reportToSave);
-
-      // No specific error check needed for addDoc success, caught by the catch block
-
-      // toast.success('Wellness report saved successfully!'); // Re-add toast if needed
+      const token = localStorage.getItem('access_token');
+      await axios.post(`${ServerAddress}/reports`, {
+        ...reportToSave,
+        employee_id: user?.id || '',
+        company_id: user?.company_id || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       router.push('/employee/dashboard');
     } catch (err) {
       setError('An unexpected error occurred');

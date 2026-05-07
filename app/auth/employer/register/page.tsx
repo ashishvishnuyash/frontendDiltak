@@ -13,9 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Building, Mail, User as UserIcon, Phone, MapPin, Eye, EyeOff, Shield, ArrowLeft, Loader2, ArrowRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { auth, db } from '@/lib/firebase';
-import { collection, doc, addDoc, setDoc, getDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 
@@ -84,71 +83,29 @@ export default function EmployerRegisterPage() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.businessEmail, formData.password);
-      const user = userCredential.user;
+      const response = await axios.post(`${ServerAddress}/auth/register`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.businessEmail,
+        password: formData.password,
+        companyName: formData.companyName,
+        industry: formData.industry,
+        companySize: formData.companySize,
+        phone: formData.phone || null,
+        address: formData.address || null,
+      });
 
-      if (user) {
-        try {
-          const companyRef = await addDoc(collection(db, 'companies'), {
-            name: formData.companyName,
-            industry: formData.industry || 'Not specified',
-            size: formData.companySize || 'Not specified',
-            owner_id: user.uid,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
+      const { access_token, user } = response.data;
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('user_profile', JSON.stringify(user));
+      await refreshUser();
 
-          const profileData = {
-            id: user.uid,
-            email: formData.businessEmail,
-            role: 'employer',
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            phone: formData.phone || null,
-            address: formData.address || null,
-            company_id: companyRef.id,
-            company_name: formData.companyName,
-            is_active: true,
-            hierarchy_level: 0,
-            can_view_team_reports: true,
-            can_manage_employees: true,
-            can_approve_leaves: true,
-            is_department_head: true,
-            skip_level_access: true,
-            direct_reports: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-
-          await setDoc(doc(db, 'users', user.uid), profileData);
-
-          const userDocRef = doc(db, 'users', user.uid);
-          const userDocSnap = await getDoc(userDocRef);
-          if (!userDocSnap.exists()) throw new Error('Failed to create user document in database');
-
-          // ── NEW: Pre-warm localStorage and Sync Context ──
-          localStorage.setItem('user_profile', JSON.stringify(profileData));
-          await refreshUser();
-
-          toast.success('Employer account created successfully!');
-          await new Promise(resolve => setTimeout(resolve, 500));
-          router.push('/employer/dashboard');
-        } catch (firestoreError: any) {
-          console.error('Firestore error during registration:', firestoreError);
-          try { await userCredential.user.delete(); } catch {}
-          setError('Failed to create user profile. Please try again or contact support.');
-        }
-      }
+      toast.success('Employer account created successfully!');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      router.push('/employer/dashboard');
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('An account with this email already exists. Please use the login page.');
-      } else if (err.code === 'auth/weak-password') {
-        setError('Password is too weak. Please choose a stronger password.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Invalid email address. Please enter a valid business email.');
-      } else {
-        setError(err.message || 'An unexpected error occurred. Please try again.');
-      }
+      const msg = err?.response?.data?.message || err?.response?.data?.detail || err?.message || 'An unexpected error occurred. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }

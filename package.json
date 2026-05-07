@@ -56,8 +56,6 @@
     "embla-carousel-react": "^8.3.0",
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.1",
-    "firebase": "^11.9.1",
-    "firebase-admin": "^13.4.0",
     "framer-motion": "^12.23.22",
     "html2canvas": "^1.4.1",
     "input-otp": "^1.2.4",

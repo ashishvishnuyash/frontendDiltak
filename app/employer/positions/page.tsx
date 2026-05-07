@@ -15,11 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BrandLoader } from '@/components/loader';
-import { db } from '@/lib/firebase';
-import {
-  collection, addDoc, updateDoc, deleteDoc,
-  doc, query, where, onSnapshot, serverTimestamp,
-} from 'firebase/firestore';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CustomButton } from '@/components/button/CustomButton';
@@ -90,23 +87,35 @@ function PositionPage() {
 
   const companyId = user?.company_id ?? (user as any)?.companyId ?? '';
 
-  // ─── Firestore listener ────────────────────────────────────────────────────
-  useEffect(() => {
+  function getHeaders() {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  // ─── Load positions from API ───────────────────────────────────────────────
+  const loadPositions = async () => {
     if (!companyId) { setLoading(false); return; }
-    const q = query(collection(db, 'Position'), where('company_id', '==', companyId));
-    const unsub = onSnapshot(q, snap => {
-      setPosition(snap.docs.map(d => ({ id: d.id, ...d.data() } as Department)));
+    try {
+      const res = await axios.get(`${ServerAddress}/employer/positions`, {
+        params: { company_id: companyId },
+        headers: getHeaders(),
+      });
+      setPosition(res.data?.positions ?? res.data ?? []);
+    } catch {
+      // silently fail — empty list shown
+    } finally {
       setLoading(false);
-    }, () => setLoading(false));
-    return unsub;
-  }, [companyId]);
+    }
+  };
+
+  useEffect(() => { loadPositions(); }, [companyId]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setTimeout(() => {
+    loadPositions().finally(() => {
       setIsRefreshing(false);
-      toast.success('Position refreshed');
-    }, 500);
+      toast.success('Positions refreshed');
+    });
   };
 
   // Calculate statistics
@@ -114,13 +123,7 @@ function PositionPage() {
     const totalEmployees = Position.reduce((s, d) => s + (d.employeeCount ?? 0), 0);
     const withHead = Position.filter(d => d.head).length;
     const avgEmployees = Position.length > 0 ? Math.round(totalEmployees / Position.length) : 0;
-    
-    return {
-      total: Position.length,
-      totalEmployees,
-      withHead,
-      avgEmployees,
-    };
+    return { total: Position.length, totalEmployees, withHead, avgEmployees };
   }, [Position]);
 
   const openAdd = () => { setEditing(null); setForm({ name: '', description: '', head: '' }); setErrors({}); setShowForm(true); };
@@ -129,7 +132,7 @@ function PositionPage() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = 'Department name is required';
+    if (!form.name.trim()) e.name = 'Position name is required';
     setErrors(e);
     return !Object.keys(e).length;
   };
@@ -140,23 +143,18 @@ function PositionPage() {
     setSubmitting(true);
     try {
       if (editing) {
-        await updateDoc(doc(db, 'Position', editing.id), {
-          name: form.name.trim(),
-          description: form.description.trim(),
-          head: form.head.trim(),
-        });
-        toast.success('Department updated successfully');
+        await axios.patch(`${ServerAddress}/employer/positions/${editing.id}`, {
+          name: form.name.trim(), description: form.description.trim(), head: form.head.trim(),
+        }, { headers: getHeaders() });
+        toast.success('Position updated successfully');
       } else {
-        await addDoc(collection(db, 'Position'), {
-          name: form.name.trim(),
-          description: form.description.trim(),
-          head: form.head.trim(),
-          company_id: companyId,
-          employeeCount: 0,
-          created_at: serverTimestamp(),
-        });
-        toast.success('Department created successfully');
+        await axios.post(`${ServerAddress}/employer/positions`, {
+          name: form.name.trim(), description: form.description.trim(), head: form.head.trim(),
+          company_id: companyId, employeeCount: 0,
+        }, { headers: getHeaders() });
+        toast.success('Position created successfully');
       }
+      await loadPositions();
       closeForm();
     } catch {
       toast.error('Something went wrong. Please try again.');
@@ -168,10 +166,11 @@ function PositionPage() {
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
-      await deleteDoc(doc(db, 'Position', id));
-      toast.success('Department deleted successfully');
+      await axios.delete(`${ServerAddress}/employer/positions/${id}`, { headers: getHeaders() });
+      toast.success('Position deleted successfully');
+      await loadPositions();
     } catch {
-      toast.error('Failed to delete department');
+      toast.error('Failed to delete position');
     } finally {
       setDeletingId(null);
     }
@@ -183,9 +182,7 @@ function PositionPage() {
     (d.head ?? '').toLowerCase().includes(search.toLowerCase())
   );
 
-
-    const router = useRouter();
-
+  const router = useRouter();
   if (userLoading || loading) return <BrandLoader />;
 
   return (

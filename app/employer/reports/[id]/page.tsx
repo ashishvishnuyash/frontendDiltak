@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,23 +38,18 @@ export default function ReportDetailPage() {
     useEffect(() => {
         const fetchReport = async () => {
             if (!user || user.role !== 'employer') return;
-
             try {
-                const reportDoc = await getDoc(doc(db, 'mental_health_reports', reportId));
-
-                if (reportDoc.exists()) {
-                    const reportData = reportDoc.data() as MentalHealthReport;
-
-                    // Verify this report belongs to the current employer's company
-                    if (reportData.company_id !== (user as any).company_id) {
-                        setError('Report not found or access denied');
-                        return;
-                    }
-
-                    setReport({ ...reportData, id: reportDoc.id } as MentalHealthReport);
-                } else {
-                    setError('Report not found');
+                const token = localStorage.getItem('access_token');
+                const res = await axios.get(`${ServerAddress}/reports/${reportId}`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
+                const reportData: MentalHealthReport = res.data?.report ?? res.data;
+                if (!reportData) { setError('Report not found'); return; }
+                if (reportData.company_id !== (user as any).company_id) {
+                    setError('Report not found or access denied');
+                    return;
                 }
+                setReport(reportData);
             } catch (err) {
                 console.error('Error fetching report:', err);
                 setError('Failed to load report data');
@@ -62,10 +57,7 @@ export default function ReportDetailPage() {
                 setLoading(false);
             }
         };
-
-        if (reportId && user && user.role === 'employer') {
-            fetchReport();
-        }
+        if (reportId && user && user.role === 'employer') fetchReport();
     }, [reportId, user]);
 
     const getRiskLevelColor = (riskLevel: 'low' | 'medium' | 'high') => {

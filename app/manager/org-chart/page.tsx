@@ -27,9 +27,7 @@ import {
   FileText
 } from 'lucide-react';
 import { getTeamHierarchy, getManagerPermissions } from '@/lib/hierarchy-service';
-import { db, auth } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { signOut } from 'firebase/auth';
 import type { User, HierarchyNode } from '@/types/index';
 import { toast } from 'sonner';
 import { SectionLoader } from '@/components/loader';
@@ -92,7 +90,8 @@ export default function OrgChartPage() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_profile');
       router.push('/auth/login');
     } catch (error) {
       console.error('Logout error:', error);

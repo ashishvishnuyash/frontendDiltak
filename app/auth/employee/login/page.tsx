@@ -12,9 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Users, Eye, EyeOff, Info, ArrowLeft, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { toast } from 'sonner';
-import { auth, db } from '@/lib/firebase';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 
 export default function EmployeeLoginPage() {
   const [email, setEmail] = useState('');
@@ -31,44 +30,22 @@ export default function EmployeeLoginPage() {
     setError(null);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const response = await axios.post(`${ServerAddress}/auth/login`, { email, password });
+      const { access_token, user } = response.data;
 
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-
-      if (!userDoc.exists()) {
-        setError('User profile not found. Please contact your administrator.');
-        await signOut(auth);
+      if (!user || !['employee', 'manager', 'hr'].includes(user.role)) {
+        setError('This login portal is for employees only. Please use the employer login portal.');
         return;
       }
 
-      const userData = userDoc.data();
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('user_profile', JSON.stringify(user));
 
-      if (userData?.role !== 'employee') {
-        setError('This login portal is for employees only. Please use the employer login portal or contact your administrator.');
-        await signOut(auth);
-        return;
-      }
-
-      toast.success(`Welcome back, ${userData.first_name}!`);
+      toast.success(`Welcome back, ${user.first_name || user.firstName || 'there'}!`);
       router.push('/employee/dashboard');
     } catch (err: any) {
-      switch (err.code) {
-        case 'auth/user-not-found':
-          setError('No account found with this email address.');
-          break;
-        case 'auth/wrong-password':
-          setError('Incorrect password.');
-          break;
-        case 'auth/invalid-email':
-          setError('Invalid email address.');
-          break;
-        case 'auth/too-many-requests':
-          setError('Too many failed attempts. Please try again later.');
-          break;
-        default:
-          setError('Login failed. Please check your credentials and try again.');
-      }
+      const msg = err?.response?.data?.message || err?.response?.data?.detail || 'Login failed. Please check your credentials.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -76,7 +53,6 @@ export default function EmployeeLoginPage() {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
-      {/* Header */}
       <motion.header
         className="border-b border-border bg-background/80 backdrop-blur-sm"
         initial={{ opacity: 0, y: -20 }}
@@ -108,7 +84,6 @@ export default function EmployeeLoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          {/* Icon + Title */}
           <div className="text-center mb-6">
             <motion.div
               className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
@@ -121,15 +96,13 @@ export default function EmployeeLoginPage() {
             <p className="text-sm text-muted-foreground mt-1">Sign in with your company-provided credentials</p>
           </div>
 
-          {/* Notice */}
           <div className="flex items-start space-x-3 bg-card border border-border rounded-xl p-4 mb-6">
             <Info className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
             <p className="text-xs text-muted-foreground">
-              Use the login credentials provided by your employer. If you don&apos;t have an account, contact your HR department.
+              Use the login credentials provided by your employer. If you don't have an account, contact your HR department.
             </p>
           </div>
 
-          {/* Form Card */}
           <Card className="bg-card border border-border shadow-xl rounded-2xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-xl font-bold text-foreground text-center">Welcome back</CardTitle>
@@ -139,11 +112,7 @@ export default function EmployeeLoginPage() {
               <form onSubmit={handleSignIn} className="space-y-5">
                 <AnimatePresence>
                   {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                       <Alert variant="destructive">
                         <AlertDescription className="text-sm">{error}</AlertDescription>
                       </Alert>
@@ -155,18 +124,7 @@ export default function EmployeeLoginPage() {
                   <Label htmlFor="email" className="text-sm font-semibold text-foreground">Company Email</Label>
                   <div className="relative">
                     <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${focusedField === 'email' ? 'text-green-500' : 'text-muted-foreground'}`} />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@company.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onFocus={() => setFocusedField('email')}
-                      onBlur={() => setFocusedField('')}
-                      className={`pl-10 ${focusedField === 'email' ? 'border-green-500 ring-2 ring-green-200 dark:ring-green-800' : ''}`}
-                      disabled={loading}
-                      required
-                    />
+                    <Input id="email" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField('')} className={`pl-10 ${focusedField === 'email' ? 'border-green-500 ring-2 ring-green-200 dark:ring-green-800' : ''}`} disabled={loading} required />
                   </div>
                 </div>
 
@@ -174,45 +132,19 @@ export default function EmployeeLoginPage() {
                   <Label htmlFor="password" className="text-sm font-semibold text-foreground">Password</Label>
                   <div className="relative">
                     <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${focusedField === 'password' ? 'text-green-500' : 'text-muted-foreground'}`} />
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onFocus={() => setFocusedField('password')}
-                      onBlur={() => setFocusedField('')}
-                      className={`pl-10 pr-10 ${focusedField === 'password' ? 'border-green-500 ring-2 ring-green-200 dark:ring-green-800' : ''}`}
-                      disabled={loading}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      disabled={loading}
-                    >
+                    <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} onFocus={() => setFocusedField('password')} onBlur={() => setFocusedField('')} className={`pl-10 pr-10 ${focusedField === 'password' ? 'border-green-500 ring-2 ring-green-200 dark:ring-green-800' : ''}`} disabled={loading} required />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" disabled={loading}>
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
 
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2.5 shadow-lg transition-all duration-300"
-                    disabled={loading}
-                  >
+                  <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2.5 shadow-lg transition-all duration-300" disabled={loading}>
                     {loading ? (
-                      <span className="flex items-center justify-center">
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Signing In...
-                      </span>
+                      <span className="flex items-center justify-center"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Signing In...</span>
                     ) : (
-                      <span className="flex items-center justify-center">
-                        Sign In to Employee Portal
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </span>
+                      <span className="flex items-center justify-center">Sign In to Employee Portal<ArrowRight className="ml-2 h-5 w-5" /></span>
                     )}
                   </Button>
                 </motion.div>
@@ -220,14 +152,11 @@ export default function EmployeeLoginPage() {
 
               <div className="text-center text-sm">
                 <span className="text-muted-foreground">Are you an employer? </span>
-                <Link href="/auth/employer/login" className="text-green-600 dark:text-green-400 hover:underline font-semibold">
-                  Employer Portal
-                </Link>
+                <Link href="/auth/employer/login" className="text-green-600 dark:text-green-400 hover:underline font-semibold">Employer Portal</Link>
               </div>
             </CardContent>
           </Card>
 
-          {/* Help */}
           <div className="mt-4 bg-card border border-border rounded-xl p-4">
             <h3 className="text-sm font-semibold text-foreground mb-2">Need Help?</h3>
             <div className="text-xs text-muted-foreground space-y-1">

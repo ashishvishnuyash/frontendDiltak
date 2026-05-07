@@ -33,8 +33,6 @@ import {
   BarChart3
 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
 import type { MentalHealthReport } from '@/types';
 import InteractiveAnalytics from '@/components/analytics/InteractiveAnalytics';
 import { PageLoader } from '@/components/loader';
@@ -83,17 +81,12 @@ export default function EmployeeReportsPage() {
     if (!user) return;
     try {
       setRefreshing(true);
-      const reportsCollection = collection(db, 'mental_health_reports');
-      const q = query(
-        reportsCollection,
-        where('employee_id', '==', user.id)
-      );
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as UIMentalHealthReport[];
-      // Sort by created_at in JavaScript to avoid Firestore index requirements
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`/api/reports?employee_id=${user.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const json = await res.json();
+      const data: UIMentalHealthReport[] = Array.isArray(json) ? json : (json?.reports ?? json?.data ?? []);
       const sortedData = data.sort((a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );

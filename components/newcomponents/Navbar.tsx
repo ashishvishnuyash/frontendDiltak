@@ -3,8 +3,6 @@
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { Menu, X, LogOut, Bell, Settings, Sun, Moon, MenuIcon, LayoutDashboard, HelpCircle, User } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -53,12 +51,11 @@ export function DesktopTopBar({
   const handleSignOut = useCallback(async () => {
     setProfileOpen(false);
     try {
-      // Clear local auth tokens first (AuthContext reads these as primary source)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user_profile');
+        localStorage.removeItem('login_data');
       }
-      await signOut(auth);
       toast.success('Signed out successfully');
       router.push('/auth/login');
     } catch {
@@ -318,12 +315,11 @@ function Navbar({ user, items = [], onNavigate, className }: NavbarProps) {
     onNavigate?.();
     setMobileOpen(false);
     try {
-      // Clear local auth tokens first (AuthContext reads these as primary source)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user_profile');
+        localStorage.removeItem('login_data');
       }
-      await signOut(auth);
       toast.success('Signed out successfully');
       router.push('/auth/login');
     } catch {

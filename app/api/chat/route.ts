@@ -5,8 +5,6 @@ import OpenAI from 'openai';
 import axios from 'axios';
 import type { ChatMessage } from '@/types/index';
 import { getPersonalHistory, formatPersonalHistoryForAI } from '@/lib/reports-service';
-import { db } from '@/lib/firebase';
-import { collection, addDoc } from 'firebase/firestore';
 
 // File processing utilities
 interface FileAttachment {
@@ -1096,9 +1094,15 @@ Always include the physical_health_metrics object in your response, even if usin
       } as any;
 
       try {
-        await addDoc(collection(db, 'mental_health_reports'), reportToSave);
-      } catch (firestoreError) {
-        console.error('Failed to save report to Firestore:', firestoreError);
+        // Save report via custom backend API
+        const SERVER = process.env.NEXT_PUBLIC_UMA_API_URL?.replace(/\/+$/, '') ?? 'http://127.0.0.1:8000';
+        await fetch(`${SERVER}/api/reports`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reportToSave),
+        });
+      } catch (saveError) {
+        console.error('Failed to save report to backend:', saveError);
       }
     }
 

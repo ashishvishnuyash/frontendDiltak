@@ -2,8 +2,6 @@
 
 import { memo, useState, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import Sidebar, { type SidebarProps } from './Sidebar';

@@ -16,11 +16,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BrandLoader } from '@/components/loader';
-import { db } from '@/lib/firebase';
-import {
-  collection, addDoc, updateDoc, deleteDoc,
-  doc, query, where, onSnapshot, serverTimestamp,
-} from 'firebase/firestore';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CustomButton } from '@/components/button/CustomButton';
@@ -91,37 +88,41 @@ function DepartmentsPage() {
 
   const companyId = user?.company_id ?? (user as any)?.companyId ?? '';
 
-  // ─── Firestore listener ────────────────────────────────────────────────────
-  useEffect(() => {
+  function getHeaders() {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  const loadDepartments = async () => {
     if (!companyId) { setLoading(false); return; }
-    const q = query(collection(db, 'departments'), where('company_id', '==', companyId));
-    const unsub = onSnapshot(q, snap => {
-      setDepartments(snap.docs.map(d => ({ id: d.id, ...d.data() } as Department)));
+    try {
+      const res = await axios.get(`${ServerAddress}/employer/departments`, {
+        params: { company_id: companyId },
+        headers: getHeaders(),
+      });
+      setDepartments(res.data?.departments ?? res.data ?? []);
+    } catch {
+      // silently fail
+    } finally {
       setLoading(false);
-    }, () => setLoading(false));
-    return unsub;
-  }, [companyId]);
+    }
+  };
+
+  useEffect(() => { loadDepartments(); }, [companyId]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setTimeout(() => {
+    loadDepartments().finally(() => {
       setIsRefreshing(false);
       toast.success('Departments refreshed');
-    }, 500);
+    });
   };
 
-  // Calculate statistics
   const stats = useMemo(() => {
     const totalEmployees = departments.reduce((s, d) => s + (d.employeeCount ?? 0), 0);
     const withHead = departments.filter(d => d.head).length;
     const avgEmployees = departments.length > 0 ? Math.round(totalEmployees / departments.length) : 0;
-    
-    return {
-      total: departments.length,
-      totalEmployees,
-      withHead,
-      avgEmployees,
-    };
+    return { total: departments.length, totalEmployees, withHead, avgEmployees };
   }, [departments]);
 
   const openAdd = () => { setEditing(null); setForm({ name: '', description: '', head: '' }); setErrors({}); setShowForm(true); };
@@ -141,23 +142,18 @@ function DepartmentsPage() {
     setSubmitting(true);
     try {
       if (editing) {
-        await updateDoc(doc(db, 'departments', editing.id), {
-          name: form.name.trim(),
-          description: form.description.trim(),
-          head: form.head.trim(),
-        });
+        await axios.patch(`${ServerAddress}/employer/departments/${editing.id}`, {
+          name: form.name.trim(), description: form.description.trim(), head: form.head.trim(),
+        }, { headers: getHeaders() });
         toast.success('Department updated successfully');
       } else {
-        await addDoc(collection(db, 'departments'), {
-          name: form.name.trim(),
-          description: form.description.trim(),
-          head: form.head.trim(),
-          company_id: companyId,
-          employeeCount: 0,
-          created_at: serverTimestamp(),
-        });
+        await axios.post(`${ServerAddress}/employer/departments`, {
+          name: form.name.trim(), description: form.description.trim(), head: form.head.trim(),
+          company_id: companyId, employeeCount: 0,
+        }, { headers: getHeaders() });
         toast.success('Department created successfully');
       }
+      await loadDepartments();
       closeForm();
     } catch {
       toast.error('Something went wrong. Please try again.');
@@ -169,8 +165,9 @@ function DepartmentsPage() {
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
-      await deleteDoc(doc(db, 'departments', id));
+      await axios.delete(`${ServerAddress}/employer/departments/${id}`, { headers: getHeaders() });
       toast.success('Department deleted successfully');
+      await loadDepartments();
     } catch {
       toast.error('Failed to delete department');
     } finally {
