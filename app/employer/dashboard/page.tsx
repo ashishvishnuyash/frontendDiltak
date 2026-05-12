@@ -71,7 +71,10 @@ interface RetentionRiskResponse {
   period_days: number;
   note: string;
   computed_at: string;
-  // Synthetic field set client-side when the API returns a privacy suppression response
+  // Server-side privacy suppression flags (200 response with empty bands when cohort is too small)
+  suppressed?: boolean;
+  suppression_reason?: string;
+  // Client-side mirror of the above — preserved for existing rendering code
   _suppressed?: boolean;
   _suppression_reason?: string;
 }
@@ -356,19 +359,23 @@ function DeptTooltip({ active, payload }: any) {
 function DepartmentComparisonChart({ data }: { data: DepartmentComparisonResponse | null }) {
   const [view, setView] = useState<'chart' | 'cards'>('chart');
 
-  if (!data || !data.departments.length) {
+  const visible    = data?.departments.filter(d => !d.suppressed) ?? [];
+  const suppressed = data?.departments.filter(d => d.suppressed) ?? [];
+
+  if (!data || !data.departments.length || !visible.length) {
     return (
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 flex flex-col items-center justify-center gap-3 min-h-[200px]">
         <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
           <Users className="h-6 w-6 text-gray-300" />
         </div>
-        <p className="text-sm text-gray-500">No department data available</p>
+        <p className="text-sm text-gray-500">
+          {suppressed.length > 0
+            ? `No department data available · ${suppressed.length} suppressed`
+            : 'No department data available'}
+        </p>
       </div>
     );
   }
-
-  const visible    = data.departments.filter(d => !d.suppressed);
-  const suppressed = data.departments.filter(d => d.suppressed);
 
   // Sort by wellness_index descending for the chart
   const sorted = [...visible].sort((a, b) => b.wellness_index - a.wellness_index);
@@ -976,18 +983,30 @@ function OrgHRAnalyticsPage() {
       results.forEach((result, index) => {
         const key = endpoints[index].key;
         if (result.status === 'fulfilled') {
-          newData[key] = result.value.data;
-          successCount++;
+          const value = result.value.data;
+          // Backend may return a 200 with `suppressed: true` instead of a 422 when
+          // the cohort is too small (privacy / k-anonymity). Map it to the existing
+          // `_suppressed` sentinel the rendering code consumes.
+          if (key === 'retention_risk' && value?.suppressed === true) {
+            newData[key] = {
+              ...value,
+              _suppressed: true,
+              _suppression_reason: value?.suppression_reason ?? 'insufficient_cohort',
+            } as RetentionRiskResponse;
+            suppressedCount++;
+          } else {
+            newData[key] = value;
+            successCount++;
+          }
         } else {
           const err = result.reason;
-          // Detect privacy-suppression responses (422 with insufficient_cohort / suppressed flag)
+          // Fallback: older backend versions still return 422 for suppression.
           const detail = err?.response?.data?.detail;
           const isSuppressed =
             err?.response?.status === 422 &&
             (detail?.suppressed === true || detail?.error === 'insufficient_cohort');
 
           if (isSuppressed && key === 'retention_risk') {
-            // Store a typed sentinel so the component can render a proper suppressed state
             newData[key] = {
               _suppressed: true,
               _suppression_reason: detail?.error ?? 'insufficient_cohort',
