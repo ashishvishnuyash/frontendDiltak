@@ -49,18 +49,6 @@ import type { ChatMessage } from "@/types/index";
 import ReactMarkdown from "react-markdown";
 
 import {
-  collection,
-  doc,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db, auth } from "@/lib/firebase";
-import { signOut } from 'firebase/auth';
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -784,74 +772,33 @@ export default function EmployeeChatPage() {
 
   const initializeChat = async () => {
     if (!user) return;
-
     try {
-      // Create a new chat session
-      const sessionRef = collection(db, "chat_sessions");
-      const newSessionDoc = await addDoc(sessionRef, {
-        employee_id: user!.id,
-        company_id: user!.company_id || "default",
-        session_type: "text_analysis",
-        status: "active",
-        created_at: serverTimestamp(),
-        report: null,
-      });
+      // Generate a local session ID — no Firestore needed
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      setSessionId(newSessionId);
 
-      setSessionId(newSessionDoc.id);
-
-      // Add welcome message from AI
-      const welcomeMessageContent = `Hello ${user!.first_name || "there"
-        }! How are you?`;
-      await addMessageToDb(welcomeMessageContent, "ai", newSessionDoc.id);
-
-      // Set up real-time listener for messages
-
-      const messagesQuery = query(
-        collection(db, "chat_sessions", newSessionDoc.id, "messages"),
-        orderBy("timestamp")
-      );
-
-      const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
-        const messagesData: ChatMessage[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-
-          ...(doc.data() as Omit<ChatMessage, "id">),
-          timestamp:
-            doc.data().timestamp?.toDate().toISOString() ||
-            new Date().toISOString(),
-        }));
-        setMessages(messagesData);
-      });
-
-      return () => unsubscribe();
+      const welcomeMessageContent = `Hello ${user.first_name || 'there'}! How are you?`;
+      addMessageToDb(welcomeMessageContent, 'ai', newSessionId);
     } catch (error: any) {
-      console.error("Error creating chat session:", error);
-      toast.error("Failed to initialize chat session.");
+      console.error('Error creating chat session:', error);
+      toast.error('Failed to initialize chat session.');
     }
   };
 
-  const addMessageToDb = async (
+  const addMessageToDb = (
     content: string,
-    sender: "user" | "ai",
+    sender: 'user' | 'ai',
     currentSessionId: string
   ) => {
     if (!currentSessionId) return;
-    try {
-      const messagesRef = collection(
-        db,
-        "chat_sessions",
-        currentSessionId,
-        "messages"
-      );
-      await addDoc(messagesRef, {
-        content,
-        sender,
-        timestamp: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error("Error adding message to DB:", error);
-      toast.error("Could not save message.");
-    }
+    const newMsg: ChatMessage = {
+      id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      session_id: currentSessionId,
+      content,
+      sender,
+      timestamp: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, newMsg]);
   };
 
   // File handling functions
@@ -1207,18 +1154,7 @@ export default function EmployeeChatPage() {
           }))
         };
 
-        // Update the chat session with comprehensive data
-        const sessionDocRef = doc(db, "chat_sessions", sessionId);
-        await updateDoc(sessionDocRef, {
-          report: report,
-          status: "completed",
-          completed_at: serverTimestamp(),
-          session_type: isVoiceMode ? "voice" : "text",
-          duration: sessionDuration,
-          conversationData: conversationData,
-          messageCount: messageCount,
-          analysisComplete: true
-        });
+        // Session is tracked in-memory only — no Firestore update needed
 
         // Save comprehensive mental health report
         const mentalHealthReport = {
@@ -1269,10 +1205,13 @@ export default function EmployeeChatPage() {
         };
 
         try {
-          await addDoc(
-            collection(db, "mental_health_reports"),
-            mentalHealthReport
-          );
+          const SERVER = process.env.NEXT_PUBLIC_UMA_API_URL?.replace(/\/+$/, '') ?? 'http://127.0.0.1:8000';
+          const token = localStorage.getItem('access_token');
+          await fetch(`${SERVER}/api/reports`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            body: JSON.stringify(mentalHealthReport),
+          });
           console.log("Comprehensive mental health report saved successfully");
         } catch (saveError) {
           console.error("Error saving mental health report:", saveError);
@@ -1281,10 +1220,13 @@ export default function EmployeeChatPage() {
 
         // Save conversation data separately for detailed analysis
         try {
-          await addDoc(
-            collection(db, "conversation_analyses"),
-            conversationData
-          );
+          const SERVER = process.env.NEXT_PUBLIC_UMA_API_URL?.replace(/\/+$/, '') ?? 'http://127.0.0.1:8000';
+          const token = localStorage.getItem('access_token');
+          await fetch(`${SERVER}/api/conversation-analyses`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            body: JSON.stringify(conversationData),
+          });
           console.log("Conversation analysis data saved successfully");
         } catch (conversationError) {
           console.error("Error saving conversation analysis:", conversationError);

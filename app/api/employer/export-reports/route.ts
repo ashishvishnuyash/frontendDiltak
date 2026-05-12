@@ -1,66 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import axios from 'axios';
 import type { MentalHealthReport } from '@/types/index';
+
+const SERVER = process.env.NEXT_PUBLIC_UMA_API_URL?.replace(/\/+$/, '') ?? 'http://127.0.0.1:8000';
 
 export async function POST(request: NextRequest) {
   try {
     const { company_id, time_range } = await request.json();
 
     if (!company_id) {
-      return NextResponse.json(
-        { error: 'Company ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Company ID is required' }, { status: 400 });
     }
 
-    // Calculate date range
     const daysBack = time_range === '7d' ? 7 : time_range === '30d' ? 30 : 90;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - daysBack);
+    const token = request.headers.get('authorization');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = token;
 
-    // Query reports
-    const reportsQuery = query(
-      collection(db, 'mental_health_reports'),
-      where('company_id', '==', company_id),
-      where('created_at', '>=', startDate.toISOString())
-      // Removed orderBy to avoid index requirements - will sort in JavaScript
-    );
+    const response = await axios.get(`${SERVER}/api/reports`, {
+      params: { company_id, days: daysBack },
+      headers,
+    });
 
-    const reportsSnapshot = await getDocs(reportsQuery);
-    const reportsData: MentalHealthReport[] = reportsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data() as Omit<MentalHealthReport, 'id'>
-    }));
+    const reports: MentalHealthReport[] = (response.data?.reports ?? response.data ?? [])
+      .sort((a: MentalHealthReport, b: MentalHealthReport) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
 
-    // Sort reports by created_at in JavaScript (newest first)
-    const reports = reportsData.sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-
-    // Generate CSV content
     const csvHeaders = [
-      'Report ID',
-      'Employee ID',
-      'Date',
-      'Session Type',
-      'Mood Rating',
-      'Stress Level',
-      'Energy Level',
-      'Work Satisfaction',
-      'Work Life Balance',
-      'Anxiety Level',
-      'Confidence Level',
-      'Sleep Quality',
-      'Overall Wellness',
-      'Risk Level',
-      'Session Duration (min)',
-      'AI Analysis Summary'
+      'Report ID', 'Employee ID', 'Date', 'Session Type',
+      'Mood Rating', 'Stress Level', 'Energy Level', 'Work Satisfaction',
+      'Work Life Balance', 'Anxiety Level', 'Confidence Level', 'Sleep Quality',
+      'Overall Wellness', 'Risk Level', 'Session Duration (min)', 'AI Analysis Summary',
     ];
 
     const csvRows = reports.map(report => [
       report.id,
-      report.employee_id.slice(-8), // Anonymized employee ID
+      report.employee_id.slice(-8),
       new Date(report.created_at).toLocaleDateString(),
       report.session_type,
       report.mood_rating,
@@ -74,28 +50,20 @@ export async function POST(request: NextRequest) {
       report.overall_wellness,
       report.risk_level,
       report.session_duration ? Math.round(report.session_duration / 60) : 'N/A',
-      report.ai_analysis ? `"${report.ai_analysis.replace(/"/g, '""')}"` : 'N/A'
+      report.ai_analysis ? `"${report.ai_analysis.replace(/"/g, '""')}"` : 'N/A',
     ]);
 
-    const csvContent = [
-      csvHeaders.join(','),
-      ...csvRows.map(row => row.join(','))
-    ].join('\n');
+    const csvContent = [csvHeaders.join(','), ...csvRows.map(r => r.join(','))].join('\n');
 
-    // Return CSV file
     return new NextResponse(csvContent, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="wellness-reports-${time_range}-${new Date().toISOString().split('T')[0]}.csv"`
-      }
+        'Content-Disposition': `attachment; filename="wellness-reports-${time_range}-${new Date().toISOString().split('T')[0]}.csv"`,
+      },
     });
-
   } catch (error) {
     console.error('Export reports error:', error);
-    return NextResponse.json(
-      { error: 'Failed to export reports' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to export reports' }, { status: 500 });
   }
 }

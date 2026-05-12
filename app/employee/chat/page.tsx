@@ -1,11 +1,9 @@
-// --- START OF FILE page.tsx ---
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +15,7 @@ import AzureAvatar, { type AzureAvatarHandle } from "@/components/avatar/AzureAv
 import AzureAvatarSelector from "@/components/avatar/AzureAvatarSelector";
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import VoiceCallUI from "@/components/voice-call/VoiceCallUI";
+import { apiPost } from '@/lib/api-client';
 
 import {
   Send,
@@ -52,18 +51,6 @@ import { toast } from "sonner";
 import type { ChatMessage } from "@/types/index";
 import ReactMarkdown from "react-markdown";
 
-import {
-  collection,
-  doc,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db, auth } from "@/lib/firebase";
-import { signOut } from 'firebase/auth';
 import {
   Sheet,
   SheetContent,
@@ -253,11 +240,31 @@ const calculateRiskLevel = (
   return "low";
 };
 
+// ── Thinking messages (rotate sequentially while AI responds) ────────────────
+const thinkingMessages = [
+  "AI is thinking...",
+  "Analyzing your message...",
+  "Understanding context...",
+  "Reflecting on your feelings...",
+  "Generating thoughtful response...",
+  "Considering the best advice...",
+  "Processing emotional tone...",
+  "Drawing insights from conversation...",
+  "Forming empathetic reply...",
+  "Thinking deeply about this...",
+  "Connecting the dots...",
+  "Preparing a supportive response...",
+  "Crafting personalized advice...",
+  "Almost there...",
+  "Refining my thoughts...",
+];
+
 export default function EmployeeChatPage() {
   const { user, loading: userLoading } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [thinkingIndex, setThinkingIndex] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<WellnessReport | null>(
@@ -279,6 +286,15 @@ export default function EmployeeChatPage() {
   const [audioEnabled, setAudioEnabled] = useState(true);
   
   // Keep refs in sync with state for callbacks (must be after state declarations)
+  // Cycle thinking messages every 2.5 s while loading
+  useEffect(() => {
+    if (!loading) { setThinkingIndex(0); return; }
+    const id = setInterval(() => {
+      setThinkingIndex(prev => (prev + 1) % thinkingMessages.length);
+    }, 2500);
+    return () => clearInterval(id);
+  }, [loading]);
+
   useEffect(() => {
     isVoiceModeRef.current = isVoiceMode;
   }, [isVoiceMode]);
@@ -717,46 +733,19 @@ export default function EmployeeChatPage() {
 
   const initializeChat = async () => {
     if (!user) return;
-
     try {
-      // Create a new chat session
-      const sessionRef = collection(db, "chat_sessions");
-      const newSessionDoc = await addDoc(sessionRef, {
-        employee_id: user!.id,
-        company_id: user!.company_id || "default",
-        session_type: "text_analysis",
-        status: "active",
-        created_at: serverTimestamp(),
-        report: null,
-      });
+      const newId = (typeof crypto !== "undefined" && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      setSessionId(newId);
 
-      setSessionId(newSessionDoc.id);
-
-      // Add welcome message from AI
-      const welcomeMessageContent = `Hello ${user!.first_name || "there"
-        }! How are you?`;
-      await addMessageToDb(welcomeMessageContent, "ai", newSessionDoc.id);
-
-      // Set up real-time listener for messages
-
-      const messagesQuery = query(
-        collection(db, "chat_sessions", newSessionDoc.id, "messages"),
-        orderBy("timestamp")
-      );
-
-      const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
-        const messagesData: ChatMessage[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-
-          ...(doc.data() as Omit<ChatMessage, "id">),
-          timestamp:
-            doc.data().timestamp?.toDate().toISOString() ||
-            new Date().toISOString(),
-        }));
-        setMessages(messagesData);
-      });
-
-      return () => unsubscribe();
+      const welcomeMessageContent = `Hello ${user!.first_name || "there"}! How are you?`;
+      setMessages([{
+        id: `${newId}-welcome`,
+        sender: "ai",
+        content: welcomeMessageContent,
+        timestamp: new Date().toISOString(),
+      } as ChatMessage]);
     } catch (error: any) {
       console.error("Error creating chat session:", error);
       toast.error("Failed to initialize chat session.");
@@ -766,25 +755,18 @@ export default function EmployeeChatPage() {
   const addMessageToDb = async (
     content: string,
     sender: "user" | "ai",
-    currentSessionId: string
+    currentSessionId: string,
   ) => {
     if (!currentSessionId) return;
-    try {
-      const messagesRef = collection(
-        db,
-        "chat_sessions",
-        currentSessionId,
-        "messages"
-      );
-      await addDoc(messagesRef, {
-        content,
-        sender,
-        timestamp: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error("Error adding message to DB:", error);
-      toast.error("Could not save message.");
-    }
+    const id = (typeof crypto !== "undefined" && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setMessages(prev => [...prev, {
+      id,
+      sender,
+      content,
+      timestamp: new Date().toISOString(),
+    } as ChatMessage]);
   };
 
   // File handling functions
@@ -1080,9 +1062,7 @@ export default function EmployeeChatPage() {
         `${m.sender === 'user' ? 'User' : 'AI'}: ${m.content}`
       ).join('\n');
 
-      const token = auth.currentUser
-        ? await auth.currentUser.getIdToken()
-        : localStorage.getItem('access_token');
+      const token = (typeof window !== 'undefined') ? localStorage.getItem('access_token') : null;
 
       // Build analyze-compatible messages
       const analyzeMessages = messages.map(m => ({
@@ -1130,86 +1110,10 @@ export default function EmployeeChatPage() {
           recommendations: ov.recommendations || [],
         };
 
-        // Update chat session
-        const sessionDocRef = doc(db, "chat_sessions", sessionId);
-        await updateDoc(sessionDocRef, {
-          report,
-          status: "completed",
-          completed_at: serverTimestamp(),
-          session_type: isVoiceMode ? "voice" : "text",
-          duration: sessionDuration,
-          messageCount,
-          analysisComplete: true,
-        });
-
-        // Save full ReportResponse to Firestore for the report detail page
-        const mentalHealthReport = {
-          employee_id: user.id,
-          company_id: user.company_id || "default",
-          // flat legacy fields for backward-compat queries
-          stress_level: Math.max(1, Math.min(10, Math.round(report.stress_score))),
-          mood_rating: Math.max(1, Math.min(10, Math.round(report.mood))),
-          energy_level: Math.max(1, Math.min(10, Math.round(report.energy_level))),
-          work_satisfaction: Math.max(1, Math.min(10, Math.round(report.work_satisfaction))),
-          work_life_balance: Math.max(1, Math.min(10, Math.round(report.work_life_balance))),
-          anxiety_level: Math.max(1, Math.min(10, Math.round(report.anxious_level))),
-          confidence_level: Math.max(1, Math.min(10, Math.round(report.confident_level))),
-          sleep_quality: Math.max(1, Math.min(10, Math.round(report.sleep_quality))),
-          overall_wellness: Math.max(1, Math.min(10, Math.round(ov.score))),
-          ai_analysis: ov.full_report || ov.summary,
-          sentiment_score: Math.max(0, Math.min(1, ov.score / 10)),
-          emotion_tags: ov.key_insights || [],
-          risk_level: ov.priority || calculateRiskLevel(report),
-          // rich analysis blocks
-          mental_health: mh,
-          physical_health: ph,
-          overall: ov,
-          meta: result.meta,
-          // session context
-          session_type: isVoiceMode ? "voice" : "text",
-          session_duration: sessionDuration,
-          conversation_metrics: {
-            totalMessages: messageCount,
-            userMessages: userMessages.length,
-            aiMessages: aiMessages.length,
-            hasAttachments: messages.some(m => m.content.includes('📎')),
-            avatarMode: isAvatarMode,
-            voiceMode: isVoiceMode,
-          },
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-
-        try {
-          await addDoc(collection(db, "mental_health_reports"), mentalHealthReport);
-          console.log("Comprehensive mental health report saved successfully");
-        } catch (saveError) {
-          console.error("Error saving mental health report:", saveError);
-          toast.error("Report generated but failed to save. Please contact support.");
-        }
-
-        // Save conversation data for audit trail
-        try {
-          await addDoc(collection(db, "conversation_analyses"), {
-            sessionId,
-            employeeId: user.id,
-            companyId: user.company_id || "default",
-            sessionType: isVoiceMode ? "voice" : "text",
-            sessionDuration,
-            messageCount,
-            userMessageCount: userMessages.length,
-            aiMessageCount: aiMessages.length,
-            conversationContent,
-            hasAttachments: messages.some(m => m.content.includes('📎')),
-            avatarMode: isAvatarMode,
-            voiceMode: isVoiceMode,
-            startTime: callStartTime?.toISOString() || new Date().toISOString(),
-            endTime: new Date().toISOString(),
-            messages: messages.map(m => ({ sender: m.sender, content: m.content, timestamp: m.timestamp })),
-          });
-        } catch (conversationError) {
-          console.error("Error saving conversation analysis:", conversationError);
-        }
+        // Update chat session — persistence is handled by backend.
+        // (Firestore writes for chat_sessions, mental_health_reports, and
+        // conversation_analyses have been removed; the backend persists the
+        // wellness report via /api/chat_wrapper/analyze.)
 
         setGeneratedReport(report);
         setSessionEnded(true);
@@ -1238,10 +1142,14 @@ export default function EmployeeChatPage() {
     if (!user) return;
 
     try {
-      const response = await fetch('/api/gamification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const result = await apiPost<{
+        success: boolean;
+        message?: string;
+        points_earned?: number;
+        new_badges?: string[];
+      }>(
+        '/gamification',
+        {
           action: 'conversation_complete',
           employee_id: user.id,
           company_id: user.company_id,
@@ -1251,22 +1159,20 @@ export default function EmployeeChatPage() {
             sessionType: isVoiceMode ? 'voice' : 'text',
             avatarMode: isAvatarMode
           }
-        })
-      });
-
-      const result = await response.json();
+        }
+      );
       if (result.success) {
         // Show success message with points earned
-        if (result.points_earned > 0) {
+        if (result.points_earned && result.points_earned > 0) {
           toast.success(`🎉 ${result.message} (+${result.points_earned} points)`);
         } else {
           toast.success(result.message);
         }
-        
+
         // Show new badges if any
         if (result.new_badges && result.new_badges.length > 0) {
           setTimeout(() => {
-            toast.success(`🏆 You earned ${result.new_badges.length} new badge(s)!`, {
+            toast.success(`🏆 You earned ${result.new_badges!.length} new badge(s)!`, {
               duration: 5000
             });
           }, 1000);
@@ -1561,17 +1467,46 @@ export default function EmployeeChatPage() {
 
               {/* AI Typing / Audio Processing */}
               {(loading || processingAudio) && (
-                <div className="flex justify-start mb-2.5">
-                  <div className="flex items-end gap-1.5">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="h-3 w-3 text-white" />
+                <div className="flex justify-start mb-4">
+                  <div className="flex items-end gap-2">
+                    {/* Avatar dot */}
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <Sparkles className="h-3.5 w-3.5 text-white" />
                     </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2 border border-gray-100 dark:border-gray-700 shadow-sm">
-                      <div className="flex items-center gap-1.5">
-                        <Loader2 className="w-3 h-3 animate-spin text-emerald-500" />
-                        <span className="text-[11px] text-gray-400">
-                          {processingAudio ? "Processing audio..." : "AI is thinking..."}
-                        </span>
+
+                    {/* Bubble */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 border border-gray-100 dark:border-gray-700 shadow-sm min-w-[200px]">
+                      <div className="flex items-center gap-2.5">
+                        {/* Three animated dots */}
+                        <div className="flex items-center gap-1">
+                          {[0, 1, 2].map(i => (
+                            <motion.span
+                              key={i}
+                              className="block w-2 h-2 rounded-full bg-emerald-400"
+                              animate={{ y: [0, -5, 0] }}
+                              transition={{
+                                duration: 0.7,
+                                repeat: Infinity,
+                                delay: i * 0.15,
+                                ease: 'easeInOut',
+                              }}
+                            />
+                          ))}
+                        </div>
+
+                        {/* Cycling message text — no overflow clip */}
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={processingAudio ? 'audio' : thinkingIndex}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.25 }}
+                            className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap font-medium"
+                          >
+                            {processingAudio ? 'Processing audio...' : thinkingMessages[thinkingIndex]}
+                          </motion.span>
+                        </AnimatePresence>
                       </div>
                     </div>
                   </div>
@@ -1764,7 +1699,7 @@ export default function EmployeeChatPage() {
 
               {/* Quick reply chips — shown when no message typed */}
               {!sessionEnded && currentMessage.length === 0 && messages.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3 justify-end">
+                <div className="flex flex-wrap gap-2 mb-3 justify-center">
                   {predefinedMessages.slice(0, 3).map((msg, i) => (
                     <button
                       key={i}
@@ -1866,6 +1801,9 @@ export default function EmployeeChatPage() {
                   <Phone className="h-5 w-5 text-white" strokeWidth={2.5} />
                 </button>
               </div>
+                <div className="px-3 py-1.5 text-center text-xs text-gray-600">
+   AI-generated content may contain errors. Review carefully before relying on it.
+ </div>
             </div>
 
 

@@ -23,8 +23,8 @@ import {
   Target,
   Zap
 } from 'lucide-react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import type { MentalHealthReport } from '@/types';
 import { SectionLoader } from '@/components/loader';
 
@@ -70,143 +70,122 @@ export default function ComprehensiveMetrics({
   const fetchMetrics = async () => {
     try {
       setRefreshing(true);
-      
-      let reportsQuery;
-      const reportsRef = collection(db, 'mental_health_reports');
-      
-      // Try to load Employer stats from the new backend API wrapper
+
+      const token = localStorage.getItem('access_token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      // Try backend dashboard-stats first for employer/manager
       if ((userRole === 'employer' || userRole === 'manager') && companyId) {
         try {
-          const { auth } = await import('@/lib/firebase');
-          const token = await auth.currentUser?.getIdToken();
-          if (token) {
-            const apiRes = await fetch(`/api/employer/dashboard-stats?company_id=${companyId}`, {
-              headers: { 'Authorization': `Bearer ${token}` }
+          const statsRes = await axios.get(`/api/employer/dashboard-stats`, {
+            params: { company_id: companyId },
+            headers,
+          });
+          const backendStats = statsRes.data;
+          const burnoutRiskLevels = backendStats.burnout_trend?.buckets || {};
+
+          // Also fetch recent reports from backend
+          let recentRep: MentalHealthReport[] = [];
+          try {
+            const repRes = await axios.get(`${ServerAddress}/reports`, {
+              params: { company_id: companyId, limit: 5 },
+              headers,
             });
+            recentRep = (repRes.data?.reports ?? repRes.data ?? [])
+              .sort((a: MentalHealthReport, b: MentalHealthReport) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              )
+              .slice(0, 5);
+          } catch {}
 
-            if (apiRes.ok) {
-              const backendStats = await apiRes.json();
-              const burnoutRiskLevels = backendStats.burnout_trend?.buckets || {};
-
-              // Fetch 5 most recent reports from Firebase for the list display
-              let recentRep: MentalHealthReport[] = [];
-              try {
-                const recentQuery = query(reportsRef, where('company_id', '==', companyId));
-                const recentSnap = await getDocs(recentQuery);
-                recentRep = recentSnap.docs
-                  .map(doc => ({ id: doc.id, ...doc.data() } as MentalHealthReport))
-                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                  .slice(0, 5);
-              } catch (e) {}
-
-              setMetrics({
-                totalReports: backendStats.wellness_index?.computed_at ? backendStats.company_stats?.totalEmployees || 0 : 0,
-                averageWellness: backendStats.wellness_index?.wellness_index ? Math.round(backendStats.wellness_index.wellness_index / 10) : 0,
-                averageMood: backendStats.wellness_index?.engagement_score ? Math.round(backendStats.wellness_index.engagement_score / 10) : 0,
-                averageStress: backendStats.wellness_index?.stress_score ? Math.round(backendStats.wellness_index.stress_score / 10) : 0,
-                averageEnergy: backendStats.engagement_signals?.wau_pct ? Math.round(backendStats.engagement_signals.wau_pct / 10) : 0,
-                riskDistribution: {
-                  low: burnoutRiskLevels['Low Risk'] || 0,
-                  medium: burnoutRiskLevels['Medium Risk'] || 0,
-                  high: backendStats.early_warnings?.alerts?.length || burnoutRiskLevels['High Risk'] || 0,
-                },
-                trends: {
-                  wellness: backendStats.wellness_index?.trend_vs_prior_period ? (backendStats.wellness_index.trend_vs_prior_period * 100) : 0, // Assuming it's a difference in absolute terms or needs percentage format
-                  mood: 0,
-                  stress: 0,
-                  energy: 0
-                },
-                recentReports: recentRep
-              });
-              return;
-            }
-          }
-        } catch (apiError) {
-          console.error("Failed to load metrics from proxy API, falling back to Firebase", apiError);
+          setMetrics({
+            totalReports: backendStats.company_stats?.totalEmployees || 0,
+            averageWellness: backendStats.wellness_index?.wellness_index
+              ? Math.round(backendStats.wellness_index.wellness_index / 10) : 0,
+            averageMood: backendStats.wellness_index?.engagement_score
+              ? Math.round(backendStats.wellness_index.engagement_score / 10) : 0,
+            averageStress: backendStats.wellness_index?.stress_score
+              ? Math.round(backendStats.wellness_index.stress_score / 10) : 0,
+            averageEnergy: backendStats.engagement_signals?.wau_pct
+              ? Math.round(backendStats.engagement_signals.wau_pct / 10) : 0,
+            riskDistribution: {
+              low:    burnoutRiskLevels['Low Risk']    || 0,
+              medium: burnoutRiskLevels['Medium Risk'] || 0,
+              high:   backendStats.early_warnings?.alerts?.length || burnoutRiskLevels['High Risk'] || 0,
+            },
+            trends: {
+              wellness: backendStats.wellness_index?.trend_vs_prior_period
+                ? backendStats.wellness_index.trend_vs_prior_period * 100 : 0,
+              mood: 0, stress: 0, energy: 0,
+            },
+            recentReports: recentRep,
+          });
+          return;
+        } catch {
+          // fall through to generic fetch
         }
       }
 
-      // Fallback for employee or if API failed
-      if (userRole === 'employee' && userId) {
-        reportsQuery = query(reportsRef, where('employee_id', '==', userId));
-      } else if ((userRole === 'manager' || userRole === 'employer') && companyId) {
-        reportsQuery = query(reportsRef, where('company_id', '==', companyId));
-      } else {
-        return;
-      }
+      // Generic fetch for employee or fallback
+      const param = userRole === 'employee' && userId
+        ? { employee_id: userId }
+        : companyId
+        ? { company_id: companyId }
+        : null;
 
-      const querySnapshot = await getDocs(reportsQuery);
-      const reports: MentalHealthReport[] = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as MentalHealthReport));
+      if (!param) return;
 
-      // Sort by created_at descending
-      const sortedReports = reports.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+      const repRes = await axios.get(`${ServerAddress}/reports`, { params: param, headers });
+      const reports: MentalHealthReport[] = (repRes.data?.reports ?? repRes.data ?? [])
+        .sort((a: MentalHealthReport, b: MentalHealthReport) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
 
-      // Calculate metrics
       const totalReports = reports.length;
-      
       if (totalReports === 0) {
         setMetrics({
-          totalReports: 0,
-          averageWellness: 0,
-          averageMood: 0,
-          averageStress: 0,
-          averageEnergy: 0,
+          totalReports: 0, averageWellness: 0, averageMood: 0, averageStress: 0, averageEnergy: 0,
           riskDistribution: { low: 0, medium: 0, high: 0 },
           trends: { wellness: 0, mood: 0, stress: 0, energy: 0 },
-          recentReports: []
+          recentReports: [],
         });
         return;
       }
 
-      const averageWellness = reports.reduce((sum, r) => sum + (r.overall_wellness || 0), 0) / totalReports;
-      const averageMood = reports.reduce((sum, r) => sum + (r.mood_rating || 0), 0) / totalReports;
-      const averageStress = reports.reduce((sum, r) => sum + (r.stress_level || 0), 0) / totalReports;
-      const averageEnergy = reports.reduce((sum, r) => sum + (r.energy_level || 0), 0) / totalReports;
+      const avg = (field: keyof MentalHealthReport) =>
+        reports.reduce((s, r) => s + ((r[field] as number) || 0), 0) / totalReports;
 
-      // Risk distribution
-      const riskDistribution = reports.reduce((acc, r) => {
-        const risk = r.risk_level || 'low';
-        acc[risk as keyof typeof acc]++;
-        return acc;
-      }, { low: 0, medium: 0, high: 0 });
+      const riskDistribution = reports.reduce(
+        (acc, r) => { acc[(r.risk_level || 'low') as keyof typeof acc]++; return acc; },
+        { low: 0, medium: 0, high: 0 }
+      );
 
-      // Calculate trends (comparing last 30% vs previous 30%)
-      const recentCount = Math.max(1, Math.floor(totalReports * 0.3));
-      const previousCount = Math.max(1, Math.floor(totalReports * 0.3));
-      
-      const recentReportsList = sortedReports.slice(0, recentCount);
-      const previousReports = sortedReports.slice(recentCount, recentCount + previousCount);
+      const recentCount  = Math.max(1, Math.floor(totalReports * 0.3));
+      const recentSlice  = reports.slice(0, recentCount);
+      const previousSlice = reports.slice(recentCount, recentCount * 2);
 
-      const calculateTrend = (recent: MentalHealthReport[], previous: MentalHealthReport[], field: keyof MentalHealthReport) => {
-        if (previous.length === 0) return 0;
-        const recentAvg = recent.reduce((sum, r) => sum + (r[field] as number || 0), 0) / recent.length;
-        const previousAvg = previous.reduce((sum, r) => sum + (r[field] as number || 0), 0) / previous.length;
-        return ((recentAvg - previousAvg) / previousAvg) * 100;
-      };
-
-      const trends = {
-        wellness: calculateTrend(recentReportsList, previousReports, 'overall_wellness'),
-        mood: calculateTrend(recentReportsList, previousReports, 'mood_rating'),
-        stress: calculateTrend(recentReportsList, previousReports, 'stress_level'),
-        energy: calculateTrend(recentReportsList, previousReports, 'energy_level')
+      const calcTrend = (field: keyof MentalHealthReport) => {
+        if (!previousSlice.length) return 0;
+        const rAvg = recentSlice.reduce((s, r) => s + ((r[field] as number) || 0), 0) / recentSlice.length;
+        const pAvg = previousSlice.reduce((s, r) => s + ((r[field] as number) || 0), 0) / previousSlice.length;
+        return pAvg === 0 ? 0 : ((rAvg - pAvg) / pAvg) * 100;
       };
 
       setMetrics({
         totalReports,
-        averageWellness: Math.round(averageWellness * 10) / 10,
-        averageMood: Math.round(averageMood * 10) / 10,
-        averageStress: Math.round(averageStress * 10) / 10,
-        averageEnergy: Math.round(averageEnergy * 10) / 10,
+        averageWellness: Math.round(avg('overall_wellness') * 10) / 10,
+        averageMood:     Math.round(avg('mood_rating')      * 10) / 10,
+        averageStress:   Math.round(avg('stress_level')     * 10) / 10,
+        averageEnergy:   Math.round(avg('energy_level')     * 10) / 10,
         riskDistribution,
-        trends,
-        recentReports: sortedReports.slice(0, 5)
+        trends: {
+          wellness: calcTrend('overall_wellness'),
+          mood:     calcTrend('mood_rating'),
+          stress:   calcTrend('stress_level'),
+          energy:   calcTrend('energy_level'),
+        },
+        recentReports: reports.slice(0, 5),
       });
-
     } catch (error) {
       console.error('Error fetching metrics:', error);
     } finally {

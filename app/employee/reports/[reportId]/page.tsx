@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { apiGet } from '@/lib/api-client';
 import { useAuth } from '@/contexts/auth-context';
 import { withAuth } from '@/components/auth/with-auth';
 import { BrandLoader } from '@/components/loader';
@@ -131,9 +130,16 @@ function ReportDetailPage() {
   const fetchReport = useCallback(async () => {
     if (!reportId) return;
     try {
-      const snap = await getDoc(doc(db, 'mental_health_reports', reportId));
-      if (snap.exists()) {
-        setReport({ id: snap.id, ...snap.data() } as DetailReport);
+      const res = await apiGet<{ success: boolean; data: DetailReport & { generated_at?: string } }>(
+        `/reports/${reportId}`,
+      );
+      if (res?.data) {
+        const r = res.data;
+        setReport({
+          ...r,
+          // Backend returns `generated_at`; the page reads `created_at`.
+          created_at: r.created_at || r.generated_at || new Date().toISOString(),
+        } as DetailReport);
       }
     } catch (e) {
       console.error(e);

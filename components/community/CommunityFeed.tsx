@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { User } from '@/types/index';
+import { apiPost } from '@/lib/api-client';
 import SafeHereModal from './SafeHereModal';
 import StartDiscussionModal from './StartDiscussionModal';
 import PostAnonModal from './PostAnonModal';
@@ -301,24 +302,20 @@ export default function CommunityFeed({ user }: { user: User }) {
     if (!user) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get_posts', company_id: user.company_id, data: { category, limit_count: 20 } }),
-      });
-      const data = await res.json();
+      const data = await apiPost<{ success: boolean; posts?: CommunityPost[] }>(
+        '/community',
+        { action: 'get_posts', company_id: user.company_id, data: { category, limit_count: 20 } },
+      );
       if (data.success) setPosts(data.posts ?? []);
     } catch { /* silent */ } finally { setLoading(false); }
   }, [user, category]);
 
   const fetchReplies = useCallback(async (postId: string) => {
     try {
-      const res = await fetch('/api/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get_replies', data: { post_id: postId } }),
-      });
-      const data = await res.json();
+      const data = await apiPost<{ success: boolean; replies?: CommunityReply[] }>(
+        '/community',
+        { action: 'get_replies', data: { post_id: postId } },
+      );
       if (data.success) setRepliesMap(prev => ({ ...prev, [postId]: data.replies ?? [] }));
     } catch { /* silent */ }
   }, []);
@@ -332,11 +329,7 @@ export default function CommunityFeed({ user }: { user: User }) {
   const handleLike = async (postId: string) => {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + 1 } : p));
     try {
-      await fetch('/api/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'like_post', data: { post_id: postId } }),
-      });
+      await apiPost('/community', { action: 'like_post', data: { post_id: postId } });
     } catch { /* optimistic */ }
   };
 
@@ -351,12 +344,10 @@ export default function CommunityFeed({ user }: { user: User }) {
     const text = replyText.trim();
     setReplyText('');
     try {
-      const res = await fetch('/api/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create_reply', employee_id: user.id, company_id: user.company_id, data: { post_id: selectedId, content: text } }),
-      });
-      const data = await res.json();
+      const data = await apiPost<{ success: boolean }>(
+        '/community',
+        { action: 'create_reply', employee_id: user.id, company_id: user.company_id, data: { post_id: selectedId, content: text } },
+      );
       if (data.success) {
         fetchReplies(selectedId);
         setPosts(prev => prev.map(p => p.id === selectedId ? { ...p, replies: p.replies + 1 } : p));
@@ -377,12 +368,10 @@ export default function CommunityFeed({ user }: { user: User }) {
     if (!pendingPost || !user) return;
     setShowPostAnon(false);
     try {
-      const res = await fetch('/api/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create_post', employee_id: user.id, company_id: user.company_id, data: { ...pendingPost, tags: [] } }),
-      });
-      const data = await res.json();
+      const data = await apiPost<{ success: boolean }>(
+        '/community',
+        { action: 'create_post', employee_id: user.id, company_id: user.company_id, data: { ...pendingPost, tags: [] } },
+      );
       if (data.success) { toast.success('Post shared anonymously!'); fetchPosts(); }
       else toast.error('Failed to share post');
     } catch { toast.error('Something went wrong'); }

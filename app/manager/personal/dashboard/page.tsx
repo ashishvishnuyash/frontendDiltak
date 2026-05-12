@@ -33,9 +33,7 @@ import {
   Award
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { collection, query, where, getDocs } from 'firebase/firestore';
 import type { MentalHealthReport } from '@/types';
-import { auth, db } from '@/lib/firebase';
 import { withAuth } from '@/components/auth/with-auth';
 import { useCallback } from 'react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -63,61 +61,36 @@ function EmployeeDashboard() {
   const fetchReports = useCallback(async () => {
     try {
       if (!user?.id) {
-        console.log('No user ID available');
         setLoading(false);
         return;
       }
-      // Fetch reports from Firestore where employee_id matches current user's ID
-      const reportsRef = collection(db, 'mental_health_reports');
-      const q = query(reportsRef, where('employee_id', '==', user.id));
-      const querySnapshot = await getDocs(q);
-
-      console.log('Query snapshot size:', querySnapshot.size);
-
-      const fetchedReports: MentalHealthReport[] = querySnapshot.docs.map((doc: any) => {
-        const data = doc.data();
-        return { 
-          id: doc.id, 
-          ...data,
-          // Ensure created_at is a string
-          created_at: data.created_at || new Date().toISOString()
-        } as MentalHealthReport;
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`/api/reports?employee_id=${user.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      const json = await res.json();
+      const fetchedReports: MentalHealthReport[] = (Array.isArray(json) ? json : (json?.reports ?? json?.data ?? []))
+        .map((r: any) => ({ ...r, created_at: r.created_at || new Date().toISOString() }));
 
-      console.log('Fetched reports:', fetchedReports.length);
+      const sortedReports = fetchedReports
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 10);
 
-      // Sort reports by created_at in JavaScript (descending order)
-      const sortedReports = fetchedReports.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+      setReports(sortedReports);
 
-      // Limit to 10 most recent reports
-      const limitedReports = sortedReports.slice(0, 10);
-
-      setReports(limitedReports);
-
-      // Calculate stats
-      if (limitedReports.length > 0) {
-        const totalMood = limitedReports.reduce((sum: number, report: MentalHealthReport) => sum + (report.mood_rating || 0), 0);
-        const totalStress = limitedReports.reduce((sum: number, report: MentalHealthReport) => sum + (report.stress_level || 0), 0);
-        const totalEnergy = limitedReports.reduce((sum: number, report: MentalHealthReport) => sum + (report.energy_level || 0), 0);
-
+      if (sortedReports.length > 0) {
+        const totalMood   = sortedReports.reduce((s, r) => s + (r.mood_rating  || 0), 0);
+        const totalStress = sortedReports.reduce((s, r) => s + (r.stress_level || 0), 0);
+        const totalEnergy = sortedReports.reduce((s, r) => s + (r.energy_level || 0), 0);
         setStats({
-          averageMood: Math.round(totalMood / limitedReports.length),
-          averageStress: Math.round(totalStress / limitedReports.length),
-          averageEnergy: Math.round(totalEnergy / limitedReports.length),
-          reportsCount: limitedReports.length,
-          lastReportDate: limitedReports[0].created_at,
+          averageMood:    Math.round(totalMood   / sortedReports.length),
+          averageStress:  Math.round(totalStress / sortedReports.length),
+          averageEnergy:  Math.round(totalEnergy / sortedReports.length),
+          reportsCount:   sortedReports.length,
+          lastReportDate: sortedReports[0].created_at,
         });
       } else {
-        // Set default stats when no reports
-        setStats({
-          averageMood: 0,
-          averageStress: 0,
-          averageEnergy: 0,
-          reportsCount: 0,
-          lastReportDate: null,
-        });
+        setStats({ averageMood: 0, averageStress: 0, averageEnergy: 0, reportsCount: 0, lastReportDate: null });
       }
     } catch (error) {
       console.error('Error fetching reports:', error);

@@ -4,6 +4,9 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts'],
+  },
   optimizeFonts: false,
   webpack: (config, { isServer }) => {
     // Handle optional dependencies for ElevenLabs SDK (these are optional peer dependencies)

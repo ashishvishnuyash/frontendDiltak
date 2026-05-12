@@ -8,7 +8,8 @@
  * Content-Type: application/json, which breaks multipart boundary detection.
  */
 
-import { apiDelete, apiGet, apiPost, API_BASE } from './api-client';
+import ServerAddress from '@/constent/ServerAddress';
+import { apiDelete, apiGet, apiPost } from './api-client';
 import type {
   AskRequest,
   AskResponse,
@@ -102,7 +103,7 @@ export async function uploadMedicalReport(
       ? localStorage.getItem('access_token')
       : null;
 
-  const res = await fetch(`${API_BASE}/physical-health/medical/upload${qs}`, {
+  const res = await fetch(`${ServerAddress}/physical-health/medical/upload${qs}`, {
     method: 'POST',
     // DO NOT set Content-Type — the browser sets `multipart/form-data; boundary=...`
     headers: token ? { Authorization: `Bearer ${token}` } : {},

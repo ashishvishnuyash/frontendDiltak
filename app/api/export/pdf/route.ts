@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import axios from 'axios';
 import { PDFExportService, generateAnalyticsFromReports } from '@/lib/pdf-export-service';
 import type { MentalHealthReport, User } from '@/types';
+
+const SERVER = process.env.NEXT_PUBLIC_UMA_API_URL?.replace(/\/+$/, '') ?? 'http://127.0.0.1:8000';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,66 +16,49 @@ export async function POST(request: NextRequest) {
       riskLevel = 'all',
       includeCharts = true,
       includeRawData = true,
-      includeAnalytics = true
+      includeAnalytics = true,
     } = await request.json();
 
     if (!companyId) {
-      return NextResponse.json(
-        { error: 'Company ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Company ID is required' }, { status: 400 });
     }
 
-    // Calculate date range
+    const token = request.headers.get('authorization');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = token;
+
     const daysBack = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 
-    // Fetch employees
-    const employeesQuery = query(
-      collection(db, 'users'),
-      where('company_id', '==', companyId)
-    );
-    const employeesSnapshot = await getDocs(employeesQuery);
-    const employees = employeesSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as User[];
+    // Fetch employees and reports from backend
+    const [employeesRes, reportsRes] = await Promise.allSettled([
+      axios.get(`${SERVER}/api/employer/employees`, { params: { company_id: companyId }, headers }),
+      axios.get(`${SERVER}/api/reports`, { params: { company_id: companyId, days: daysBack }, headers }),
+    ]);
 
-    // Fetch reports
-    const reportsQuery = query(
-      collection(db, 'mental_health_reports'),
-      where('company_id', '==', companyId)
-    );
-    const reportsSnapshot = await getDocs(reportsQuery);
-    const allReports = reportsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as MentalHealthReport[];
+    const employees: User[] =
+      employeesRes.status === 'fulfilled'
+        ? (employeesRes.value.data?.employees ?? employeesRes.value.data ?? [])
+        : [];
 
-    // Filter reports by date range
-    const filteredReports = allReports.filter(report => {
-      const reportDate = new Date(report.created_at);
-      return reportDate >= startDate && reportDate <= endDate;
-    });
+    let allReports: MentalHealthReport[] =
+      reportsRes.status === 'fulfilled'
+        ? (reportsRes.value.data?.reports ?? reportsRes.value.data ?? [])
+        : [];
 
-    // Apply additional filters
-    let finalReports = filteredReports;
+    // Apply filters
     if (department !== 'all') {
-      const deptEmployees = employees.filter(emp => emp.department === department);
-      const deptEmployeeIds = deptEmployees.map(emp => emp.id);
-      finalReports = finalReports.filter(report => deptEmployeeIds.includes(report.employee_id));
+      const deptEmployeeIds = new Set(employees.filter(e => e.department === department).map(e => e.id));
+      allReports = allReports.filter(r => deptEmployeeIds.has(r.employee_id));
     }
-    
     if (riskLevel !== 'all') {
-      finalReports = finalReports.filter(report => report.risk_level === riskLevel);
+      allReports = allReports.filter(r => r.risk_level === riskLevel);
     }
 
-    // Generate analytics
-    const analytics = generateAnalyticsFromReports(finalReports, employees);
+    const analytics = generateAnalyticsFromReports(allReports, employees);
 
-    // Create report config
     const config = {
       title: `${reportType === 'company' ? 'Company' : 'Team'} Wellness Report`,
       subtitle: `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`,
@@ -83,29 +67,18 @@ export async function POST(request: NextRequest) {
       includeAnalytics,
       dateRange: {
         start: startDate.toISOString().split('T')[0],
-        end: endDate.toISOString().split('T')[0]
+        end: endDate.toISOString().split('T')[0],
       },
       filters: {
         departments: department !== 'all' ? [department] : undefined,
-        riskLevels: riskLevel !== 'all' ? [riskLevel] : undefined
-      }
+        riskLevels: riskLevel !== 'all' ? [riskLevel] : undefined,
+      },
     };
 
-    // Generate PDF
     const pdfService = new PDFExportService();
-    const pdfBlob = await pdfService.generateReportPDF(
-      config,
-      {
-        reports: finalReports,
-        employees,
-        analytics
-      }
-    );
-
-    // Convert blob to buffer
+    const pdfBlob = await pdfService.generateReportPDF(config, { reports: allReports, employees, analytics });
     const buffer = await pdfBlob.arrayBuffer();
 
-    // Return PDF as response
     return new NextResponse(buffer, {
       status: 200,
       headers: {
@@ -114,12 +87,8 @@ export async function POST(request: NextRequest) {
         'Content-Length': buffer.byteLength.toString(),
       },
     });
-
   } catch (error: any) {
     console.error('Error generating PDF report:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate PDF report', details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to generate PDF report', details: error.message }, { status: 500 });
   }
 }

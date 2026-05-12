@@ -19,8 +19,6 @@ import {
   BarChart3,
   User as UserIcon
 } from 'lucide-react';
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
 import type { User } from '@/types/index';
 import { SectionLoader } from '@/components/loader';
 
@@ -35,7 +33,8 @@ function ManagerDashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_profile');
       router.push('/auth/login');
     } catch (error) {
       console.error('Logout error:', error);

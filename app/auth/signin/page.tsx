@@ -12,10 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { toast } from 'sonner';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { FirebaseError } from 'firebase/app';
-import { auth, db } from '@/lib/firebase';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -31,30 +29,19 @@ export default function SignInPage() {
     setLoading(true);
     setError('');
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-        if (!userDocSnap.exists()) {
-          setError('Failed to get user data');
-          return;
-        }
-
-        toast.success('Successfully signed in!');
-        const userData = userDocSnap.data();
-        if (userData?.role === 'employer') {
-          router.push('/employer/dashboard');
-        } else {
-          router.push('/employee/dashboard');
-        }
+      const response = await axios.post(`${ServerAddress}/auth/login`, { email, password });
+      const { access_token, user } = response.data;
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('user_profile', JSON.stringify(user));
+      toast.success('Successfully signed in!');
+      if (user?.role === 'employer') {
+        router.push('/employer/dashboard');
+      } else {
+        router.push('/employee/dashboard');
       }
     } catch (err: any) {
-      if (err instanceof FirebaseError) {
-        setError(err.message);
-        return;
-      }
-      setError('An unexpected error occurred');
+      const msg = err?.response?.data?.message || err?.response?.data?.detail || 'An unexpected error occurred';
+      setError(msg);
     } finally {
       setLoading(false);
     }

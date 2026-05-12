@@ -2,11 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/auth-context';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { withAuth } from '@/components/auth/with-auth';
-import type { MentalHealthReport } from '@/types';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
@@ -16,7 +11,25 @@ import {
   TrendingUp, Calendar, MessageSquare, Sparkles,
   ArrowRight, Star, Award, User as UserIcon, BarChart2,
 } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { apiGet } from '@/lib/api-client';
+import { withAuth } from '@/components/auth/with-auth';
 import { BrandLoader } from '@/components/loader';
+import type { MentalHealthReport } from '@/types';
+
+// Backend GET /api/reports/recent response shape (humasql/routers/reports_escalation.py)
+interface ReportsRecentResponse {
+  success: boolean;
+  data: {
+    companyReports: { count: number; analytics: unknown; aiContext: string };
+    personalHistory?: {
+      history: {
+        recentReports: Array<Partial<MentalHealthReport> & { generated_at?: string }>;
+      };
+      aiContext: string;
+    } | null;
+  };
+}
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -95,14 +108,21 @@ function EmployeeDashboard() {
   const [loading, setLoading] = useState(true);
 
   const fetchReports = useCallback(async () => {
-    if (!user?.id) { setLoading(false); return; }
+    if (!user?.id || !user?.company_id) { setLoading(false); return; }
     try {
-      const snap = await getDocs(query(
-        collection(db, 'mental_health_reports'),
-        where('employee_id', '==', user.id)
-      ));
-      const data = snap.docs
-        .map(d => ({ id: d.id, ...d.data(), created_at: d.data().created_at || new Date().toISOString() } as MentalHealthReport))
+      const params = new URLSearchParams({
+        companyId: user.company_id,
+        userId: user.id,
+        days: '30',
+      });
+      const res = await apiGet<ReportsRecentResponse>(`/reports/recent?${params}`);
+      const raw = res?.data?.personalHistory?.history?.recentReports ?? [];
+      const data: MentalHealthReport[] = raw
+        .map(r => ({
+          ...(r as MentalHealthReport),
+          // Backend returns `generated_at`; the dashboard reads `created_at`.
+          created_at: r.created_at || r.generated_at || new Date().toISOString(),
+        }))
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 10);
       setReports(data);

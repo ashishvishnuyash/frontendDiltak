@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 import Sidebar from '@/components/newcomponents/Sidebar';
 import Navbar, { DesktopTopBar } from '@/components/newcomponents/Navbar';
 import { adminNavItems } from '@/components/newcomponents/nav-configs';
 import { useAuth } from '@/contexts/auth-context';
+import { NavigationProgress } from '@/components/newcomponents/NavigationProgress';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -17,6 +18,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <Suspense fallback={null}>
+        <NavigationProgress />
+      </Suspense>
       <Navbar user={navUser} items={adminNavItems} />
       <Sidebar
         items={adminNavItems}

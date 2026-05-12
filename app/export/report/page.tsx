@@ -47,8 +47,8 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import { toast } from 'sonner';
 
 const COLORS = {
@@ -102,33 +102,23 @@ export default function ExportReportPage() {
         return;
       }
 
-      // Calculate date range
       const daysBack = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - daysBack);
 
-      // Fetch employees
-      const employeesQuery = query(
-        collection(db, 'users'),
-        where('company_id', '==', user.company_id)
-      );
-      const employeesSnapshot = await getDocs(employeesQuery);
-      const employees = employeesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as User[];
+      const token = localStorage.getItem('access_token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      // Fetch reports
-      const reportsQuery = query(
-        collection(db, 'mental_health_reports'),
-        where('company_id', '==', user.company_id)
-      );
-      const reportsSnapshot = await getDocs(reportsQuery);
-      const allReports = reportsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as MentalHealthReport[];
+      const [empRes, repRes] = await Promise.allSettled([
+        axios.get(`${ServerAddress}/employer/employees`, { params: { company_id: user.company_id }, headers }),
+        axios.get(`${ServerAddress}/reports`, { params: { company_id: user.company_id, days: daysBack }, headers }),
+      ]);
+
+      const employees: User[] = empRes.status === 'fulfilled'
+        ? (empRes.value.data?.employees ?? empRes.value.data ?? []) : [];
+      const allReports: MentalHealthReport[] = repRes.status === 'fulfilled'
+        ? (repRes.value.data?.reports ?? repRes.value.data ?? []) : [];
 
       // Filter reports by date range
       const filteredReports = allReports.filter(report => {
@@ -138,12 +128,10 @@ export default function ExportReportPage() {
 
       // Apply additional filters
       let finalReports = filteredReports;
-      
-      // For employee reports, only show current user's reports
+
       if (reportType === 'employee') {
         finalReports = finalReports.filter(report => report.employee_id === user.id);
       } else if (reportType === 'team' && user.role === 'manager') {
-        // For managers, show their team's reports
         const teamEmployeeIds = employees
           .filter(emp => emp.manager_id === user.id || emp.id === user.id)
           .map(emp => emp.id);
@@ -153,7 +141,7 @@ export default function ExportReportPage() {
         const deptEmployeeIds = deptEmployees.map(emp => emp.id);
         finalReports = finalReports.filter(report => deptEmployeeIds.includes(report.employee_id));
       }
-      
+
       if (riskLevel !== 'all') {
         finalReports = finalReports.filter(report => report.risk_level === riskLevel);
       }

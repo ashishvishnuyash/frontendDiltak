@@ -33,8 +33,8 @@ import {
   Briefcase
 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 import { MentalHealthReport, User } from '@/types';
 import { toast } from 'sonner';
 import { PageLoader } from '@/components/loader';
@@ -64,56 +64,37 @@ function EmployerReportsPage() {
 
   const fetchReports = useCallback(async () => {
     if (!user?.company_id) return;
-
     try {
       setLoading(true);
+      const token = localStorage.getItem('access_token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      const employeesQuery = query(
-        collection(db, 'users'),
-        where('company_id', '==', user.company_id)
-      );
-      const employeesSnapshot = await getDocs(employeesQuery);
-      const employees = employeesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as User));
+      const [empRes, repRes] = await Promise.allSettled([
+        axios.get(`${ServerAddress}/employer/employees`, { params: { company_id: user.company_id }, headers }),
+        axios.get(`${ServerAddress}/reports`, { params: { company_id: user.company_id }, headers }),
+      ]);
 
+      const employees: User[] = empRes.status === 'fulfilled'
+        ? (empRes.value.data?.employees ?? empRes.value.data ?? []) : [];
       const employeeMap = new Map(employees.map(emp => [emp.id, emp]));
 
-      const reportsQuery = query(
-        collection(db, 'mental_health_reports'),
-        where('company_id', '==', user.company_id),
-        orderBy('created_at', 'desc')
-      );
-      const reportsSnapshot = await getDocs(reportsQuery);
+      const rawReports: MentalHealthReport[] = repRes.status === 'fulfilled'
+        ? (repRes.value.data?.reports ?? repRes.value.data ?? []) : [];
 
-      const reportsData = reportsSnapshot.docs.map(doc => {
-        const reportData = { id: doc.id, ...doc.data() } as MentalHealthReport;
-        const employee = employeeMap.get(reportData.employee_id);
-        return { ...reportData, employee };
-      });
+      const reportsData = rawReports
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .map(r => ({ ...r, employee: employeeMap.get(r.employee_id) }));
 
       setReports(reportsData);
 
       const totalReports = reportsData.length;
-      const highRisk = reportsData.filter(r => r.risk_level === 'high').length;
+      const highRisk   = reportsData.filter(r => r.risk_level === 'high').length;
       const mediumRisk = reportsData.filter(r => r.risk_level === 'medium').length;
       const avgWellness = totalReports > 0
-        ? reportsData.reduce((sum, r) => sum + (r.overall_wellness || 0), 0) / totalReports
-        : 0;
+        ? reportsData.reduce((s, r) => s + (r.overall_wellness || 0), 0) / totalReports : 0;
+      const departments = Array.from(new Set(employees.map(e => e.department).filter(Boolean))) as string[];
 
-      const departments = Array.from(
-        new Set(employees.map(emp => emp.department).filter(Boolean))
-      ) as string[];
-
-      setStats({
-        totalReports,
-        highRisk,
-        mediumRisk,
-        avgWellness: Math.round(avgWellness * 10) / 10,
-        departments
-      });
-
+      setStats({ totalReports, highRisk, mediumRisk, avgWellness: Math.round(avgWellness * 10) / 10, departments });
     } catch (error) {
       console.error('Error fetching reports:', error);
     } finally {

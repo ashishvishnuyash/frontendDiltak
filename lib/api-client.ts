@@ -5,9 +5,8 @@
  * Reads 'access_token' from localStorage and injects the Bearer header.
  */
 
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import ServerAddress from "@/constent/ServerAddress";
-
-export const API_BASE = ServerAddress;
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -21,49 +20,54 @@ interface FetchOptions {
   headers?: Record<string, string>;
 }
 
+const axiosInstance = axios.create({
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+axiosInstance.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_profile');
+      window.location.href = '/auth/login';
+      return Promise.reject(new Error('Session expired. Please log in again.'));
+    }
+    const detail = error.response?.data?.detail || `API error ${error.response?.status || ''}`;
+    return Promise.reject(new Error(detail));
+  }
+);
+
 /**
- * Authenticated fetch helper.
+ * Authenticated axios helper.
  * Throws an Error with `message` = the API detail string on non-2xx responses.
  */
 export async function apiRequest<T = unknown>(
   path: string,
   options: FetchOptions = {},
 ): Promise<T> {
-  const token = getToken();
   const { method = 'GET', body, headers = {} } = options;
+  const url = path.startsWith('http') ? path : `${ServerAddress}${path}`;
 
-  const init: RequestInit = {
+  const config: AxiosRequestConfig = {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    url,
+    headers,
+    data: body,
   };
 
-  const url = path.startsWith('http') ? path : `${ServerAddress}${path}`;
-  const res = await fetch(url, init);
-
-  if (!res.ok) {
-    if (res.status === 401 && typeof window !== 'undefined') {
-      // Token expired or invalid — clear auth and redirect to login
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user_profile');
-      window.location.href = '/auth/login';
-      throw new Error('Session expired. Please log in again.');
-    }
-    let detail = `API error ${res.status}`;
-    try {
-      const err = await res.json();
-      detail = err?.detail ?? detail;
-    } catch {
-      // ignore JSON parse errors
-    }
-    throw new Error(detail);
-  }
-
-  return res.json() as Promise<T>;
+  const response: AxiosResponse<T> = await axiosInstance.request(config);
+  return response.data;
 }
 
 // ── Convenience wrappers ──────────────────────────────────────────────────────

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, limit, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Initialize OpenAI client
 function getOpenAIClient() {
@@ -48,83 +46,18 @@ interface ChatSession {
   company_id?: string;
 }
 
-// Get user's recent chat history for context
-async function getUserChatHistory(userId: string, companyId: string, days: number = 7): Promise<ChatSession[]> {
+// Get user's recent chat history for context — fetches from backend API
+async function getUserChatHistory(userId: string, _companyId: string, days: number = 7): Promise<ChatSession[]> {
   try {
-    const chatRef = collection(db, 'chat_sessions');
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - days);
-    
-    // Query without date filter to avoid composite index requirement
-    // We'll filter by date in JavaScript instead
-    const q = query(
-      chatRef,
-      where('employee_id', '==', userId),
-      orderBy('created_at', 'desc'),
-      limit(50) // Get more documents to filter by date
+    const SERVER = process.env.NEXT_PUBLIC_UMA_API_URL?.replace(/\/+$/, '') ?? 'http://127.0.0.1:8000';
+    const response = await fetch(
+      `${SERVER}/api/chat-sessions?employee_id=${userId}&days=${days}&limit=20`,
+      { headers: { 'Content-Type': 'application/json' } }
     );
-    
-    const querySnapshot = await getDocs(q);
-    const sessions: ChatSession[] = querySnapshot.docs
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as ChatSession))
-      .filter(session => {
-        // Filter by date in JavaScript
-        const sessionDate = session.created_at 
-          ? (session.created_at instanceof Date 
-              ? session.created_at 
-              : new Date(session.created_at))
-          : null;
-        return sessionDate && sessionDate >= sevenDaysAgo;
-      })
-      .slice(0, 20); // Limit to 20 most recent after filtering
-    
-    return sessions;
-  } catch (error: any) {
-    // If the query still fails (e.g., missing index for user_id + company_id + orderBy),
-    // try a simpler query without orderBy
-    if (error?.code === 'failed-precondition') {
-      try {
-        const chatRef = collection(db, 'chat_sessions');
-        const q = query(
-          chatRef,
-          where('employee_id', '==', userId),
-          limit(50)
-        );
-        
-        const querySnapshot = await getDocs(q);
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - days);
-        
-        const sessions: ChatSession[] = querySnapshot.docs
-          .map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          } as ChatSession))
-          .filter(session => {
-            const sessionDate = session.created_at 
-              ? (session.created_at instanceof Date 
-                  ? session.created_at 
-                  : new Date(session.created_at))
-              : null;
-            return sessionDate && sessionDate >= sevenDaysAgo;
-          })
-          .sort((a, b) => {
-            const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at || 0);
-            const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at || 0);
-            return dateB.getTime() - dateA.getTime();
-          })
-          .slice(0, 20);
-        
-        return sessions;
-      } catch (fallbackError) {
-        console.error('Error fetching chat history (fallback):', fallbackError);
-        return [];
-      }
-    }
-    console.error('Error fetching chat history:', error);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return Array.isArray(data?.sessions) ? data.sessions : Array.isArray(data) ? data : [];
+  } catch {
     return [];
   }
 }
@@ -420,23 +353,19 @@ export async function POST(request: NextRequest) {
     
     // Store recommendations in database for tracking
     try {
-      const recommendationsRef = collection(db, 'ai_recommendations');
-      await addDoc(recommendationsRef, {
-        employee_id,
-        company_id,
-        recommendations,
-        context: {
-          current_mood,
-          current_stress,
-          current_energy,
-          time_available
-        },
-        created_at: serverTimestamp(),
-        generated_at: new Date().toISOString()
+      const SERVER = process.env.NEXT_PUBLIC_UMA_API_URL?.replace(/\/+$/, '') ?? 'http://127.0.0.1:8000';
+      await fetch(`${SERVER}/api/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          employee_id, company_id, recommendations,
+          context: { current_mood, current_stress, current_energy, time_available },
+          generated_at: new Date().toISOString(),
+        }),
       });
     } catch (dbError) {
       console.error('Error storing recommendations:', dbError);
-      // Continue even if database storage fails
+      // Continue even if storage fails
     }
     
     return NextResponse.json({

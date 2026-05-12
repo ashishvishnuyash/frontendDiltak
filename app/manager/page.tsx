@@ -23,7 +23,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
-import { auth } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export default function ManagerSelectionPage() {

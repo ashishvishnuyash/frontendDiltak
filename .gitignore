@@ -35,3 +35,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# embedded backend repo (separate git repo, not part of frontend)
+/humasql/

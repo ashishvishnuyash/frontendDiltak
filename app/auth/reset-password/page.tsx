@@ -11,9 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, CheckCircle, Lock, Loader2 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { auth } from '@/lib/firebase';
-import { confirmPasswordReset } from 'firebase/auth';
-import { toast } from 'sonner';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState('');
@@ -53,17 +52,12 @@ function ResetPasswordForm() {
     try {
       const oobCode = searchParams.get('oobCode');
       if (!oobCode) throw new Error('Missing password reset code.');
-
-      await confirmPasswordReset(auth, oobCode, password);
+      await axios.post(`${ServerAddress}/auth/reset-password`, { token: oobCode, password });
       setSuccess(true);
-      toast.success('Password updated successfully!');
       setTimeout(() => router.push('/auth/login'), 2000);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('An unexpected error occurred.');
-      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'An unexpected error occurred.';
+      setError(msg);
     } finally {
       setLoading(false);
     }

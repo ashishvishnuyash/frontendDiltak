@@ -9,9 +9,17 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
-import { apiPost } from '@/lib/api-client';
-import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { apiGet, apiPost } from '@/lib/api-client';
+
+// Backend GET /api/reports/recent response shape
+interface ReportsRecentResponse {
+  success: boolean;
+  data: {
+    personalHistory?: {
+      history: { recentReports: Array<LatestReport & { generated_at?: string; created_at?: string }> };
+    } | null;
+  };
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -111,38 +119,29 @@ export default function AIRecommendations() {
   const [latestReport, setLatestReport] = useState<LatestReport | null>(null);
   const [noReportFound, setNoReportFound] = useState(false);
 
-  // Fetch the most recent mental_health_reports entry for this user
+  // Fetch the most recent mental_health_reports entry for this user.
+  // Backend already filters to the user via personalHistory + sorts desc.
   const fetchLatestReport = useCallback(async (): Promise<LatestReport | null> => {
-    if (!user?.id) return null;
+    if (!user?.id || !user?.company_id) return null;
     try {
-      const q = query(
-        collection(db, 'mental_health_reports'),
-        where('employee_id', '==', user.id),
-        orderBy('created_at', 'desc'),
-        limit(1)
-      );
-      const snap = await getDocs(q);
-      if (snap.empty) return null;
-      return snap.docs[0].data() as LatestReport;
+      const params = new URLSearchParams({
+        companyId: user.company_id,
+        userId: user.id,
+        days: '90',
+      });
+      const res = await apiGet<ReportsRecentResponse>(`/reports/recent?${params}`);
+      const items = res?.data?.personalHistory?.history?.recentReports ?? [];
+      if (items.length === 0) return null;
+      const sorted = [...items].sort((a, b) => {
+        const ad = (a.created_at ?? a.generated_at ?? '');
+        const bd = (b.created_at ?? b.generated_at ?? '');
+        return bd.localeCompare(ad);
+      });
+      return sorted[0] as LatestReport;
     } catch {
-      // Fallback without orderBy if index missing
-      try {
-        const q2 = query(
-          collection(db, 'mental_health_reports'),
-          where('employee_id', '==', user.id),
-          limit(5)
-        );
-        const snap2 = await getDocs(q2);
-        if (snap2.empty) return null;
-        // Pick most recent by created_at string
-        const docs = snap2.docs.map(d => d.data() as LatestReport & { created_at?: string });
-        docs.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''));
-        return docs[0];
-      } catch {
-        return null;
-      }
+      return null;
     }
-  }, [user?.id]);
+  }, [user?.id, user?.company_id]);
 
   const fetchRecommendations = useCallback(async () => {
     if (!user) return;

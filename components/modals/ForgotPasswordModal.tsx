@@ -2,16 +2,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X,
-  Mail,
-  CheckCircle,
-  Loader2,
-  ArrowLeft
-} from 'lucide-react';
+import { X, Mail, CheckCircle, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { auth } from '@/lib/firebase';
-import { sendPasswordResetEmail } from 'firebase/auth';
+import axios from 'axios';
+import ServerAddress from '@/constent/ServerAddress';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -30,26 +24,12 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
     setError('');
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      await axios.post(`${ServerAddress}/auth/forgot-password`, { email });
       setSuccess(true);
       toast.success('Password reset email sent!');
     } catch (err: any) {
-      console.error('Password reset error:', err);
-      
-      // Handle specific Firebase Auth errors
-      switch (err.code) {
-        case 'auth/user-not-found':
-          setError('No account found with this email address.');
-          break;
-        case 'auth/invalid-email':
-          setError('Invalid email address.');
-          break;
-        case 'auth/too-many-requests':
-          setError('Too many requests. Please try again later.');
-          break;
-        default:
-          setError('Failed to send reset email. Please try again.');
-      }
+      const msg = err?.response?.data?.message || err?.message || 'Failed to send reset email. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -74,7 +54,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -83,16 +62,14 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
             onClick={handleClose}
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
             className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <button
               onClick={handleClose}
               disabled={loading}
@@ -103,7 +80,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
 
             <div className="p-8 sm:p-10">
               {success ? (
-                // Success State
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -112,30 +88,22 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                   <div className="mx-auto w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
                     <CheckCircle className="h-8 w-8 text-emerald-500" />
                   </div>
-                  
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      Check Your Email
-                    </h2>
-                    <p className="text-gray-500 text-sm mb-4">
-                      We've sent a password reset link to:
-                    </p>
-                    <p className="font-semibold text-gray-900 mb-4">
-                      {email}
-                    </p>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h2>
+                    <p className="text-gray-500 text-sm mb-4">We've sent a password reset link to:</p>
+                    <p className="font-semibold text-gray-900 mb-4">{email}</p>
                     <p className="text-sm text-gray-500 leading-relaxed">
-                      Click the link in the email to reset your password. If you don't see it, be sure to check your spam folder.
+                      Click the link in the email to reset your password. If you don't see it, check your spam folder.
                     </p>
                   </div>
-
                   <div className="space-y-3 pt-4">
-                    <button 
+                    <button
                       onClick={handleClose}
                       className="w-full px-6 py-2.5 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
                     >
                       Back to Login
                     </button>
-                    <button 
+                    <button
                       onClick={handleTryDifferentEmail}
                       className="w-full flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
                     >
@@ -145,13 +113,9 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                   </div>
                 </motion.div>
               ) : (
-                // Form State
                 <>
-                  {/* Header */}
                   <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      Reset Password
-                    </h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Reset Password</h2>
                     <p className="text-sm text-gray-500">
                       Enter your email address and we'll send you a link to reset your password.
                     </p>
@@ -162,7 +126,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
                         className="p-3 text-[11px] font-medium text-red-600 bg-red-50 border border-red-100 rounded-lg"
                       >
                         {error}
@@ -180,10 +143,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                           type="email"
                           placeholder="Enter your email"
                           value={email}
-                          onChange={(e) => {
-                            setEmail(e.target.value);
-                            if (error) setError('');
-                          }}
+                          onChange={(e) => { setEmail(e.target.value); if (error) setError(''); }}
                           className="w-full text-sm pl-10 pr-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:border-emerald-400 transition-colors"
                           disabled={loading}
                           required
@@ -210,14 +170,11 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                             <Loader2 className="h-4 w-4 animate-spin" />
                             <span>Sending...</span>
                           </div>
-                        ) : (
-                          'Send Link'
-                        )}
+                        ) : 'Send Link'}
                       </button>
                     </div>
                   </form>
 
-                  {/* Help Text */}
                   <div className="mt-8 pt-6 border-t border-gray-100">
                     <h3 className="font-medium text-gray-800 text-xs mb-3">Need help?</h3>
                     <ul className="text-[11px] text-gray-500 space-y-2 list-disc pl-4">

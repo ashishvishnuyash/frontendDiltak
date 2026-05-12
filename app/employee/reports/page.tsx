@@ -8,10 +8,23 @@ import {
   TrendingDown, TrendingUp, Minus, X, FileDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { apiGet } from '@/lib/api-client';
 import { withAuth } from '@/components/auth/with-auth';
 import type { MentalHealthReport } from '@/types';
+
+// Backend GET /api/reports/recent response shape (humasql/routers/reports_escalation.py)
+interface ReportsRecentResponse {
+  success: boolean;
+  data: {
+    companyReports: { count: number; analytics: unknown; aiContext: string };
+    personalHistory?: {
+      history: {
+        recentReports: Array<Partial<MentalHealthReport> & { generated_at?: string }>;
+      };
+      aiContext: string;
+    } | null;
+  };
+}
 import InteractiveAnalytics from '@/components/analytics/InteractiveAnalytics';
 import { DataList } from '@/components/list/DataList';
 import type { ColumnDef } from '@/components/list/DataList';
@@ -67,12 +80,22 @@ function EmployeeReportsPage() {
   const router = useRouter();
 
   const fetchReports = useCallback(async () => {
-    if (!user) return;
+    if (!user?.id || !user?.company_id) { setLoading(false); return; }
     try {
       setRefreshing(true);
-      const snap = await getDocs(query(collection(db, 'mental_health_reports'), where('employee_id', '==', user.id)));
-      const data = snap.docs
-        .map(d => ({ id: d.id, ...d.data() } as UIMentalHealthReport))
+      const params = new URLSearchParams({
+        companyId: user.company_id,
+        userId: user.id,
+        days: '365',
+      });
+      const res = await apiGet<ReportsRecentResponse>(`/reports/recent?${params}`);
+      const raw = res?.data?.personalHistory?.history?.recentReports ?? [];
+      const data: UIMentalHealthReport[] = raw
+        .map(r => ({
+          ...(r as UIMentalHealthReport),
+          // Backend returns `generated_at`; this page reads `created_at`.
+          created_at: r.created_at || r.generated_at || new Date().toISOString(),
+        }))
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setReports(data);
     } catch (e) {
